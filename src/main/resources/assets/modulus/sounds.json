@@ -1,0 +1,14 @@
+{
+	"ya": {
+		"sounds": ["modulus:ya"],
+		"subtitle": "subtitles.ya"
+	},
+	"net": {
+		"sounds": ["modulus:net"],
+		"subtitle": "subtitles.net"
+	},
+	"button": {
+		"sounds": ["modulus:button"],
+		"subtitle": "subtitles.button"
+	}
+}

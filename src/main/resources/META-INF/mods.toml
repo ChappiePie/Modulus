@@ -1,0 +1,27 @@
+modLoader="javafml" 
+loaderVersion="[44,)"
+license="All rights reserved"
+
+[[mods]]
+modId="modulus"
+version="${file.jarVersion}"
+displayName="Modulus"
+logoFile="modulus.png"
+credits="Thanks to all peoples that sponsored our mods"
+authors="Chappie"
+description='''
+The core for the mods created by Chappie is under constant development.
+Basically adding a lot of cool things for convenient writing of mods. '''
+[[dependencies.modulus]]
+    modId="forge" 
+    mandatory=true
+    versionRange="[44,)"
+    ordering="NONE"
+    side="BOTH"
+
+[[dependencies.modulus]]
+    modId="minecraft"
+    mandatory=true
+    versionRange="[1.19.3,1.20)"
+    ordering="NONE"
+    side="BOTH"
