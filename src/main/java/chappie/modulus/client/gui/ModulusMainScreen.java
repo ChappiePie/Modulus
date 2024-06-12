@@ -9,7 +9,6 @@ import chappie.modulus.util.IOneScaleScreen;
 import com.google.common.collect.ImmutableList;
 import com.mojang.blaze3d.systems.RenderSystem;
 import com.mojang.blaze3d.vertex.PoseStack;
-import net.minecraft.Util;
 import net.minecraft.client.gui.GuiComponent;
 import net.minecraft.client.gui.components.Button;
 import net.minecraft.client.gui.components.Renderable;
@@ -30,7 +29,6 @@ import org.jetbrains.annotations.Nullable;
 
 import java.util.ArrayList;
 import java.util.List;
-import java.util.concurrent.atomic.AtomicReference;
 import java.util.function.Supplier;
 
 public class ModulusMainScreen extends Screen implements IOneScaleScreen {
@@ -41,7 +39,7 @@ public class ModulusMainScreen extends Screen implements IOneScaleScreen {
     private static final Supplier<ResourceLocation> CHAPPIE_TEXTURE = ClientUtil.getTextureFromLink(MODULUS_SCREEN, "chappie", "https://raw.githubusercontent.com/ChappiePie/ModulusResources/main/chappie.png");
     private final Screen lastScreen;
     private final List<TabButton> tabs = Lists.newArrayList();
-    private final IHasTimer.Timer atChappieTimer = new IHasTimer.Timer(() -> 10, () -> true);
+    private final IHasTimer.Timer atChappieTimer = new IHasTimer.Timer(() -> 10, () -> false);
     private final Supplier<List<String>> links = CommonUtil.getTxtFromLink("https://raw.githubusercontent.com/ChappiePie/ModulusResources/main/links.txt");
     public List<GuiEventListener> pageWidgets = new ArrayList<>();
     private int tabId = 0;
@@ -115,6 +113,15 @@ public class ModulusMainScreen extends Screen implements IOneScaleScreen {
 
     @Override
     public void render(PoseStack pPoseStack, int pMouseX, int pMouseY, float pPartialTick) {
+        this.atChappieTimer.update();
+        for (Renderable renderable : this.renderables) {
+            if (renderable instanceof IHasTimer timer) {
+                for (IHasTimer.Timer t : timer.timers()) {
+                    t.update();
+                }
+            }
+        }
+
         this.renderDirtBackground(pPoseStack);
         // Modulus header
         RenderSystem.setShaderTexture(0, MENU);
@@ -208,7 +215,6 @@ public class ModulusMainScreen extends Screen implements IOneScaleScreen {
 
 
                 this.atChappieTimer.predicate = () -> isMouseOverObj(pMouseX, pMouseY, x1, y1, width, canvasHeight / 1.5F);
-                this.atChappieTimer.update();
                 RenderSystem.enableBlend();
                 RenderSystem.defaultBlendFunc();
                 RenderSystem.setShaderTexture(0, CHAPPIE_TEXTURE.get());

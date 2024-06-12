@@ -1,7 +1,6 @@
 package chappie.modulus.client.gui;
 
 import chappie.modulus.util.ClientUtil;
-import chappie.modulus.util.CommonUtil;
 import chappie.modulus.util.IHasTimer;
 import com.mojang.blaze3d.systems.RenderSystem;
 import com.mojang.blaze3d.vertex.PoseStack;
@@ -11,11 +10,11 @@ import net.minecraft.network.chat.CommonComponents;
 import net.minecraft.network.chat.Component;
 import net.minecraft.resources.ResourceLocation;
 
+import java.util.Collections;
 import java.util.List;
-import java.util.concurrent.atomic.AtomicReference;
 import java.util.function.Supplier;
 
-public class ModulusAboutButton extends Button {
+public class ModulusAboutButton extends Button implements IHasTimer {
     private final IHasTimer.Timer timer = new IHasTimer.Timer(() -> 10, this::isHoveredOrFocused);
     protected final ResourceLocation resourceLocation;
     protected final int xTexStart;
@@ -26,7 +25,7 @@ public class ModulusAboutButton extends Button {
 
     public ModulusAboutButton(int pX, int pY, int pScale, int pXTexStart, ResourceLocation pResourceLocation, Supplier<List<String>> links, int index) {
         this(pX, pY, pScale, pScale, pXTexStart, 0, pResourceLocation, (b) -> {
-            if (links.get().size() > 0) {
+            if (!links.get().isEmpty()) {
                 Util.getPlatform().openUri(links.get().get(index));
             }
         }, index);
@@ -49,7 +48,6 @@ public class ModulusAboutButton extends Button {
     @Override
     public void renderWidget(PoseStack pPoseStack, int pMouseX, int pMouseY, float pPartialTick) {
         float f = this.height / 8F * this.timer.value(pPartialTick);
-        this.timer.update();
         //super.renderWidget(pPoseStack, pMouseX, pMouseY, pPartialTick);
         RenderSystem.setShaderTexture(0, this.resourceLocation);
 
@@ -73,4 +71,8 @@ public class ModulusAboutButton extends Button {
         return false;
     }
 
+    @Override
+    public Iterable<Timer> timers() {
+        return Collections.singleton(this.timer);
+    }
 }
