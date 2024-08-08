@@ -14,8 +14,6 @@ import net.minecraft.world.entity.LivingEntity;
 import net.minecraftforge.common.capabilities.Capability;
 import net.minecraftforge.common.capabilities.CapabilityManager;
 import net.minecraftforge.common.capabilities.CapabilityToken;
-import net.minecraftforge.common.util.INBTSerializable;
-import net.minecraftforge.network.NetworkDirection;
 
 import javax.annotation.Nullable;
 import java.util.Collection;
@@ -69,15 +67,15 @@ public class PowerCap {
 
     public void sync() {
         if (this.livingEntity instanceof ServerPlayer player) {
-            ModNetworking.INSTANCE.sendTo(new ClientSyncPowerCap(this.livingEntity.getId(), this.serializeNBT()), player.connection.connection, NetworkDirection.PLAY_TO_CLIENT);
+            ModNetworking.INSTANCE.send(new ClientSyncPowerCap(this.livingEntity.getId(), this.serializeNBT()), player.connection.getConnection());
         }
     }
 
     public void syncToAll() {
         this.sync();
-        for (LivingEntity livingEntity : this.livingEntity.level.players()) {
+        for (LivingEntity livingEntity : this.livingEntity.getCommandSenderWorld().players()) {
             if (livingEntity instanceof ServerPlayer player) {
-                ModNetworking.INSTANCE.sendTo(new ClientSyncPowerCap(this.livingEntity.getId(), this.serializeNBT()), player.connection.connection, NetworkDirection.PLAY_TO_CLIENT);
+                ModNetworking.INSTANCE.send(new ClientSyncPowerCap(this.livingEntity.getId(), this.serializeNBT()), player.connection.getConnection());
             }
         }
     }

@@ -7,9 +7,7 @@ import net.minecraft.client.Minecraft;
 import net.minecraft.nbt.CompoundTag;
 import net.minecraft.network.FriendlyByteBuf;
 import net.minecraft.world.entity.Entity;
-import net.minecraftforge.network.NetworkEvent;
-
-import java.util.function.Supplier;
+import net.minecraftforge.event.network.CustomPayloadEvent;
 
 public class ClientSyncData {
 
@@ -38,20 +36,18 @@ public class ClientSyncData {
         buf.writeNbt(this.tag);
     }
 
-    public void handle(Supplier<NetworkEvent.Context> ctx) {
-        ctx.get().enqueueWork(() -> {
-            Entity entity = Minecraft.getInstance().level.getEntity(this.entityId);
-            if (entity != null) {
-                entity.getCapability(PowerCap.CAPABILITY).ifPresent(cap -> {
-                    DataManager dataManager = cap.getAbility(this.abilityName).dataManager;
-                    DataAccessor<?> accessor = dataManager.getAccessorById(this.id);
-                    if (accessor != null) {
-                        dataManager.getDataValue(accessor).deserialize(this.tag, true);
-                        cap.getAbility(this.abilityName).onDataUpdated(accessor);
-                    }
-                });
-            }
-        });
-        ctx.get().setPacketHandled(true);
+    public static void handle(ClientSyncData msg, CustomPayloadEvent.Context ctx) {
+        Entity entity = Minecraft.getInstance().level.getEntity(msg.entityId);
+        if (entity != null) {
+            entity.getCapability(PowerCap.CAPABILITY).ifPresent(cap -> {
+                DataManager dataManager = cap.getAbility(msg.abilityName).dataManager;
+                DataAccessor<?> accessor = dataManager.getAccessorById(msg.id);
+                if (accessor != null) {
+                    dataManager.getDataValue(accessor).deserialize(msg.tag, true);
+                    cap.getAbility(msg.abilityName).onDataUpdated(accessor);
+                }
+            });
+        }
+        ctx.setPacketHandled(true);
     }
 }

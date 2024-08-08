@@ -2,9 +2,9 @@ package chappie.modulus.common.capability.anim;
 
 import chappie.modulus.client.model.anim.FPPlayerGeoModel;
 import chappie.modulus.client.model.anim.PlayerGeoModel;
-import chappie.modulus.util.events.RegisterPlayerControllerEvent;
-import chappie.modulus.networking.client.ClientTriggerPlayerAnim;
 import chappie.modulus.networking.ModNetworking;
+import chappie.modulus.networking.client.ClientTriggerPlayerAnim;
+import chappie.modulus.util.events.RegisterPlayerControllerEvent;
 import net.minecraft.client.Minecraft;
 import net.minecraft.nbt.CompoundTag;
 import net.minecraft.world.entity.Entity;
@@ -51,13 +51,13 @@ public class PlayerAnimCap implements GeoAnimatable {
 
     public void triggerAnim(@Nullable String controllerName, boolean firstPerson, String animName) {
         this.registerNewPlayerControllers();
-        if (this.player.getLevel().isClientSide()) {
+        if (this.player.getCommandSenderWorld().isClientSide()) {
             var controller = getController(controllerName, firstPerson);
             if (controller != null) {
                 controller.tryTriggerAnimation(animName);
             }
         } else {
-            ModNetworking.INSTANCE.send(PacketDistributor.TRACKING_ENTITY_AND_SELF.with(() -> this.player), new ClientTriggerPlayerAnim(this.player.getId(), controllerName, firstPerson, animName));
+            ModNetworking.INSTANCE.send(new ClientTriggerPlayerAnim(this.player.getId(), controllerName, firstPerson, animName), PacketDistributor.TRACKING_ENTITY_AND_SELF.with(this.player));
         }
     }
 

@@ -1,6 +1,5 @@
 package chappie.modulus.common.ability.base;
 
-import chappie.modulus.util.model.IHasModelProperties;
 import chappie.modulus.util.events.RendererChangeEvent;
 import chappie.modulus.util.events.SetupAnimEvent;
 import chappie.modulus.util.model.ModelProperties;

@@ -1,8 +1,8 @@
 package chappie.modulus.client;
 
 import chappie.modulus.Modulus;
-import chappie.modulus.client.gui.ModulusMenuButton;
 import chappie.modulus.client.gui.ModulusMainScreen;
+import chappie.modulus.client.gui.ModulusMenuButton;
 import chappie.modulus.common.ability.base.Ability;
 import chappie.modulus.networking.ModNetworking;
 import chappie.modulus.networking.server.ServerKeyInput;
@@ -28,6 +28,7 @@ import net.minecraftforge.client.settings.KeyConflictContext;
 import net.minecraftforge.event.TickEvent;
 import net.minecraftforge.event.entity.living.LivingEvent;
 import net.minecraftforge.eventbus.api.SubscribeEvent;
+import net.minecraftforge.network.PacketDistributor;
 import org.lwjgl.glfw.GLFW;
 
 public class ClientEvents {
@@ -53,7 +54,7 @@ public class ClientEvents {
 
     @SubscribeEvent
     public void livingTick(LivingEvent.LivingTickEvent event) {
-        if (event.getEntity().level.isClientSide && !(event.getEntity() instanceof Player)) {
+        if (event.getEntity().getCommandSenderWorld().isClientSide && !(event.getEntity() instanceof Player)) {
             for (Ability ability : CommonUtil.getAbilities(event.getEntity())) {
                 if (ability instanceof IHasTimer iHasTimer) {
                     iHasTimer.timers().forEach(IHasTimer.Timer::update);
@@ -118,7 +119,7 @@ public class ClientEvents {
                     iHasTimer.timers().forEach(IHasTimer.Timer::update);
                 }
                 if (ability.keys.notEquals(KEYS)) {
-                    ModNetworking.INSTANCE.sendToServer(new ServerKeyInput(ability.builder.id, KEYS));
+                    ModNetworking.INSTANCE.send(new ServerKeyInput(ability.builder.id, KEYS), PacketDistributor.SERVER.noArg());
                 }
             }
         }

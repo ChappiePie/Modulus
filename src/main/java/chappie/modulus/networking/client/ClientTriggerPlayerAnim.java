@@ -4,10 +4,9 @@ import chappie.modulus.common.capability.anim.PlayerAnimCap;
 import net.minecraft.client.Minecraft;
 import net.minecraft.network.FriendlyByteBuf;
 import net.minecraft.world.entity.Entity;
-import net.minecraftforge.network.NetworkEvent;
+import net.minecraftforge.event.network.CustomPayloadEvent;
 
 import javax.annotation.Nullable;
-import java.util.function.Supplier;
 
 public class ClientTriggerPlayerAnim {
     private final int entityId;
@@ -36,14 +35,12 @@ public class ClientTriggerPlayerAnim {
         buffer.writeUtf(this.animName);
     }
 
-    public void handle(Supplier<NetworkEvent.Context> ctx) {
-        ctx.get().enqueueWork(() -> {
-            Entity entity = Minecraft.getInstance().level.getEntity(this.entityId);
-            if (entity != null) {
-                entity.getCapability(PlayerAnimCap.CAPABILITY).ifPresent(cap ->
-                        cap.triggerAnim(this.controllerName, this.firstPerson, this.animName));
-            }
-        });
-        ctx.get().setPacketHandled(true);
+    public static void handle(ClientTriggerPlayerAnim msg, CustomPayloadEvent.Context ctx) {
+        Entity entity = Minecraft.getInstance().level.getEntity(msg.entityId);
+        if (entity != null) {
+            entity.getCapability(PlayerAnimCap.CAPABILITY).ifPresent(cap ->
+                    cap.triggerAnim(msg.controllerName, msg.firstPerson, msg.animName));
+        }
+        ctx.setPacketHandled(true);
     }
 }

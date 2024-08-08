@@ -1,8 +1,6 @@
 package chappie.modulus.common;
 
 import chappie.modulus.Modulus;
-import chappie.modulus.common.capability.anim.PlayerAnimCap;
-import chappie.modulus.util.events.RegisterPlayerControllerEvent;
 import chappie.modulus.common.capability.PowerCap;
 import chappie.modulus.common.capability.PowerCapProvider;
 import chappie.modulus.common.capability.anim.PlayerAnimCapProvider;
@@ -19,15 +17,9 @@ import net.minecraft.world.entity.player.Player;
 import net.minecraftforge.event.AttachCapabilitiesEvent;
 import net.minecraftforge.event.RegisterCommandsEvent;
 import net.minecraftforge.event.entity.EntityJoinLevelEvent;
-import net.minecraftforge.event.entity.living.LivingEvent;
 import net.minecraftforge.event.entity.living.LivingFallEvent;
 import net.minecraftforge.event.entity.player.PlayerEvent;
 import net.minecraftforge.eventbus.api.SubscribeEvent;
-import net.minecraftforge.network.NetworkDirection;
-import software.bernie.geckolib.core.animation.Animation;
-import software.bernie.geckolib.core.animation.AnimationState;
-import software.bernie.geckolib.core.animation.RawAnimation;
-import software.bernie.geckolib.core.object.PlayState;
 
 public class CommonEvents {
 
@@ -75,7 +67,7 @@ public class CommonEvents {
     public void onStartTracking(PlayerEvent.StartTracking event) {
         event.getTarget().getCapability(PowerCap.CAPABILITY).ifPresent(a -> {
             if (event.getEntity() instanceof ServerPlayer player) {
-                ModNetworking.INSTANCE.sendTo(new ClientSyncPowerCap(event.getTarget().getId(), a.serializeNBT()), player.connection.connection, NetworkDirection.PLAY_TO_CLIENT);
+                ModNetworking.INSTANCE.send(new ClientSyncPowerCap(event.getTarget().getId(), a.serializeNBT()), player.connection.getConnection());
             }
         });
     }

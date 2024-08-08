@@ -8,10 +8,8 @@ import chappie.modulus.networking.client.ClientKeyInput;
 import chappie.modulus.util.KeyMap;
 import net.minecraft.network.FriendlyByteBuf;
 import net.minecraft.world.entity.player.Player;
-import net.minecraftforge.network.NetworkEvent;
+import net.minecraftforge.event.network.CustomPayloadEvent;
 import net.minecraftforge.network.PacketDistributor;
-
-import java.util.function.Supplier;
 
 public class ServerKeyInput {
 
@@ -39,18 +37,16 @@ public class ServerKeyInput {
         }
     }
 
-    public void handle(Supplier<NetworkEvent.Context> ctx) {
-        ctx.get().enqueueWork(() -> {
-            Player player = ctx.get().getSender();
+    public static void handle(ServerKeyInput msg, CustomPayloadEvent.Context ctx) {
+            Player player = ctx.getSender();
             if (player != null) {
                 player.getCapability(PowerCap.CAPABILITY).ifPresent(cap -> {
-                    Ability ability = cap.getAbility(this.id);
-                    ability.keys.copyFrom(this.keys);
+                    Ability ability = cap.getAbility(msg.id);
+                    ability.keys.copyFrom(msg.keys);
                     ability.conditionManager.conditions().forEach(Condition::keyEvent);
-                    ModNetworking.INSTANCE.send(PacketDistributor.TRACKING_ENTITY_AND_SELF.with(() -> player), new ClientKeyInput(player.getId(), this.id, this.keys));
+                    ModNetworking.INSTANCE.send(new ClientKeyInput(player.getId(), msg.id, msg.keys), PacketDistributor.TRACKING_ENTITY_AND_SELF.with(player));
                 });
             }
-        });
-        ctx.get().setPacketHandled(true);
+        ctx.setPacketHandled(true);
     }
 }

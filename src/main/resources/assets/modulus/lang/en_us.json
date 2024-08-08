@@ -21,5 +21,6 @@
   "commands.modulus.superpower.set.single": "%s superpower was given to %s",
   "commands.modulus.superpower.set.multiple": "%s superpower was given to %s entities",
   "commands.modulus.superpower.removed": "%s superpowers have been removed",
-  "commands.modulus.superpower.removed.multiple": "Superpowers of %s entities have been removed"
+  "commands.modulus.superpower.removed.multiple": "Superpowers of %s entities have been removed",
+  "commands.modulus.DidntExist": "Didn't exist"
 }

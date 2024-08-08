@@ -1,6 +1,5 @@
 package chappie.modulus.util;
 
-import chappie.modulus.util.model.IChangeableSize;
 import com.google.common.collect.ImmutableList;
 import com.google.common.collect.Lists;
 import net.minecraft.client.model.HumanoidModel;

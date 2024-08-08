@@ -1,10 +1,10 @@
 package chappie.modulus;
 
-import chappie.modulus.client.model.anim.PlayerGeoModel;
 import chappie.modulus.client.ClientEvents;
 import chappie.modulus.client.gui.ModulusMainScreen;
 import chappie.modulus.client.model.CapeModel;
 import chappie.modulus.client.model.SuitModel;
+import chappie.modulus.client.model.anim.PlayerGeoModel;
 import chappie.modulus.common.CommonEvents;
 import chappie.modulus.common.ModSounds;
 import chappie.modulus.common.ability.base.AbilityType;
@@ -12,7 +12,6 @@ import chappie.modulus.common.ability.base.Superpower;
 import chappie.modulus.common.capability.PowerCap;
 import chappie.modulus.networking.ModNetworking;
 import chappie.modulus.util.ModAttributes;
-import com.mojang.logging.LogUtils;
 import net.minecraft.client.model.geom.builders.CubeDeformation;
 import net.minecraft.world.entity.EntityType;
 import net.minecraft.world.entity.LivingEntity;
@@ -33,16 +32,17 @@ import net.minecraftforge.fml.common.Mod;
 import net.minecraftforge.fml.event.lifecycle.FMLCommonSetupEvent;
 import net.minecraftforge.fml.event.lifecycle.FMLLoadCompleteEvent;
 import net.minecraftforge.fml.javafmlmod.FMLJavaModLoadingContext;
-import org.slf4j.Logger;
+import org.apache.logging.log4j.LogManager;
+import org.apache.logging.log4j.Logger;
 import software.bernie.geckolib.GeckoLib;
 
 import java.util.Arrays;
 
-@Mod(Modulus.MODID)
+@Mod("modulus")
 public class Modulus {
 
     public static final String MODID = "modulus";
-    private static final Logger LOGGER = LogUtils.getLogger();
+    public static final Logger LOGGER = LogManager.getLogger();
 
     public Modulus() {
         IEventBus bus = FMLJavaModLoadingContext.get().getModEventBus();

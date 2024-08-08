@@ -10,6 +10,7 @@ import chappie.modulus.util.CommonUtil;
 import chappie.modulus.util.KeyMap;
 import net.minecraft.client.Minecraft;
 import net.minecraft.client.player.LocalPlayer;
+import net.minecraftforge.network.PacketDistributor;
 import org.spongepowered.asm.mixin.Mixin;
 import org.spongepowered.asm.mixin.Shadow;
 import org.spongepowered.asm.mixin.injection.At;
@@ -39,7 +40,7 @@ public class MinecraftMixin {
                         if (ability.keys.notEquals(ClientEvents.KEYS)) {
                             ability.keys.copyFrom(ClientEvents.KEYS);
                             ability.conditionManager.conditions().forEach(Condition::keyEvent);
-                            ModNetworking.INSTANCE.sendToServer(new ServerKeyInput(ability.builder.id, ClientEvents.KEYS));
+                            ModNetworking.INSTANCE.send(new ServerKeyInput(ability.builder.id, ClientEvents.KEYS), PacketDistributor.SERVER.noArg());
                         }
                         if (ability.conditionManager.test(e.getKey())) {
                             cir.setReturnValue(false);
@@ -61,7 +62,7 @@ public class MinecraftMixin {
                         if (ability.keys.notEquals(ClientEvents.KEYS)) {
                             ability.keys.copyFrom(ClientEvents.KEYS);
                             ability.conditionManager.conditions().forEach(Condition::keyEvent);
-                            ModNetworking.INSTANCE.sendToServer(new ServerKeyInput(ability.builder.id, ClientEvents.KEYS));
+                            ModNetworking.INSTANCE.send(new ServerKeyInput(ability.builder.id, ClientEvents.KEYS), PacketDistributor.SERVER.noArg());
                         }
                         if (ability.conditionManager.test(e.getKey())) {
                             ci.cancel();

@@ -1,32 +1,77 @@
 package chappie.modulus.networking;
 
 import chappie.modulus.Modulus;
-import chappie.modulus.networking.client.ClientTriggerPlayerAnim;
-import chappie.modulus.networking.client.ClientKeyInput;
-import chappie.modulus.networking.client.ClientSyncAbility;
-import chappie.modulus.networking.client.ClientSyncData;
-import chappie.modulus.networking.client.ClientSyncPowerCap;
+import chappie.modulus.networking.client.*;
 import chappie.modulus.networking.server.ServerKeyInput;
 import chappie.modulus.networking.server.ServerSetData;
 import net.minecraft.resources.ResourceLocation;
-import net.minecraftforge.network.NetworkRegistry;
-import net.minecraftforge.network.simple.SimpleChannel;
+import net.minecraftforge.network.ChannelBuilder;
+import net.minecraftforge.network.NetworkDirection;
+import net.minecraftforge.network.SimpleChannel;
+import net.minecraftforge.network.packets.OpenContainer;
+import org.apache.logging.log4j.Marker;
+import org.apache.logging.log4j.MarkerManager;
 
 public class ModNetworking {
 
-    public static SimpleChannel INSTANCE;
-    private static int id = -1;
+    private static final Marker MARKER = MarkerManager.getMarker("FORGE_NETWORK");
+    public static final ResourceLocation NAME = new ResourceLocation(Modulus.MODID, "networking");
 
     public static void registerMessages() {
-        INSTANCE = NetworkRegistry.newSimpleChannel(new ResourceLocation(Modulus.MODID, "networking"), () -> "1.0", s -> true, s -> true);
-        INSTANCE.registerMessage(id++, ClientTriggerPlayerAnim.class, ClientTriggerPlayerAnim::toBytes, ClientTriggerPlayerAnim::new, ClientTriggerPlayerAnim::handle);
-
-        INSTANCE.registerMessage(id++, ClientSyncPowerCap.class, ClientSyncPowerCap::toBytes, ClientSyncPowerCap::new, ClientSyncPowerCap::handle);
-        INSTANCE.registerMessage(id++, ClientSyncAbility.class, ClientSyncAbility::toBytes, ClientSyncAbility::new, ClientSyncAbility::handle);
-        INSTANCE.registerMessage(id++, ClientSyncData.class, ClientSyncData::toBytes, ClientSyncData::new, ClientSyncData::handle);
-        INSTANCE.registerMessage(id++, ClientKeyInput.class, ClientKeyInput::toBytes, ClientKeyInput::new, ClientKeyInput::handle);
-
-        INSTANCE.registerMessage(id++, ServerKeyInput.class, ServerKeyInput::toBytes, ServerKeyInput::new, ServerKeyInput::handle);
-        INSTANCE.registerMessage(id++, ServerSetData.class, ServerSetData::toBytes, ServerSetData::new, ServerSetData::handle);
+        Modulus.LOGGER.debug(MARKER, "Registering Network {} v{}", INSTANCE.getName(), INSTANCE.getProtocolVersion());
     }
+
+    public static SimpleChannel INSTANCE = ChannelBuilder
+            .named(NAME)
+            .optional()
+                .networkProtocolVersion(1)
+            .simpleChannel()
+
+            .messageBuilder(ClientTriggerPlayerAnim.class, NetworkDirection.PLAY_TO_CLIENT)
+            .decoder(ClientTriggerPlayerAnim::new)
+            .encoder(ClientTriggerPlayerAnim::toBytes)
+            .consumerMainThread(ClientTriggerPlayerAnim::handle)
+            .add()
+
+            .messageBuilder(ClientSyncPowerCap.class, NetworkDirection.PLAY_TO_CLIENT)
+            .decoder(ClientSyncPowerCap::new)
+            .encoder(ClientSyncPowerCap::toBytes)
+            .consumerMainThread(ClientSyncPowerCap::handle)
+            .add()
+
+            .messageBuilder(ClientSyncAbility.class, NetworkDirection.PLAY_TO_CLIENT)
+            .decoder(ClientSyncAbility::new)
+            .encoder(ClientSyncAbility::toBytes)
+            .consumerMainThread(ClientSyncAbility::handle)
+            .add()
+
+            .messageBuilder(ClientSyncData.class, NetworkDirection.PLAY_TO_CLIENT)
+            .decoder(ClientSyncData::new)
+            .encoder(ClientSyncData::toBytes)
+            .consumerMainThread(ClientSyncData::handle)
+            .add()
+
+            .messageBuilder(ClientKeyInput.class, NetworkDirection.PLAY_TO_CLIENT)
+            .decoder(ClientKeyInput::new)
+            .encoder(ClientKeyInput::toBytes)
+            .consumerMainThread(ClientKeyInput::handle)
+            .add()
+
+            .messageBuilder(ServerKeyInput.class, NetworkDirection.PLAY_TO_SERVER)
+            .decoder(ServerKeyInput::new)
+            .encoder(ServerKeyInput::toBytes)
+            .consumerMainThread(ServerKeyInput::handle)
+            .add()
+
+                    .messageBuilder(ServerSetData.class, NetworkDirection.PLAY_TO_SERVER)
+            .decoder(ServerSetData::new)
+            .encoder(ServerSetData::toBytes)
+            .consumerMainThread(ServerSetData::handle)
+            .add()
+
+            .messageBuilder(OpenContainer.class)
+            .decoder(OpenContainer::decode)
+            .encoder(OpenContainer::encode)
+            .consumerMainThread(OpenContainer::handle)
+            .add();
 }

@@ -3,7 +3,6 @@ package chappie.modulus.common.ability.base.condition;
 import chappie.modulus.common.ability.base.Ability;
 import net.minecraft.nbt.CompoundTag;
 import net.minecraft.world.entity.player.Player;
-import net.minecraftforge.common.util.INBTSerializable;
 
 import java.util.function.Predicate;
 

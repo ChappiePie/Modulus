@@ -6,9 +6,7 @@ import chappie.modulus.util.data.DataAccessor;
 import com.google.common.collect.Maps;
 import net.minecraft.nbt.CompoundTag;
 import net.minecraft.nbt.ListTag;
-import net.minecraft.nbt.Tag;
 import net.minecraft.world.entity.LivingEntity;
-import net.minecraftforge.common.util.INBTSerializable;
 import org.apache.commons.compress.utils.Lists;
 
 import java.util.HashMap;

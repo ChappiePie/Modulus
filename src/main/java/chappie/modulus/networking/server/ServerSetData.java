@@ -7,10 +7,8 @@ import chappie.modulus.networking.client.ClientSyncData;
 import net.minecraft.nbt.CompoundTag;
 import net.minecraft.network.FriendlyByteBuf;
 import net.minecraft.server.level.ServerPlayer;
-import net.minecraftforge.network.NetworkEvent;
+import net.minecraftforge.event.network.CustomPayloadEvent;
 import net.minecraftforge.network.PacketDistributor;
-
-import java.util.function.Supplier;
 
 public class ServerSetData {
 
@@ -35,22 +33,20 @@ public class ServerSetData {
         buf.writeNbt(this.tag);
     }
 
-    public void handle(Supplier<NetworkEvent.Context> ctx) {
-        ctx.get().enqueueWork(() -> {
-            ServerPlayer player = ctx.get().getSender();
+    public static void handle(ServerSetData msg, CustomPayloadEvent.Context ctx) {
+            ServerPlayer player = ctx.getSender();
             if (player != null) {
                 player.getCapability(PowerCap.CAPABILITY).ifPresent(cap -> {
-                    Ability ability = cap.getAbility(this.abilityName);
-                    var accessor = ability.dataManager.getAccessorById(this.id);
+                    Ability ability = cap.getAbility(msg.abilityName);
+                    var accessor = ability.dataManager.getAccessorById(msg.id);
                     if (accessor != null) {
                         var value = ability.dataManager.getDataValue(accessor);
-                        value.deserialize(this.tag, true);
+                        value.deserialize(msg.tag, true);
                         ability.onDataUpdated(accessor);
-                        ModNetworking.INSTANCE.send(PacketDistributor.TRACKING_ENTITY_AND_SELF.with(() -> player), new ClientSyncData(player.getId(), this.id, this.abilityName, this.tag));
+                        ModNetworking.INSTANCE.send(new ClientSyncData(player.getId(), msg.id, msg.abilityName, msg.tag), PacketDistributor.TRACKING_ENTITY_AND_SELF.with(player));
                     }
                 });
             }
-        });
-        ctx.get().setPacketHandled(true);
+        ctx.setPacketHandled(true);
     }
 }

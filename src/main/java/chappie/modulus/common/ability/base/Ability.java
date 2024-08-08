@@ -3,9 +3,9 @@ package chappie.modulus.common.ability.base;
 import chappie.modulus.common.ability.base.condition.Condition;
 import chappie.modulus.networking.ModNetworking;
 import chappie.modulus.networking.client.ClientSyncAbility;
+import chappie.modulus.util.KeyMap;
 import chappie.modulus.util.data.DataAccessor;
 import chappie.modulus.util.data.DataManager;
-import chappie.modulus.util.KeyMap;
 import net.minecraft.nbt.CompoundTag;
 import net.minecraft.server.level.ServerPlayer;
 import net.minecraft.world.entity.Entity;
@@ -13,7 +13,6 @@ import net.minecraft.world.entity.LivingEntity;
 import net.minecraft.world.entity.player.Player;
 import net.minecraftforge.api.distmarker.Dist;
 import net.minecraftforge.fml.loading.FMLEnvironment;
-import net.minecraftforge.network.NetworkDirection;
 import net.minecraftforge.network.PacketDistributor;
 
 import java.util.ArrayList;
@@ -56,7 +55,7 @@ public class Ability {
     }
 
     public void updateTick(LivingEntity entity) {
-        if (!entity.level.isClientSide) {
+        if (!entity.getCommandSenderWorld().isClientSide) {
             if (entity instanceof Player) {
                 this.dataManager.set(ENABLED, this.conditionManager.test("enabling"));
             } else {
@@ -105,13 +104,13 @@ public class Ability {
 
     public void sync(Entity entity) {
         if (entity instanceof ServerPlayer player) {
-            ModNetworking.INSTANCE.sendTo(new ClientSyncAbility(player.getId(), this.builder.id, this.serializeNBT()), player.connection.connection, NetworkDirection.PLAY_TO_CLIENT);
+            ModNetworking.INSTANCE.send(new ClientSyncAbility(player.getId(), this.builder.id, this.serializeNBT()), player.connection.getConnection());
         }
     }
 
     public void syncToAll(Entity entity) {
-        if (!entity.level.isClientSide) {
-            ModNetworking.INSTANCE.send(PacketDistributor.TRACKING_ENTITY_AND_SELF.with(() -> entity), new ClientSyncAbility(entity.getId(), this.builder.id, this.serializeNBT()));
+        if (!entity.getCommandSenderWorld().isClientSide) {
+            ModNetworking.INSTANCE.send(new ClientSyncAbility(entity.getId(), this.builder.id, this.serializeNBT()), PacketDistributor.TRACKING_ENTITY_AND_SELF.with(entity));
         }
     }
 }

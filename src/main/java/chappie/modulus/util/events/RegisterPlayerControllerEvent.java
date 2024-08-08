@@ -1,13 +1,16 @@
 package chappie.modulus.util.events;
 
-import chappie.modulus.common.capability.anim.PlayerAnimCap;
 import chappie.modulus.client.model.anim.PlayerGeoModel;
+import chappie.modulus.common.capability.anim.PlayerAnimCap;
 import net.minecraft.resources.ResourceLocation;
 import net.minecraft.world.entity.player.Player;
 import net.minecraftforge.event.entity.player.PlayerEvent;
 import software.bernie.geckolib.GeckoLibException;
 import software.bernie.geckolib.cache.GeckoLibCache;
-import software.bernie.geckolib.core.animation.*;
+import software.bernie.geckolib.core.animation.Animation;
+import software.bernie.geckolib.core.animation.AnimationController;
+import software.bernie.geckolib.core.animation.AnimationProcessor;
+import software.bernie.geckolib.core.animation.RawAnimation;
 import software.bernie.geckolib.core.keyframe.BoneAnimation;
 import software.bernie.geckolib.core.keyframe.event.data.CustomInstructionKeyframeData;
 import software.bernie.geckolib.core.keyframe.event.data.ParticleKeyframeData;

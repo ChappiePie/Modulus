@@ -42,7 +42,7 @@ public class PlayerGeoModel extends DefaultedGeoModel<PlayerAnimCap> {
 
     @Override
     public ResourceLocation getTextureResource(PlayerAnimCap o) {
-        return ((LocalPlayer) o.player).getSkinTextureLocation();
+        return ((LocalPlayer) o.player).getSkin().texture();
     }
 
     @Override

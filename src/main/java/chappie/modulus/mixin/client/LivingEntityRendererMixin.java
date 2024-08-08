@@ -1,12 +1,12 @@
 package chappie.modulus.mixin.client;
 
-import chappie.modulus.common.capability.anim.PlayerAnimCap;
-import chappie.modulus.client.model.anim.PlayerGeoModel;
 import chappie.modulus.client.AbilityLayerRenderer;
+import chappie.modulus.client.model.anim.PlayerGeoModel;
+import chappie.modulus.common.capability.anim.PlayerAnimCap;
 import chappie.modulus.util.PlayerPart;
-import chappie.modulus.util.model.IHasModelProperties;
 import chappie.modulus.util.events.RendererChangeEvent;
 import chappie.modulus.util.events.SetupAnimEvent;
+import chappie.modulus.util.model.IHasModelProperties;
 import com.google.common.collect.Iterables;
 import com.llamalad7.mixinextras.injector.WrapWithCondition;
 import com.llamalad7.mixinextras.sugar.Local;

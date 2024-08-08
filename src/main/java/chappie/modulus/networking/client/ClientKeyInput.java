@@ -7,9 +7,7 @@ import chappie.modulus.util.KeyMap;
 import net.minecraft.client.Minecraft;
 import net.minecraft.network.FriendlyByteBuf;
 import net.minecraft.world.entity.Entity;
-import net.minecraftforge.network.NetworkEvent;
-
-import java.util.function.Supplier;
+import net.minecraftforge.event.network.CustomPayloadEvent;
 
 public class ClientKeyInput {
 
@@ -41,17 +39,15 @@ public class ClientKeyInput {
         }
     }
 
-    public void handle(Supplier<NetworkEvent.Context> ctx) {
-        ctx.get().enqueueWork(() -> {
-            Entity entity = Minecraft.getInstance().level.getEntity(this.entityId);
-            if (entity != null) {
-                entity.getCapability(PowerCap.CAPABILITY).ifPresent(cap -> {
-                    Ability ability = cap.getAbility(this.id);
-                    ability.keys.copyFrom(this.keys);
-                    ability.conditionManager.conditions().forEach(Condition::keyEvent);
-                });
-            }
-        });
-        ctx.get().setPacketHandled(true);
+    public static void handle(ClientKeyInput msg, CustomPayloadEvent.Context ctx) {
+        Entity entity = Minecraft.getInstance().level.getEntity(msg.entityId);
+        if (entity != null) {
+            entity.getCapability(PowerCap.CAPABILITY).ifPresent(cap -> {
+                Ability ability = cap.getAbility(msg.id);
+                ability.keys.copyFrom(msg.keys);
+                ability.conditionManager.conditions().forEach(Condition::keyEvent);
+            });
+        }
+        ctx.setPacketHandled(true);
     }
 }

@@ -1,9 +1,8 @@
  package chappie.modulus.util;
 
-import net.minecraft.util.Mth;
+ import net.minecraft.util.Mth;
 
-import java.util.List;
-import java.util.function.Supplier;
+ import java.util.function.Supplier;
 
 public interface IHasTimer {
 

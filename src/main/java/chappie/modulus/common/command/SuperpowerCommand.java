@@ -42,9 +42,11 @@ public class SuperpowerCommand {
             }
         }
         if (i == 1)
-            commandSource.sendSuccess(Component.translatable("commands.modulus.superpower.set.single", superpower.getDisplayName(), (entities.iterator().next()).getDisplayName()), true);
-        else
-            commandSource.sendSuccess(Component.translatable("commands.modulus.superpower.set.multiple", superpower.getDisplayName(), i), true);
+            commandSource.sendSuccess(() -> Component.translatable("commands.modulus.superpower.set.single", superpower.getDisplayName(), (entities.iterator().next()).getDisplayName()), true);
+        else {
+            int finalI = i;
+            commandSource.sendSuccess(() -> Component.translatable("commands.modulus.superpower.set.multiple", superpower.getDisplayName(), finalI), true);
+        }
         return entities.size();
     }
 
@@ -58,9 +60,11 @@ public class SuperpowerCommand {
             }
         }
         if (i == 1)
-            commandSource.sendSuccess(Component.translatable("commands.modulus.superpower.removed", (entities.iterator().next()).getDisplayName()), true);
-        else
-            commandSource.sendSuccess(Component.translatable("commands.modulus.superpower.removed.multiple", i), true);
+            commandSource.sendSuccess(() -> Component.translatable("commands.modulus.superpower.removed", (entities.iterator().next()).getDisplayName()), true);
+        else {
+            int finalI = i;
+            commandSource.sendSuccess(() -> Component.translatable("commands.modulus.superpower.removed.multiple", finalI), true);
+        }
         return entities.size();
     }
 

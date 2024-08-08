@@ -3,8 +3,8 @@ package chappie.modulus.client.gui;
 import chappie.modulus.util.ClientUtil;
 import chappie.modulus.util.IHasTimer;
 import com.mojang.blaze3d.systems.RenderSystem;
-import com.mojang.blaze3d.vertex.PoseStack;
 import net.minecraft.Util;
+import net.minecraft.client.gui.GuiGraphics;
 import net.minecraft.client.gui.components.Button;
 import net.minecraft.network.chat.CommonComponents;
 import net.minecraft.network.chat.Component;
@@ -46,16 +46,16 @@ public class ModulusAboutButton extends Button implements IHasTimer {
     }
 
     @Override
-    public void renderWidget(PoseStack pPoseStack, int pMouseX, int pMouseY, float pPartialTick) {
+    public void renderWidget(GuiGraphics guiGraphics, int pMouseX, int pMouseY, float pPartialTick) {
         float f = this.height / 8F * this.timer.value(pPartialTick);
-        //super.renderWidget(pPoseStack, pMouseX, pMouseY, pPartialTick);
+        //super.renderWidget(guiGraphics, pMouseX, pMouseY, pPartialTick);
         RenderSystem.setShaderTexture(0, this.resourceLocation);
 
         float x = this.index == 0 || this.index == 2 ? -f : 0;
         float y = this.index == 0 || this.index == 1 ? -f : 0;
 
-        ClientUtil.blit(pPoseStack, this.getX() + x, this.getY() + y, this.width + f, this.height + f, this.xTexStart, this.yTexStart, 16, 16, this.textureWidth, this.textureHeight);
-        //this.renderTexture(pPoseStack, this.resourceLocation, this.getX(), this.getY(), this.xTexStart, this.yTexStart, this.yDiffTex, this.width, this.height, this.textureWidth, this.textureHeight);
+        ClientUtil.blit(guiGraphics, this.getX() + x, this.getY() + y, this.width + f, this.height + f, this.xTexStart, this.yTexStart, 16, 16, this.textureWidth, this.textureHeight);
+        //this.renderTexture(guiGraphics, this.resourceLocation, this.getX(), this.getY(), this.xTexStart, this.yTexStart, this.yDiffTex, this.width, this.height, this.textureWidth, this.textureHeight);
     }
 
     @Override

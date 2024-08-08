@@ -2,7 +2,6 @@ package chappie.modulus.mixin.client;
 
 import chappie.modulus.util.IOneScaleScreen;
 import chappie.modulus.util.IScreenExtender;
-import com.mojang.blaze3d.pipeline.RenderTarget;
 import com.mojang.blaze3d.platform.Window;
 import net.minecraft.client.Minecraft;
 import net.minecraft.client.gui.screens.Screen;

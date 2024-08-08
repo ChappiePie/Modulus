@@ -1,7 +1,7 @@
 plugins {
     id 'eclipse'
     id 'maven-publish'
-    id 'net.minecraftforge.gradle' version '5.1.+'
+    id 'net.minecraftforge.gradle' version '[6.0.16,6.2)'
     id 'org.parchmentmc.librarian.forgegradle' version '1.+'
     id 'org.spongepowered.mixin' version '0.7.+'
 }
@@ -27,7 +27,7 @@ mixin {
 }
 
 minecraft {
-    mappings channel: 'parchment', version: "2023.06.26-1.19.4"
+    mappings channel: 'parchment', version: "2024.04.14-1.20.4"
     //mappings channel: 'parchment', version: "2023.03.12-${minecraft_version}"
     //mappings channel: 'official', version: '${minecraft_version}'
 
@@ -36,14 +36,9 @@ minecraft {
     runs {
         configureEach {
             workingDirectory project.file('run')
-            property 'forge.logging.markers', 'SCAN, REGISTRIES, REGISTRYDUMP'
+            property 'forge.logging.markers', 'REGISTRIES'
             property 'forge.logging.console.level', 'debug'
             property 'forge.enabledGameTestNamespaces', 'modulus'
-            mods {
-                modulus {
-                    source sourceSets.main
-                }
-            }
         }
         client {}
         clientWithCredentials {
@@ -68,16 +63,20 @@ repositories {
 dependencies {
     minecraft "net.minecraftforge:forge:${minecraft_version}-${forge_version}"
     compileOnly(annotationProcessor("io.github.llamalad7:mixinextras-common:${mixin_extras_version}"))
-    implementation(jarJar("io.github.llamalad7:mixinextras-forge:${mixin_extras_version}")) {
+    /*implementation(jarJar("io.github.llamalad7:mixinextras-forge:${mixin_extras_version}")) {
         jarJar.ranged(it, "[${mixin_extras_version},)")
-    }
+    }*/
 
-    implementation(fg.deobf(jarJar("software.bernie.geckolib:geckolib-forge-${minecraft_version}:${geckolib_version}"){
-        jarJar.ranged(it, "[${geckolib_version},)")
-    }))
+    implementation(fg.deobf("io.github.llamalad7:mixinextras-forge:${mixin_extras_version}"))
+
+    /*implementation(fg.deobf(jarJar("software.bernie.geckolib:geckolib-forge-${minecraft_version}:${geckolib_version}"){
+                jarJar.ranged(it, "[${geckolib_version},)")
+            }))*/
+    implementation(fg.deobf("software.bernie.geckolib:geckolib-forge-${minecraft_version}:${geckolib_version}"))
+    compileOnly("com.eliotlash.mclib:mclib:20")
 
     if (System.getProperty('idea.sync.active') != 'true') {
-        annotationProcessor "org.spongepowered:mixin:${mixin_version}:processor"
+        //annotationProcessor "org.spongepowered:mixin:${mixin_version}:processor"
     }
 }
 
@@ -98,15 +97,6 @@ jar {
 }
 
 jar.finalizedBy('reobfJar')
-
-tasks.register('sourcesJar', Jar) {
-    from sourceSets.main.allJava
-    classifier 'sources'
-}
-
-artifacts {
-    archives sourcesJar
-}
 
 tasks.build.dependsOn tasks.jarJar
 
@@ -129,7 +119,6 @@ publishing {
     publications {
         mavenJava(MavenPublication) {
             artifact tasks.jarJar
-            artifact sourcesJar
             artifactId = "modulus"
         }
     }
@@ -138,4 +127,10 @@ publishing {
             url "file://${project.projectDir}/mcmodsrepo"
         }
     }
+}
+
+sourceSets.each {
+    def dir = layout.buildDirectory.dir("sourcesSets/$it.name")
+    it.output.resourcesDir = dir
+    it.java.destinationDirectory = dir
 }

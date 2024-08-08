@@ -1,15 +1,16 @@
 package chappie.modulus.util;
 
 import chappie.modulus.Modulus;
-import chappie.modulus.common.capability.anim.PlayerAnimCap;
 import chappie.modulus.client.model.anim.FPPlayerGeoModel;
 import chappie.modulus.client.model.anim.PlayerGeoModel;
+import chappie.modulus.common.capability.anim.PlayerAnimCap;
 import chappie.modulus.util.model.IChangeableSize;
 import chappie.modulus.util.model.IHasModelProperties;
 import com.mojang.blaze3d.systems.RenderSystem;
 import com.mojang.blaze3d.vertex.*;
 import com.mojang.math.Axis;
 import net.minecraft.client.Minecraft;
+import net.minecraft.client.gui.GuiGraphics;
 import net.minecraft.client.model.Model;
 import net.minecraft.client.model.PlayerModel;
 import net.minecraft.client.model.geom.ModelPart;
@@ -28,9 +29,7 @@ import net.minecraft.world.phys.AABB;
 import net.minecraftforge.fml.loading.FMLPaths;
 import org.joml.Matrix3f;
 import org.joml.Matrix4f;
-import org.joml.Vector3f;
-import org.joml.Vector4f;
-import software.bernie.geckolib.cache.object.*;
+import software.bernie.geckolib.cache.object.GeoBone;
 import software.bernie.geckolib.constant.DataTickets;
 import software.bernie.geckolib.core.animation.AnimationController;
 import software.bernie.geckolib.core.animation.AnimationState;
@@ -47,8 +46,8 @@ public class ClientUtil {
     private static final ResourceLocation BOLD_FONT = new ResourceLocation("modulus", "bold");
     public static final Style BOLD_MINECRAFT = Style.EMPTY.withFont(BOLD_FONT);
 
-    public static void blit(PoseStack pPoseStack, float pX, float pY, float pWidth, float pHeight, float pUOffset, float pVOffset, int pUWidth, int pVHeight, int pTextureWidth, int pTextureHeight) {
-        blit(pPoseStack, pX, pX + pWidth, pY, pY + pHeight, 0, pUWidth, pVHeight, pUOffset, pVOffset, pTextureWidth, pTextureHeight);
+    public static void blit(GuiGraphics guiGraphics, float pX, float pY, float pWidth, float pHeight, float pUOffset, float pVOffset, int pUWidth, int pVHeight, int pTextureWidth, int pTextureHeight) {
+        blit(guiGraphics.pose(), pX, pX + pWidth, pY, pY + pHeight, 0, pUWidth, pVHeight, pUOffset, pVOffset, pTextureWidth, pTextureHeight);
     }
 
     private static void blit(PoseStack p_93188_, float p_93189_, float p_93190_, float p_93191_, float p_93192_, float p_93193_, int p_93194_, int p_93195_, float p_93196_, float p_93197_, int p_93198_, int p_93199_) {

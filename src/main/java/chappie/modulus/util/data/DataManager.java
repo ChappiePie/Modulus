@@ -42,9 +42,8 @@ public class DataManager {
         if (dataValue.get() != value) {
             dataValue.set(value);
             this.ability.onDataUpdated(accessor);
-            if (!entity.level.isClientSide) {
-                ModNetworking.INSTANCE.send(PacketDistributor.TRACKING_ENTITY_AND_SELF.with(() -> entity),
-                        new ClientSyncData(entity.getId(), accessor.key(), this.ability.builder.id, dataValue.serialize(new CompoundTag(), true)));
+            if (!entity.getCommandSenderWorld().isClientSide) {
+                ModNetworking.INSTANCE.send(new ClientSyncData(entity.getId(), accessor.key(), this.ability.builder.id, dataValue.serialize(new CompoundTag(), true)), PacketDistributor.TRACKING_ENTITY_AND_SELF.with(entity));
             }
         }
         return this;
@@ -52,8 +51,8 @@ public class DataManager {
 
     public <T> DataManager setFromClient(DataAccessor<T> accessor, T value) {
         DataValue<T> dataValue = this.getDataValue(accessor);
-        if (this.ability.entity.level.isClientSide && dataValue.get() != value) {
-            ModNetworking.INSTANCE.sendToServer(new ServerSetData(accessor.key(), this.ability.builder.id, dataValue.serialize(new CompoundTag(), value, true)));
+        if (this.ability.entity.getCommandSenderWorld().isClientSide && dataValue.get() != value) {
+            ModNetworking.INSTANCE.send(new ServerSetData(accessor.key(), this.ability.builder.id, dataValue.serialize(new CompoundTag(), value, true)), PacketDistributor.SERVER.noArg());
         }
         return this;
     }

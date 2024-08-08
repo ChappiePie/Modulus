@@ -6,9 +6,7 @@ import net.minecraft.nbt.CompoundTag;
 import net.minecraft.network.FriendlyByteBuf;
 import net.minecraft.world.entity.Entity;
 import net.minecraft.world.entity.LivingEntity;
-import net.minecraftforge.network.NetworkEvent;
-
-import java.util.function.Supplier;
+import net.minecraftforge.event.network.CustomPayloadEvent;
 
 public class ClientSyncAbility {
 
@@ -34,14 +32,12 @@ public class ClientSyncAbility {
         buffer.writeNbt(this.nbt);
     }
 
-    public void handle(Supplier<NetworkEvent.Context> ctx) {
-        ctx.get().enqueueWork(() -> {
-            Entity entity = Minecraft.getInstance().level.getEntity(this.entityId);
-            if (entity instanceof LivingEntity) {
-                entity.getCapability(PowerCap.CAPABILITY).ifPresent(cap ->
-                        cap.getAbility(this.id).deserializeNBT(this.nbt));
-            }
-        });
-        ctx.get().setPacketHandled(true);
+    public static void handle(ClientSyncAbility msg, CustomPayloadEvent.Context ctx) {
+        Entity entity = Minecraft.getInstance().level.getEntity(msg.entityId);
+        if (entity instanceof LivingEntity) {
+            entity.getCapability(PowerCap.CAPABILITY).ifPresent(cap ->
+                    cap.getAbility(msg.id).deserializeNBT(msg.nbt));
+        }
+        ctx.setPacketHandled(true);
     }
 }

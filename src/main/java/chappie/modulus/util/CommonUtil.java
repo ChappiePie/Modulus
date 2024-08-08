@@ -44,7 +44,7 @@ public class CommonUtil {
 
     public static boolean smallArms(Entity entity) {
         if (entity instanceof AbstractClientPlayer) {
-            return ((AbstractClientPlayer) entity).getModelName().equalsIgnoreCase("slim");
+            return ((AbstractClientPlayer) entity).getSkin().model().id().equalsIgnoreCase("slim");
         }
         return false;
     }
