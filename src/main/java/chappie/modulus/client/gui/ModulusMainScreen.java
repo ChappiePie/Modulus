@@ -91,7 +91,7 @@ public class ModulusMainScreen extends Screen implements IOneScaleScreen {
 
     @SuppressWarnings("unchecked")
     public <T extends GuiEventListener & Renderable & NarratableEntry> ImmutableList<T> createModsPage() {
-        this.modList = new ChappModListWidget(this, this.width - 18, 64, this.height - 42);
+        this.modList = new ChappModListWidget(this, this.width - 18, 64, this.height - 42   );
         this.modList.setX(6);
         return (ImmutableList<T>) ImmutableList.of(this.modList);
     }
@@ -123,11 +123,7 @@ public class ModulusMainScreen extends Screen implements IOneScaleScreen {
 
         this.renderDirtBackground(guiGraphics);
         // Modulus header
-        //RenderSystem.setShaderTexture(0, MENU);
-        //guiGraphics.blitSprite(this.width / 2 - 60, 4, 120, 29, 20, 4, 60, 20, 196, 20); TODO
-
-        //guiGraphics.blitSprite(MENU, this.width / 2 - 60, 4, 29, 20);
-
+        guiGraphics.blit(MENU, this.width / 2 - 60, 3, 120, 32, 196, 20, 60, 20, 256, 256);
 
         PoseStack pPoseStack = guiGraphics.pose();
         // Label
@@ -232,6 +228,10 @@ public class ModulusMainScreen extends Screen implements IOneScaleScreen {
                 }
             }
         }
+    }
+
+    @Override
+    public void renderBackground(GuiGraphics pGuiGraphics, int pMouseX, int pMouseY, float pPartialTick) {
     }
 
     private boolean isMouseOverObj(float pMouseX, float pMouseY, float x, float y, float width, float height) {

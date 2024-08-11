@@ -44,7 +44,7 @@ public class ChappModListWidget extends ContainerObjectSelectionList<ChappModLis
     private final ModulusMainScreen parent;
 
     public ChappModListWidget(ModulusMainScreen parent, int listWidth, int top, int bottom) {
-        super(Minecraft.getInstance(), listWidth, parent.height, top, bottom);
+        super(Minecraft.getInstance(), listWidth, bottom - top, top, 110);
         this.parent = parent;
         this.listWidth = listWidth;
         this.refreshList();
@@ -211,10 +211,7 @@ public class ChappModListWidget extends ContainerObjectSelectionList<ChappModLis
             pPoseStack.scale(f, f, 1.0F);
             f = 1.0F / f;
             pPoseStack.translate(this.getX() * f, this.getY() * f, 0);
-            //RenderSystem.setShaderTexture(0, ModulusMainScreen.MENU); TODO
-            //guiGraphics.blitNineSliced(0, 0, (int) this.oldSize.x, (int) this.oldSize.y, 20, 4, 60, 20, 196, this.getTextureY());
-
-            //guiGraphics.blitSprite(ModulusMainScreen.MENU, 0, 0, (int) this.oldSize.x, (int) this.oldSize.y, 20, 4, 60, 20, 196, this.getTextureY());
+            guiGraphics.blit(ModulusMainScreen.MENU, 0, 0, (int) this.oldSize.x, (int) this.oldSize.y, 196, this.getTextureY(), 60, 20, 256, 256);
 
             this.setWidth((int) ((this.oldSize.x - 5) / f));
             this.setHeight((int) (this.oldSize.y / f));

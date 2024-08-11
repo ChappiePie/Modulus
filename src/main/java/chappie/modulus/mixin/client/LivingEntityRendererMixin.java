@@ -67,7 +67,7 @@ public abstract class LivingEntityRendererMixin<T extends LivingEntity, M extend
     @Inject(method = "render*", at = @At(value = "INVOKE", target = "Lnet/minecraft/client/model/EntityModel;renderToBuffer(Lcom/mojang/blaze3d/vertex/PoseStack;Lcom/mojang/blaze3d/vertex/VertexConsumer;IIFFFF)V"))
     public void setup(T entity, float entityYaw, float partialTicks, PoseStack matrixStack, MultiBufferSource buffer, int light, CallbackInfo ci, @Local(ordinal = 0) RenderType type, @Local(ordinal = 1) int overlay) {
         LivingEntityRenderer<T, M> renderer = (LivingEntityRenderer<T, M>) (Object) this;
-        if (this.model instanceof IHasModelProperties iModel) {
+        if (false && this.model instanceof IHasModelProperties iModel) {
             this.modulus$event = new RendererChangeEvent<>(entity, renderer, iModel.modelProperties(), matrixStack, buffer, type, light, overlay);
             if (this.model instanceof HumanoidModel<?> humanoidModel) {
                 MinecraftForge.EVENT_BUS.post(new SetupAnimEvent<>(entity, (HumanoidModel<T>) this.model, iModel.modelProperties()));

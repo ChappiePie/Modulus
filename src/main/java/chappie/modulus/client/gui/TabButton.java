@@ -4,6 +4,7 @@ import net.minecraft.client.Minecraft;
 import net.minecraft.client.gui.Font;
 import net.minecraft.client.gui.GuiGraphics;
 import net.minecraft.client.gui.components.AbstractWidget;
+import net.minecraft.client.gui.components.WidgetSprites;
 import net.minecraft.client.gui.narration.NarrationElementOutput;
 import net.minecraft.client.sounds.SoundManager;
 import net.minecraft.network.chat.Component;
@@ -12,7 +13,7 @@ import net.minecraft.resources.ResourceLocation;
 import java.util.function.Supplier;
 
 public class TabButton extends AbstractWidget {
-    private static final ResourceLocation TEXTURE_LOCATION = new ResourceLocation("textures/gui/tab_button.png");
+    private static final WidgetSprites SPRITES = new WidgetSprites(new ResourceLocation("widget/tab_selected"), new ResourceLocation("widget/tab"), new ResourceLocation("widget/tab_selected_highlighted"), new ResourceLocation("widget/tab_highlighted"));
 
     public final int tabId;
     private final Supplier<Integer> currentTab;
@@ -25,10 +26,8 @@ public class TabButton extends AbstractWidget {
 
     @Override
     public void renderWidget(GuiGraphics guiGraphics, int pMouseX, int pMouseY, float pPartialTick) {
-        //RenderSystem.setShaderTexture(0, TEXTURE_LOCATION); TODO
         try {
-            //guiGraphics.blitNineSliced(this.getX(), this.getY(), this.width, this.height, 2, 2, 2, 2, 130, 24, 0, this.getTextureY());
-
+            guiGraphics.blitSprite(SPRITES.get(this.isSelected(), this.isHovered()), this.getX(), this.getY(), this.width, this.height);
         }catch (Throwable e) {
             e.printStackTrace();
         }

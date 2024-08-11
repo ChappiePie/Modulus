@@ -9,6 +9,7 @@ import net.minecraftforge.registries.RegistryBuilder;
 
 import java.util.Collections;
 import java.util.LinkedList;
+import java.util.Objects;
 import java.util.function.Supplier;
 
 public class Superpower {
@@ -41,6 +42,6 @@ public class Superpower {
     }
 
     public Component getDisplayName() {
-        return Component.translatable("superpower.%s".formatted(REGISTRY.get().getKey(this)));
+        return Component.translatable("superpower.%s".formatted(Objects.requireNonNull(REGISTRY.get().getKey(this)).toString().replace(":", ".")));
     }
 }

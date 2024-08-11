@@ -19,10 +19,10 @@ public abstract class LivingEntityMixin extends Entity {
     }
 
     @Inject(method = "getJumpBoostPower", at = @At("TAIL"), cancellable = true)
-    public void jumpBoostPower(CallbackInfoReturnable<Double> cir) {
+    public void jumpBoostPower(CallbackInfoReturnable<Float> cir) {
         AttributeInstance attributeInstance = ((LivingEntity) (Object) this).getAttribute(ModAttributes.JUMP_BOOST.get());
         if (attributeInstance != null) {
-            cir.setReturnValue(cir.getReturnValue() + 0.1F * attributeInstance.getValue());
+            cir.setReturnValue((float) (cir.getReturnValue() + 0.1F * attributeInstance.getValue()));
         }
     }
 }

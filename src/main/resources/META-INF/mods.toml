@@ -1,4 +1,4 @@
-modLoader="javafml" 
+modLoader="javafml"
 loaderVersion="[49,)"
 license="All rights reserved"
 
@@ -13,7 +13,7 @@ description='''
 The core for the mods created by Chappie is under constant development.
 Basically adding a lot of cool things for convenient writing of mods. '''
 [[dependencies.modulus]]
-    modId="forge" 
+    modId="forge"
     mandatory=true
     versionRange="[49,)"
     ordering="NONE"
