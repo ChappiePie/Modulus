@@ -37,14 +37,14 @@ public class ServerKeyInput {
         }
     }
 
-    public static void handle(ServerKeyInput msg, CustomPayloadEvent.Context ctx) {
+    public void handle(CustomPayloadEvent.Context ctx) {
             Player player = ctx.getSender();
             if (player != null) {
                 player.getCapability(PowerCap.CAPABILITY).ifPresent(cap -> {
-                    Ability ability = cap.getAbility(msg.id);
-                    ability.keys.copyFrom(msg.keys);
+                    Ability ability = cap.getAbility(this.id);
+                    ability.keys.copyFrom(this.keys);
                     ability.conditionManager.conditions().forEach(Condition::keyEvent);
-                    ModNetworking.INSTANCE.send(new ClientKeyInput(player.getId(), msg.id, msg.keys), PacketDistributor.TRACKING_ENTITY_AND_SELF.with(player));
+                    ModNetworking.INSTANCE.send(new ClientKeyInput(player.getId(), this.id, this.keys), PacketDistributor.TRACKING_ENTITY_AND_SELF.with(player));
                 });
             }
         ctx.setPacketHandled(true);

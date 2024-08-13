@@ -39,12 +39,12 @@ public class ClientKeyInput {
         }
     }
 
-    public static void handle(ClientKeyInput msg, CustomPayloadEvent.Context ctx) {
-        Entity entity = Minecraft.getInstance().level.getEntity(msg.entityId);
+    public void handle(CustomPayloadEvent.Context ctx) {
+        Entity entity = Minecraft.getInstance().level.getEntity(this.entityId);
         if (entity != null) {
             entity.getCapability(PowerCap.CAPABILITY).ifPresent(cap -> {
-                Ability ability = cap.getAbility(msg.id);
-                ability.keys.copyFrom(msg.keys);
+                Ability ability = cap.getAbility(this.id);
+                ability.keys.copyFrom(this.keys);
                 ability.conditionManager.conditions().forEach(Condition::keyEvent);
             });
         }

@@ -35,11 +35,11 @@ public class ClientTriggerPlayerAnim {
         buffer.writeUtf(this.animName);
     }
 
-    public static void handle(ClientTriggerPlayerAnim msg, CustomPayloadEvent.Context ctx) {
-        Entity entity = Minecraft.getInstance().level.getEntity(msg.entityId);
+    public void handle(CustomPayloadEvent.Context ctx) {
+        Entity entity = Minecraft.getInstance().level.getEntity(this.entityId);
         if (entity != null) {
             entity.getCapability(PlayerAnimCap.CAPABILITY).ifPresent(cap ->
-                    cap.triggerAnim(msg.controllerName, msg.firstPerson, msg.animName));
+                    cap.triggerAnim(this.controllerName, this.firstPerson, this.animName));
         }
         ctx.setPacketHandled(true);
     }

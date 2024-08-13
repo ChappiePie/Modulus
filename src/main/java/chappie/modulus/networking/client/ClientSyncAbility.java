@@ -32,11 +32,11 @@ public class ClientSyncAbility {
         buffer.writeNbt(this.nbt);
     }
 
-    public static void handle(ClientSyncAbility msg, CustomPayloadEvent.Context ctx) {
-        Entity entity = Minecraft.getInstance().level.getEntity(msg.entityId);
+    public void handle(CustomPayloadEvent.Context ctx) {
+        Entity entity = Minecraft.getInstance().level.getEntity(this.entityId);
         if (entity instanceof LivingEntity) {
             entity.getCapability(PowerCap.CAPABILITY).ifPresent(cap ->
-                    cap.getAbility(msg.id).deserializeNBT(msg.nbt));
+                    cap.getAbility(this.id).deserializeNBT(this.nbt));
         }
         ctx.setPacketHandled(true);
     }

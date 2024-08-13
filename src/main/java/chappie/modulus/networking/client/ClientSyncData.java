@@ -36,15 +36,15 @@ public class ClientSyncData {
         buf.writeNbt(this.tag);
     }
 
-    public static void handle(ClientSyncData msg, CustomPayloadEvent.Context ctx) {
-        Entity entity = Minecraft.getInstance().level.getEntity(msg.entityId);
+    public void handle(CustomPayloadEvent.Context ctx) {
+        Entity entity = Minecraft.getInstance().level.getEntity(this.entityId);
         if (entity != null) {
             entity.getCapability(PowerCap.CAPABILITY).ifPresent(cap -> {
-                DataManager dataManager = cap.getAbility(msg.abilityName).dataManager;
-                DataAccessor<?> accessor = dataManager.getAccessorById(msg.id);
+                DataManager dataManager = cap.getAbility(this.abilityName).dataManager;
+                DataAccessor<?> accessor = dataManager.getAccessorById(this.id);
                 if (accessor != null) {
-                    dataManager.getDataValue(accessor).deserialize(msg.tag, true);
-                    cap.getAbility(msg.abilityName).onDataUpdated(accessor);
+                    dataManager.getDataValue(accessor).deserialize(this.tag, true);
+                    cap.getAbility(this.abilityName).onDataUpdated(accessor);
                 }
             });
         }

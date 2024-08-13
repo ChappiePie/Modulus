@@ -8,14 +8,13 @@ import net.minecraft.resources.ResourceLocation;
 import net.minecraftforge.network.ChannelBuilder;
 import net.minecraftforge.network.NetworkDirection;
 import net.minecraftforge.network.SimpleChannel;
-import net.minecraftforge.network.packets.OpenContainer;
 import org.apache.logging.log4j.Marker;
 import org.apache.logging.log4j.MarkerManager;
 
 public class ModNetworking {
 
-    private static final Marker MARKER = MarkerManager.getMarker("FORGE_NETWORK");
-    public static final ResourceLocation NAME = new ResourceLocation(Modulus.MODID, "networking");
+    private static final Marker MARKER = MarkerManager.getMarker("MODULUS_NETWORK");
+    public static SimpleChannel INSTANCE = ChannelBuilder.named(new ResourceLocation(Modulus.MODID, "networking")).simpleChannel();
 
     public static void registerMessages() {
         INSTANCE.messageBuilder(ClientTriggerPlayerAnim.class, NetworkDirection.PLAY_TO_CLIENT)
@@ -58,16 +57,8 @@ public class ModNetworking {
                 .decoder(ServerSetData::new)
                 .encoder(ServerSetData::toBytes)
                 .consumerMainThread(ServerSetData::handle)
-                .add()
-
-                .messageBuilder(OpenContainer.class)
-                .decoder(OpenContainer::decode)
-                .encoder(OpenContainer::encode)
-                .consumerMainThread(OpenContainer::handle)
                 .add();
 
         Modulus.LOGGER.debug(MARKER, "Registering Network {} v{}", INSTANCE.getName(), INSTANCE.getProtocolVersion());
     }
-
-    public static SimpleChannel INSTANCE = ChannelBuilder.named(NAME).simpleChannel();
 }

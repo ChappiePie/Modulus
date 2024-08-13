@@ -33,17 +33,17 @@ public class ServerSetData {
         buf.writeNbt(this.tag);
     }
 
-    public static void handle(ServerSetData msg, CustomPayloadEvent.Context ctx) {
+    public void handle(CustomPayloadEvent.Context ctx) {
             ServerPlayer player = ctx.getSender();
             if (player != null) {
                 player.getCapability(PowerCap.CAPABILITY).ifPresent(cap -> {
-                    Ability ability = cap.getAbility(msg.abilityName);
-                    var accessor = ability.dataManager.getAccessorById(msg.id);
+                    Ability ability = cap.getAbility(this.abilityName);
+                    var accessor = ability.dataManager.getAccessorById(this.id);
                     if (accessor != null) {
                         var value = ability.dataManager.getDataValue(accessor);
-                        value.deserialize(msg.tag, true);
+                        value.deserialize(this.tag, true);
                         ability.onDataUpdated(accessor);
-                        ModNetworking.INSTANCE.send(new ClientSyncData(player.getId(), msg.id, msg.abilityName, msg.tag), PacketDistributor.TRACKING_ENTITY_AND_SELF.with(player));
+                        ModNetworking.INSTANCE.send(new ClientSyncData(player.getId(), this.id, this.abilityName, this.tag), PacketDistributor.TRACKING_ENTITY_AND_SELF.with(player));
                     }
                 });
             }

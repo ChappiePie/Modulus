@@ -28,10 +28,10 @@ public class ClientSyncPowerCap {
         buf.writeNbt(this.data);
     }
 
-    public static void handle(ClientSyncPowerCap msg, CustomPayloadEvent.Context ctx) {
-        Entity entity = Minecraft.getInstance().level.getEntity(msg.entityId);
+    public void handle(CustomPayloadEvent.Context ctx) {
+        Entity entity = Minecraft.getInstance().level.getEntity(this.entityId);
         if (entity instanceof LivingEntity e) {
-            e.getCapability(PowerCap.CAPABILITY).ifPresent(data -> data.deserializeNBT(msg.data));
+            e.getCapability(PowerCap.CAPABILITY).ifPresent(data -> data.deserializeNBT(this.data));
         }
         ctx.setPacketHandled(true);
     }
