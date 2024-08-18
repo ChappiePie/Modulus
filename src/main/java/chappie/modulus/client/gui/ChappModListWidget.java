@@ -84,7 +84,7 @@ public class ChappModListWidget extends ContainerObjectSelectionList<ChappModLis
     }
 
     public void tick() {
-        if (JSON_LIST.get().size() != 0 && this.children().isEmpty()) {
+        if (!JSON_LIST.get().isEmpty() && this.children().isEmpty()) {
             this.refreshList();
         }
     }
@@ -95,6 +95,7 @@ public class ChappModListWidget extends ContainerObjectSelectionList<ChappModLis
         public final ChappModInfo modInfo;
         public final ModulusMainScreen parent;
         private final IHasTimer.Timer titleTimer = new IHasTimer.Timer(() -> 10, () -> false);
+        private final IHasTimer.Timer highlightTimer = new IHasTimer.Timer(() -> 10, () -> false);
 
         ChappEntry(ChappModInfo info, ModulusMainScreen parent) {
             this.modInfo = info;
@@ -137,7 +138,15 @@ public class ChappModListWidget extends ContainerObjectSelectionList<ChappModLis
                 RenderSystem.setShaderTexture(0, this.modInfo.texture.get());
                 float f = this.titleTimer.value(partialTick);
                 f *= Mth.sin(entryIdx + (float)(Util.getMillis() % 1000L) / 1000.0F * ((float)Math.PI * 2F)) / 2F;
+                this.highlightTimer.predicate = () -> isHoveredMod;
+                this.highlightTimer.update();
+                float ht = 1 - this.highlightTimer.value(partialTick) * 0.5F;
+                if (MOD_CLICKED.containsKey(this.modInfo.modId)) {
+                    ht = 1 + this.highlightTimer.value(partialTick);
+                }
+                guiGraphics.setColor(ht, ht, ht, 1);
                 ClientUtil.blit(guiGraphics, x.get() + 6 * f, y + 2 + 3 * f, 128 / (1.0F + f / 10F), 64 / (1.0F + f / 10F), 0, 0, 2048, 1024, 2048, 1024);
+                guiGraphics.setColor(1, 1, 1, 1);
             }
             for (Map.Entry<AbstractWidget, BiFunction<Integer, Integer, Vec2>> e : this.children.entrySet()) {
                 Vec2 vec2 = e.getValue().apply(x.get(), y);
