@@ -1,64 +1,60 @@
 package chappie.modulus.networking;
 
 import chappie.modulus.Modulus;
-import chappie.modulus.networking.client.*;
+import chappie.modulus.networking.client.ClientKeyInput;
+import chappie.modulus.networking.client.ClientSyncAbility;
+import chappie.modulus.networking.client.ClientSyncData;
+import chappie.modulus.networking.client.ClientTriggerPlayerAnim;
 import chappie.modulus.networking.server.ServerKeyInput;
 import chappie.modulus.networking.server.ServerSetData;
-import net.minecraft.resources.ResourceLocation;
-import net.minecraftforge.network.ChannelBuilder;
-import net.minecraftforge.network.NetworkDirection;
-import net.minecraftforge.network.SimpleChannel;
-import org.apache.logging.log4j.Marker;
-import org.apache.logging.log4j.MarkerManager;
+import net.fabricmc.fabric.api.client.networking.v1.ClientPlayNetworking;
+import net.fabricmc.fabric.api.networking.v1.FabricPacket;
+import net.fabricmc.fabric.api.networking.v1.PlayerLookup;
+import net.fabricmc.fabric.api.networking.v1.ServerPlayNetworking;
+import net.minecraft.core.BlockPos;
+import net.minecraft.server.level.ServerLevel;
+import net.minecraft.server.level.ServerPlayer;
+import net.minecraft.world.entity.Entity;
 
 public class ModNetworking {
 
-    private static final Marker MARKER = MarkerManager.getMarker("MODULUS_NETWORK");
-    public static SimpleChannel INSTANCE = ChannelBuilder.named(new ResourceLocation(Modulus.MODID, "networking")).simpleChannel();
-
     public static void registerMessages() {
-        INSTANCE.messageBuilder(ClientTriggerPlayerAnim.class, NetworkDirection.PLAY_TO_CLIENT)
-                .decoder(ClientTriggerPlayerAnim::new)
-                .encoder(ClientTriggerPlayerAnim::toBytes)
-                .consumerMainThread(ClientTriggerPlayerAnim::handle)
-                .add()
+        ServerPlayNetworking.registerGlobalReceiver(ServerSetData.PACKET, ServerSetData::handle);
+        ServerPlayNetworking.registerGlobalReceiver(ServerKeyInput.PACKET, ServerKeyInput::handle);
 
-                .messageBuilder(ClientSyncPowerCap.class, NetworkDirection.PLAY_TO_CLIENT)
-                .decoder(ClientSyncPowerCap::new)
-                .encoder(ClientSyncPowerCap::toBytes)
-                .consumerMainThread(ClientSyncPowerCap::handle)
-                .add()
-
-                .messageBuilder(ClientSyncAbility.class, NetworkDirection.PLAY_TO_CLIENT)
-                .decoder(ClientSyncAbility::new)
-                .encoder(ClientSyncAbility::toBytes)
-                .consumerMainThread(ClientSyncAbility::handle)
-                .add()
-
-                .messageBuilder(ClientSyncData.class, NetworkDirection.PLAY_TO_CLIENT)
-                .decoder(ClientSyncData::new)
-                .encoder(ClientSyncData::toBytes)
-                .consumerMainThread(ClientSyncData::handle)
-                .add()
-
-                .messageBuilder(ClientKeyInput.class, NetworkDirection.PLAY_TO_CLIENT)
-                .decoder(ClientKeyInput::new)
-                .encoder(ClientKeyInput::toBytes)
-                .consumerMainThread(ClientKeyInput::handle)
-                .add()
-
-                .messageBuilder(ServerKeyInput.class, NetworkDirection.PLAY_TO_SERVER)
-                .decoder(ServerKeyInput::new)
-                .encoder(ServerKeyInput::toBytes)
-                .consumerMainThread(ServerKeyInput::handle)
-                .add()
-
-                .messageBuilder(ServerSetData.class, NetworkDirection.PLAY_TO_SERVER)
-                .decoder(ServerSetData::new)
-                .encoder(ServerSetData::toBytes)
-                .consumerMainThread(ServerSetData::handle)
-                .add();
-
-        Modulus.LOGGER.debug(MARKER, "Registering Network {} v{}", INSTANCE.getName(), INSTANCE.getProtocolVersion());
+        Modulus.LOGGER.debug("Registered server network");
     }
+
+    public static void registerClientMessages() {
+        ClientPlayNetworking.registerGlobalReceiver(ClientTriggerPlayerAnim.PACKET, ClientTriggerPlayerAnim::handle);
+        ClientPlayNetworking.registerGlobalReceiver(ClientSyncAbility.PACKET, ClientSyncAbility::handle);
+        ClientPlayNetworking.registerGlobalReceiver(ClientSyncData.PACKET, ClientSyncData::handle);
+        ClientPlayNetworking.registerGlobalReceiver(ClientKeyInput.PACKET, ClientKeyInput::handle);
+
+        Modulus.LOGGER.debug("Registered client network");
+    }
+
+    public static void sendToServer(FabricPacket packet) {
+        ClientPlayNetworking.send(packet);
+    }
+
+    public static void send(FabricPacket packet, ServerPlayer player) {
+        ServerPlayNetworking.send(player, packet);
+    }
+
+    public static void sendToTrackingEntityAndSelf(FabricPacket packet, Entity entityToTrack) {
+        for (ServerPlayer trackingPlayer : PlayerLookup.tracking(entityToTrack)) {
+            ServerPlayNetworking.send(trackingPlayer, packet);
+        }
+
+        if (entityToTrack instanceof ServerPlayer serverPlayer)
+            ServerPlayNetworking.send(serverPlayer, packet);
+    }
+
+    public static void sendToEntitiesTrackingChunk(FabricPacket packet, ServerLevel level, BlockPos blockPos) {
+        for (ServerPlayer trackingPlayer : PlayerLookup.tracking(level, blockPos)) {
+            ServerPlayNetworking.send(trackingPlayer, packet);
+        }
+    }
+
 }

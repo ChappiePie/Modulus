@@ -1,8 +1,8 @@
 package chappie.modulus.mixin.client;
 
+import chappie.modulus.util.ClientUtil;
 import chappie.modulus.util.model.IHasModelProperties;
 import chappie.modulus.util.model.ModelProperties;
-import net.minecraft.client.Minecraft;
 import net.minecraft.client.model.HierarchicalModel;
 import net.minecraft.client.model.geom.ModelPart;
 import net.minecraft.client.renderer.entity.layers.RenderLayer;
@@ -27,7 +27,7 @@ public abstract class HierarchicalModelMixin<T extends Entity> implements IHasMo
     @Override
     public ModelProperties modelProperties() {
         if (this.modulus$modelProperties == null) {
-            this.setup(0, 0, 0, 0, 0, Minecraft.getInstance().getPartialTick(), List.of());
+            this.setup(0, 0, 0, 0, 0, ClientUtil.getPartialTick(), List.of());
         }
         return this.modulus$modelProperties;
     }

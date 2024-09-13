@@ -1,6 +1,6 @@
 package chappie.modulus.client.gui;
 
-import chappie.modulus.common.ModSounds;
+import chappie.modulus.util.ModRegistries;
 import com.mojang.blaze3d.systems.RenderSystem;
 import net.minecraft.client.gui.GuiGraphics;
 import net.minecraft.client.gui.components.Button;
@@ -33,6 +33,6 @@ public class ModulusMenuButton extends Button {
 
     @Override
     public void playDownSound(SoundManager pHandler) {
-        pHandler.play(SimpleSoundInstance.forUI(ModSounds.YA, 1.0F));
+        pHandler.play(SimpleSoundInstance.forUI(ModRegistries.YA, 1.0F));
     }
 }

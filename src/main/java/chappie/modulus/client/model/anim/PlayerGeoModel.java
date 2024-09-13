@@ -6,13 +6,14 @@ import chappie.modulus.util.ClientUtil;
 import chappie.modulus.util.PlayerPart;
 import chappie.modulus.util.model.IHasModelProperties;
 import chappie.modulus.util.model.ModelProperties;
+import net.fabricmc.api.EnvType;
+import net.fabricmc.api.Environment;
 import net.minecraft.client.model.PlayerModel;
 import net.minecraft.client.model.geom.ModelPart;
 import net.minecraft.client.player.LocalPlayer;
 import net.minecraft.resources.ResourceLocation;
 import net.minecraft.world.entity.HumanoidArm;
-import net.minecraftforge.api.distmarker.Dist;
-import net.minecraftforge.api.distmarker.OnlyIn;
+import org.jetbrains.annotations.Nullable;
 import org.joml.Vector3f;
 import software.bernie.geckolib.cache.object.GeoBone;
 import software.bernie.geckolib.core.animation.AnimationState;
@@ -20,8 +21,6 @@ import software.bernie.geckolib.core.molang.LazyVariable;
 import software.bernie.geckolib.core.molang.MolangParser;
 import software.bernie.geckolib.core.object.DataTicket;
 import software.bernie.geckolib.model.DefaultedGeoModel;
-
-import javax.annotation.Nullable;
 
 public class PlayerGeoModel extends DefaultedGeoModel<PlayerAnimCap> {
 
@@ -32,7 +31,7 @@ public class PlayerGeoModel extends DefaultedGeoModel<PlayerAnimCap> {
     private PlayerModel<?> model;
 
     public PlayerGeoModel() {
-        super(new ResourceLocation(Modulus.MODID, "player"));
+        super(Modulus.id("player"));
     }
 
     @Override
@@ -47,7 +46,7 @@ public class PlayerGeoModel extends DefaultedGeoModel<PlayerAnimCap> {
 
     @Override
     public ResourceLocation getAnimationResource(PlayerAnimCap o) {
-        return new ResourceLocation(Modulus.MODID, "animations/player.animation.json");
+        return Modulus.id("animations/player.animation.json");
     }
 
     @Override
@@ -63,7 +62,7 @@ public class PlayerGeoModel extends DefaultedGeoModel<PlayerAnimCap> {
         return false;
     }
 
-    @OnlyIn(Dist.CLIENT)
+    @Environment(EnvType.CLIENT)
     @Override
     public void applyMolangQueries(PlayerAnimCap animatable, double animTime) {
         super.applyMolangQueries(animatable, animTime);

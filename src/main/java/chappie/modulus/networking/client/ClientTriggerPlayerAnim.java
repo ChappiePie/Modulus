@@ -1,14 +1,25 @@
 package chappie.modulus.networking.client;
 
+import chappie.modulus.Modulus;
 import chappie.modulus.common.capability.anim.PlayerAnimCap;
+import net.fabricmc.fabric.api.networking.v1.FabricPacket;
+import net.fabricmc.fabric.api.networking.v1.PacketSender;
+import net.fabricmc.fabric.api.networking.v1.PacketType;
 import net.minecraft.client.Minecraft;
+import net.minecraft.client.player.LocalPlayer;
 import net.minecraft.network.FriendlyByteBuf;
 import net.minecraft.world.entity.Entity;
-import net.minecraftforge.event.network.CustomPayloadEvent;
+import org.jetbrains.annotations.Nullable;
 
-import javax.annotation.Nullable;
+public class ClientTriggerPlayerAnim implements FabricPacket {
 
-public class ClientTriggerPlayerAnim {
+    public static final PacketType<ClientTriggerPlayerAnim> PACKET = PacketType.create(Modulus.id("trigger_player_anim"), ClientTriggerPlayerAnim::new);
+
+    @Override
+    public PacketType<?> getType() {
+        return PACKET;
+    }
+
     private final int entityId;
     private final String controllerName;
     private final boolean firstPerson;
@@ -28,19 +39,18 @@ public class ClientTriggerPlayerAnim {
         this.animName = buffer.readUtf();
     }
 
-    public void toBytes(FriendlyByteBuf buffer) {
+    public void write(FriendlyByteBuf buffer) {
         buffer.writeInt(this.entityId);
         buffer.writeUtf(this.controllerName);
         buffer.writeBoolean(this.firstPerson);
         buffer.writeUtf(this.animName);
     }
 
-    public void handle(CustomPayloadEvent.Context ctx) {
+    public void handle(LocalPlayer localPlayer, PacketSender packetSender) {
         Entity entity = Minecraft.getInstance().level.getEntity(this.entityId);
         if (entity != null) {
-            entity.getCapability(PlayerAnimCap.CAPABILITY).ifPresent(cap ->
-                    cap.triggerAnim(this.controllerName, this.firstPerson, this.animName));
+            PlayerAnimCap.getCap(entity).triggerAnim(this.controllerName, this.firstPerson, this.animName);
         }
-        ctx.setPacketHandled(true);
+
     }
 }

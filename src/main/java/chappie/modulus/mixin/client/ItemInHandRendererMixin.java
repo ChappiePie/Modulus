@@ -2,7 +2,7 @@ package chappie.modulus.mixin.client;
 
 import chappie.modulus.common.capability.anim.PlayerAnimCap;
 import chappie.modulus.util.ClientUtil;
-import chappie.modulus.util.events.FirstPersonAdditionalHandEvent;
+import chappie.modulus.util.events.FirstPersonAdditionalHandCallback;
 import com.llamalad7.mixinextras.injector.wrapoperation.Operation;
 import com.llamalad7.mixinextras.injector.wrapoperation.WrapOperation;
 import com.mojang.blaze3d.vertex.PoseStack;
@@ -12,7 +12,6 @@ import net.minecraft.client.renderer.MultiBufferSource;
 import net.minecraft.world.InteractionHand;
 import net.minecraft.world.entity.HumanoidArm;
 import net.minecraft.world.item.ItemStack;
-import net.minecraftforge.common.MinecraftForge;
 import org.spongepowered.asm.mixin.Mixin;
 import org.spongepowered.asm.mixin.Shadow;
 import org.spongepowered.asm.mixin.injection.At;
@@ -38,7 +37,7 @@ public abstract class ItemInHandRendererMixin {
             AtomicReference<Float> equippedProgress = new AtomicReference<>(pEquippedProgress);
             renderArm.set(ClientUtil.rotationFromAnimation(cap, instance, pPlayer, pPartialTicks, pPitch, pHand, swingProgress, pStack, equippedProgress, pMatrixStack, pBuffer, pCombinedLight));
 
-            MinecraftForge.EVENT_BUS.post(new FirstPersonAdditionalHandEvent(instance, renderArm, pPlayer, pPartialTicks, pPitch, pHand, pHand == InteractionHand.MAIN_HAND ? pPlayer.getMainArm() : pPlayer.getMainArm().getOpposite(), swingProgress, pStack, equippedProgress, pMatrixStack, pBuffer, pCombinedLight));
+            FirstPersonAdditionalHandCallback.EVENT.invoker().event(new FirstPersonAdditionalHandCallback.FirstPersonAdditionalHandEvent(instance, renderArm, pPlayer, pPartialTicks, pPitch, pHand, pHand == InteractionHand.MAIN_HAND ? pPlayer.getMainArm() : pPlayer.getMainArm().getOpposite(), swingProgress, pStack, equippedProgress, pMatrixStack, pBuffer, pCombinedLight));
 
             pSwingProgress = swingProgress.get();
             pEquippedProgress = equippedProgress.get();

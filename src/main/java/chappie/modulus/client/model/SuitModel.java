@@ -67,6 +67,6 @@ public class SuitModel<T extends LivingEntity> extends HumanoidModel<T> {
     }
 
     private static ModelLayerLocation createLocation(String type) {
-        return new ModelLayerLocation(new ResourceLocation(Modulus.MODID, "suit"), type);
+        return new ModelLayerLocation(Modulus.id("suit"), type);
     }
 }

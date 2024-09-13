@@ -8,6 +8,9 @@ import com.google.gson.JsonElement;
 import com.google.gson.JsonObject;
 import com.mojang.blaze3d.systems.RenderSystem;
 import com.mojang.blaze3d.vertex.PoseStack;
+import net.fabricmc.loader.api.FabricLoader;
+import net.fabricmc.loader.api.ModContainer;
+import net.fabricmc.loader.api.metadata.ModMetadata;
 import net.minecraft.Util;
 import net.minecraft.client.Minecraft;
 import net.minecraft.client.gui.Font;
@@ -24,9 +27,6 @@ import net.minecraft.resources.ResourceLocation;
 import net.minecraft.util.FastColor;
 import net.minecraft.util.Mth;
 import net.minecraft.world.phys.Vec2;
-import net.minecraftforge.fml.ModContainer;
-import net.minecraftforge.fml.ModList;
-import net.minecraftforge.forgespi.language.IModInfo;
 
 import java.util.*;
 import java.util.concurrent.atomic.AtomicInteger;
@@ -89,104 +89,34 @@ public class ChappModListWidget extends ContainerObjectSelectionList<ChappModLis
         }
     }
 
-    public class ChappEntry extends ContainerObjectSelectionList.Entry<ChappEntry> implements IHasTimer {
+    private final TextRenderable DEFAULT_TEXT = (entry, font, x, guiGraphics,  entryIdx, top, left, entryWidth, entryHeight, mouseX, mouseY, isHovered, partialTick) -> {
+        boolean b = entryIdx % 2 == 0;
+        int initX = x.get();
+        x.set(initX + (b ? left + 128 : left - 12) + 6);
 
-        public final Map<AbstractWidget, BiFunction<Integer, Integer, Vec2>> children;
-        public final ChappModInfo modInfo;
-        public final ModulusMainScreen parent;
-        private final IHasTimer.Timer titleTimer = new IHasTimer.Timer(() -> 10, () -> false);
-        private final IHasTimer.Timer highlightTimer = new IHasTimer.Timer(() -> 10, () -> false);
+        PoseStack poseStack = guiGraphics.pose();
 
-        ChappEntry(ChappModInfo info, ModulusMainScreen parent) {
-            this.modInfo = info;
-            this.parent = parent;
-            this.children = new HashMap<>();
-            var modFile = info.modInfo();
-            String version = modFile != null ? modFile.getVersion().toString() : info.version;
-            MyButton versionButton = new MyButton(68, 16, Component.translatable("modulus.screen.modEntry.version", version), (b) -> {
-            });
-            versionButton.active = false;
-            this.children.put(versionButton, (x, y) -> new Vec2(4 + x, 76 + y));
-            if (modFile == null) {
-                this.children.put(new MyButton(68, 16, Component.translatable("modulus.screen.modEntry.download"), (b) -> {
-                    Util.getPlatform().openUri(info.url);
-                }), (x, y) -> new Vec2(74 + x, 76 + y));
-            }
-        }
+        poseStack.pushPose();
+        Component modName = Component.literal(entry.modInfo.modInfo() == null ? entry.modInfo.modId : entry.modInfo.modInfo().getName()).withStyle(ClientUtil.BOLD_MINECRAFT);
+        float f = 2.5F;
+        poseStack.scale(f, f, f);
+        poseStack.translate(b ? (x.get() + 5) / f : (entryWidth - 128) / f - font.width(modName), (top + 5) / f, 0);
+        guiGraphics.drawString(font,  modName, 0, 0, -1, true);
+        poseStack.popPose();
 
-        @Override
-        public void render(GuiGraphics guiGraphics, int entryIdx, int top, int left, int entryWidth, int entryHeight, int mouseX, int mouseY, boolean isHovered, float partialTick) {
-            //GuiComponent.enableScissor(left, top, left + entryWidth, top + entryHeight - 10);
-            //guiGraphics.fill( left, top, left + entryWidth, top + entryHeight, entryIdx % 2 == 0 ? -16777216 : -1);
-            Font font = this.parent.getMinecraft().font;
-            AtomicInteger x = new AtomicInteger(6);
-            int y = top;
+        MultiLineLabel label = MultiLineLabel.create(font, entry.modInfo.modInfo() == null ? FormattedText.composite(entry.modInfo.text) : Component.literal(entry.modInfo.modInfo().getDescription()), entryWidth - 160, 7);
 
-            this.modInfo.textRenderable.render(this, font, x, guiGraphics,  entryIdx, y, left, entryWidth, entryHeight, mouseX, mouseY, isHovered, partialTick);
-            y += 6;
-            {
-                int mainColor = FastColor.ARGB32.color(255, 108, 108, 108);
-                int offColor = FastColor.ARGB32.color(255, 56, 56, 56);
-                int minX = x.get() - 4, minY = y - 4;
-                int maxX = x.get() + 128 + 4, maxY = y + 67 + 7;
-                boolean isHoveredMod = mouseX > minX && mouseX < maxX && mouseY > minY && mouseY < maxY;
-                guiGraphics.fill( minX, minY, maxX, maxY, mainColor);
-                guiGraphics.fill( minX, maxY, maxX, maxY + 15, offColor);
-
-                this.titleTimer.predicate = () -> isHoveredMod;
-                this.titleTimer.update();
-                RenderSystem.setShaderTexture(0, this.modInfo.texture.get());
-                float f = this.titleTimer.value(partialTick);
-                f *= Mth.sin(entryIdx + (float)(Util.getMillis() % 1000L) / 1000.0F * ((float)Math.PI * 2F)) / 2F;
-                this.highlightTimer.predicate = () -> isHoveredMod;
-                this.highlightTimer.update();
-                float ht = 1 - this.highlightTimer.value(partialTick) * 0.5F;
-                if (MOD_CLICKED.containsKey(this.modInfo.modId)) {
-                    ht = 1 + this.highlightTimer.value(partialTick);
-                }
-                guiGraphics.setColor(ht, ht, ht, 1);
-                ClientUtil.blit(guiGraphics, x.get() + 6 * f, y + 2 + 3 * f, 128 / (1.0F + f / 10F), 64 / (1.0F + f / 10F), 0, 0, 2048, 1024, 2048, 1024);
-                guiGraphics.setColor(1, 1, 1, 1);
-            }
-            for (Map.Entry<AbstractWidget, BiFunction<Integer, Integer, Vec2>> e : this.children.entrySet()) {
-                Vec2 vec2 = e.getValue().apply(x.get(), y);
-                e.getKey().setX((int) vec2.x);
-                e.getKey().setY((int) vec2.y);
-                e.getKey().render(guiGraphics,  mouseX, mouseY, partialTick);
-            }
-
-            //GuiComponent.disableScissor();
-        }
-
-        @Override
-        public boolean mouseClicked(double pMouseX, double pMouseY, int pButton) {
-            if (this.titleTimer.predicate.get() && pButton == 0) {
-                if (MOD_CLICKED.containsKey(this.modInfo.modId)) {
-                    MOD_CLICKED.get(this.modInfo.modId).accept(this);
-                }
-            }
-            return super.mouseClicked(pMouseX, pMouseY, pButton);
-        }
-
-        @Override
-        public List<? extends GuiEventListener> children() {
-            return new ArrayList<>(this.children.keySet());
-        }
-
-        @Override
-        public List<? extends NarratableEntry> narratables() {
-            return new ArrayList<>(this.children.keySet());
-        }
-
-        public ChappModInfo getInfo() {
-            return modInfo;
-        }
-
-        @Override
-        public Iterable<Timer> timers() {
-            return Collections.singleton(this.titleTimer);
-        }
-    }
+        poseStack.pushPose();
+        int y = top + 27;
+        guiGraphics.fill( x.get() + 4, y, x.get() + 10 + label.getWidth(), y + 2, -1);
+        y += 4;
+        label.renderLeftAligned(guiGraphics,  x.get() + 8, y, font.lineHeight, 0xFFFFFF);
+        int newX = b ? x.get() + 4 : x.get() + 10 + label.getWidth();
+        int yMax = y + font.lineHeight * label.getLineCount() + 3;
+        guiGraphics.fill( newX, y - 4, newX + 2, yMax, -1);
+        poseStack.popPose();
+        x.set(initX + (b ? left : entryWidth - 128));
+    };
 
     public class MyButton extends Button {
 
@@ -198,11 +128,6 @@ public class ChappModListWidget extends ContainerObjectSelectionList<ChappModLis
 
         public MyButton(int pX, int pY, int pWidth, int pHeight, Component pMessage, OnPress pOnPress) {
             super(pX, pY, pWidth, pHeight, pMessage, pOnPress, Button.DEFAULT_NARRATION);
-            this.oldSize = new Vec2(this.getWidth(), this.getHeight());
-        }
-
-        public MyButton(Builder builder) {
-            super(builder);
             this.oldSize = new Vec2(this.getWidth(), this.getHeight());
         }
 
@@ -275,40 +200,110 @@ public class ChappModListWidget extends ContainerObjectSelectionList<ChappModLis
                                     .formatted(textureId)), textRenderable);
         }
 
-        public IModInfo modInfo() {
-            var v = ModList.get().getModContainerById(this.modId);
-            return v.map(ModContainer::getModInfo).orElse(null);
+        public ModMetadata modInfo() {
+            var v = FabricLoader.getInstance().getModContainer(this.modId);
+            return v.map(ModContainer::getMetadata).orElse(null);
         }
     }
 
-    private final TextRenderable DEFAULT_TEXT = (entry, font, x, guiGraphics,  entryIdx, top, left, entryWidth, entryHeight, mouseX, mouseY, isHovered, partialTick) -> {
-        boolean b = entryIdx % 2 == 0;
-        int initX = x.get();
-        x.set(initX + (b ? left + 128 : left - 12) + 6);
+    public class ChappEntry extends Entry<ChappEntry> implements IHasTimer {
 
-        PoseStack poseStack = guiGraphics.pose();
+        public final Map<AbstractWidget, BiFunction<Integer, Integer, Vec2>> children;
+        public final ChappModInfo modInfo;
+        public final ModulusMainScreen parent;
+        private final IHasTimer.Timer titleTimer = new IHasTimer.Timer(() -> 10, () -> false);
+        private final IHasTimer.Timer highlightTimer = new IHasTimer.Timer(() -> 10, () -> false);
 
-        poseStack.pushPose();
-        Component modName = Component.literal(entry.modInfo.modInfo() == null ? entry.modInfo.modId : entry.modInfo.modInfo().getDisplayName()).withStyle(ClientUtil.BOLD_MINECRAFT);
-        float f = 2.5F;
-        poseStack.scale(f, f, f);
-        poseStack.translate(b ? (x.get() + 5) / f : (entryWidth - 128) / f - font.width(modName), (top + 5) / f, 0);
-        guiGraphics.drawString(font,  modName, 0, 0, -1, true);
-        poseStack.popPose();
+        ChappEntry(ChappModInfo info, ModulusMainScreen parent) {
+            this.modInfo = info;
+            this.parent = parent;
+            this.children = new HashMap<>();
+            var modFile = info.modInfo();
+            String version = modFile != null ? modFile.getVersion().toString() : info.version;
+            MyButton versionButton = new MyButton(68, 16, Component.translatable("modulus.screen.modEntry.version", version), (b) -> {
+            });
+            versionButton.active = false;
+            this.children.put(versionButton, (x, y) -> new Vec2(4 + x, 76 + y));
+            if (modFile == null) {
+                this.children.put(new MyButton(68, 16, Component.translatable("modulus.screen.modEntry.download"), (b) -> {
+                    Util.getPlatform().openUri(info.url);
+                }), (x, y) -> new Vec2(74 + x, 76 + y));
+            }
+        }
 
-        MultiLineLabel label = MultiLineLabel.create(font, entry.modInfo.modInfo() == null ? FormattedText.composite(entry.modInfo.text) : Component.literal(entry.modInfo.modInfo().getDescription()), entryWidth - 160, 7);
+        @Override
+        public void render(GuiGraphics guiGraphics, int entryIdx, int top, int left, int entryWidth, int entryHeight, int mouseX, int mouseY, boolean isHovered, float partialTick) {
+            //GuiComponent.enableScissor(left, top, left + entryWidth, top + entryHeight - 10);
+            //guiGraphics.fill( left, top, left + entryWidth, top + entryHeight, entryIdx % 2 == 0 ? -16777216 : -1);
+            Font font = Minecraft.getInstance().font;
+            AtomicInteger x = new AtomicInteger(6);
+            int y = top;
 
-        poseStack.pushPose();
-        int y = top + 27;
-        guiGraphics.fill( x.get() + 4, y, x.get() + 10 + label.getWidth(), y + 2, -1);
-        y += 4;
-        label.renderLeftAligned(guiGraphics,  x.get() + 8, y, font.lineHeight, 0xFFFFFF);
-        int newX = b ? x.get() + 4 : x.get() + 10 + label.getWidth();
-        int yMax = y + font.lineHeight * label.getLineCount() + 3;
-        guiGraphics.fill( newX, y - 4, newX + 2, yMax, -1);
-        poseStack.popPose();
-        x.set(initX + (b ? left : entryWidth - 128));
-    };
+            this.modInfo.textRenderable.render(this, font, x, guiGraphics,  entryIdx, y, left, entryWidth, entryHeight, mouseX, mouseY, isHovered, partialTick);
+            y += 6;
+            {
+                int mainColor = FastColor.ARGB32.color(255, 108, 108, 108);
+                int offColor = FastColor.ARGB32.color(255, 56, 56, 56);
+                int minX = x.get() - 4, minY = y - 4;
+                int maxX = x.get() + 128 + 4, maxY = y + 67 + 7;
+                boolean isHoveredMod = mouseX > minX && mouseX < maxX && mouseY > minY && mouseY < maxY;
+                guiGraphics.fill( minX, minY, maxX, maxY, mainColor);
+                guiGraphics.fill( minX, maxY, maxX, maxY + 15, offColor);
+
+                this.titleTimer.predicate = () -> isHoveredMod;
+                this.titleTimer.update();
+                RenderSystem.setShaderTexture(0, this.modInfo.texture.get());
+                float f = this.titleTimer.value(partialTick);
+                f *= Mth.sin(entryIdx + (float)(Util.getMillis() % 1000L) / 1000.0F * ((float)Math.PI * 2F)) / 2F;
+                this.highlightTimer.predicate = () -> isHoveredMod;
+                this.highlightTimer.update();
+                float ht = 1 - this.highlightTimer.value(partialTick) * 0.5F;
+                if (MOD_CLICKED.containsKey(this.modInfo.modId)) {
+                    ht = 1 + this.highlightTimer.value(partialTick);
+                }
+                guiGraphics.setColor(ht, ht, ht, 1);
+                ClientUtil.blit(guiGraphics, x.get() + 6 * f, y + 2 + 3 * f, 128 / (1.0F + f / 10F), 64 / (1.0F + f / 10F), 0, 0, 2048, 1024, 2048, 1024);
+                guiGraphics.setColor(1, 1, 1, 1);
+            }
+            for (Map.Entry<AbstractWidget, BiFunction<Integer, Integer, Vec2>> e : this.children.entrySet()) {
+                Vec2 vec2 = e.getValue().apply(x.get(), y);
+                e.getKey().setX((int) vec2.x);
+                e.getKey().setY((int) vec2.y);
+                e.getKey().render(guiGraphics,  mouseX, mouseY, partialTick);
+            }
+
+            //GuiComponent.disableScissor();
+        }
+
+        @Override
+        public boolean mouseClicked(double pMouseX, double pMouseY, int pButton) {
+            if (this.titleTimer.predicate.get() && pButton == 0) {
+                if (MOD_CLICKED.containsKey(this.modInfo.modId)) {
+                    MOD_CLICKED.get(this.modInfo.modId).accept(this);
+                }
+            }
+            return super.mouseClicked(pMouseX, pMouseY, pButton);
+        }
+
+        @Override
+        public List<? extends GuiEventListener> children() {
+            return new ArrayList<>(this.children.keySet());
+        }
+
+        @Override
+        public List<? extends NarratableEntry> narratables() {
+            return new ArrayList<>(this.children.keySet());
+        }
+
+        public ChappModInfo getInfo() {
+            return modInfo;
+        }
+
+        @Override
+        public Iterable<Timer> timers() {
+            return Collections.singleton(this.titleTimer);
+        }
+    }
 
     @FunctionalInterface
     public interface TextRenderable {

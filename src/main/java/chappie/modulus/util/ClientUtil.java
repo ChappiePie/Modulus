@@ -26,7 +26,6 @@ import net.minecraft.world.InteractionHand;
 import net.minecraft.world.entity.HumanoidArm;
 import net.minecraft.world.item.ItemStack;
 import net.minecraft.world.phys.AABB;
-import net.minecraftforge.fml.loading.FMLPaths;
 import org.joml.Matrix3f;
 import org.joml.Matrix4f;
 import software.bernie.geckolib.cache.object.GeoBone;
@@ -45,6 +44,10 @@ public class ClientUtil {
 
     private static final ResourceLocation BOLD_FONT = new ResourceLocation("modulus", "bold");
     public static final Style BOLD_MINECRAFT = Style.EMPTY.withFont(BOLD_FONT);
+
+    public static float getPartialTick() {
+        return Minecraft.getInstance().isPaused() ? 0 : Minecraft.getInstance().getFrameTime();
+    }
 
     public static void blit(GuiGraphics guiGraphics, float pX, float pY, float pWidth, float pHeight, float pUOffset, float pVOffset, int pUWidth, int pVHeight, int pTextureWidth, int pTextureHeight) {
         blit(guiGraphics.pose(), pX, pX + pWidth, pY, pY + pHeight, 0, pUWidth, pVHeight, pUOffset, pVOffset, pTextureWidth, pTextureHeight);
@@ -113,8 +116,8 @@ public class ClientUtil {
         ResourceLocation resourcelocation = new ResourceLocation(location.getNamespace(), location.getPath() + "/" + name);
         AbstractTexture abstracttexture = Minecraft.getInstance().getTextureManager().getTexture(resourcelocation, MissingTextureAtlasSprite.getTexture());
         if (abstracttexture == MissingTextureAtlasSprite.getTexture()) {
-            File file = new File(FMLPaths.CONFIGDIR.get().toAbsolutePath() + "/modulus/data", name);
-            HttpTexture httptexture = new HttpTexture(file, url, new ResourceLocation("forge", "textures/white.png"), false, () -> {
+            File file = new File("config/modulus/data", name);
+            HttpTexture httptexture = new HttpTexture(file, url, Modulus.id("textures/gui/white.png"), false, () -> {
             });
             Minecraft.getInstance().getTextureManager().register(resourcelocation, httptexture);
         }
@@ -258,9 +261,9 @@ public class ClientUtil {
                 .createCompositeState(true));
 
         public static RenderType glow(ResourceLocation texture) {
-            return create(Modulus.MODID + ":light", DefaultVertexFormat.NEW_ENTITY, VertexFormat.Mode.QUADS, 256, false, true, RenderType.CompositeState.builder().setShaderState(RENDERTYPE_ENERGY_SWIRL_SHADER)
-                    .setTextureState(new RenderStateShard.TextureStateShard(texture, false, false))
-                    .setTexturingState(new RenderStateShard.OffsetTexturingStateShard(0, 0))
+            return create(Modulus.MODID + ":light", DefaultVertexFormat.NEW_ENTITY, VertexFormat.Mode.QUADS, 256, false, true, CompositeState.builder().setShaderState(RENDERTYPE_ENERGY_SWIRL_SHADER)
+                    .setTextureState(new TextureStateShard(texture, false, false))
+                    .setTexturingState(new OffsetTexturingStateShard(0, 0))
                     .setTransparencyState(RenderStateShard.TRANSLUCENT_TRANSPARENCY)
                     .setCullState(NO_CULL).setLightmapState(LIGHTMAP).setOverlayState(OVERLAY)
                     .createCompositeState(false));

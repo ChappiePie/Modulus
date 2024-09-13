@@ -15,7 +15,7 @@ public class EntityMixin {
     @Inject(at = @At("HEAD"), method = "setOldPosAndRot")
     public void abilityTick(CallbackInfo ci) {
         Entity entity = (Entity) (Object) this;
-        if (entity.isAddedToWorld() && entity instanceof LivingEntity e) {
+        if (entity instanceof LivingEntity e) {
             for (Ability ability : CommonUtil.getAbilities(e)) {
                 ability.updateTick(e);
             }

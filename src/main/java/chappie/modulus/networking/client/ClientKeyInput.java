@@ -1,15 +1,27 @@
 package chappie.modulus.networking.client;
 
+import chappie.modulus.Modulus;
 import chappie.modulus.common.ability.base.Ability;
 import chappie.modulus.common.ability.base.condition.Condition;
 import chappie.modulus.common.capability.PowerCap;
 import chappie.modulus.util.KeyMap;
+import net.fabricmc.fabric.api.networking.v1.FabricPacket;
+import net.fabricmc.fabric.api.networking.v1.PacketSender;
+import net.fabricmc.fabric.api.networking.v1.PacketType;
 import net.minecraft.client.Minecraft;
+import net.minecraft.client.player.LocalPlayer;
 import net.minecraft.network.FriendlyByteBuf;
 import net.minecraft.world.entity.Entity;
-import net.minecraftforge.event.network.CustomPayloadEvent;
 
-public class ClientKeyInput {
+public class ClientKeyInput implements FabricPacket {
+
+    public static final PacketType<ClientKeyInput> PACKET = PacketType.create(Modulus.id("client_key_input"), ClientKeyInput::new);
+
+    @Override
+    public PacketType<?> getType() {
+        return PACKET;
+    }
+
 
     private final int entityId;
     private final String id;
@@ -31,7 +43,7 @@ public class ClientKeyInput {
         this.keys = map;
     }
 
-    public void toBytes(FriendlyByteBuf buf) {
+    public void write(FriendlyByteBuf buf) {
         buf.writeInt(this.entityId);
         buf.writeUtf(this.id);
         for (KeyMap.KeyType type : KeyMap.KeyType.values()) {
@@ -39,15 +51,16 @@ public class ClientKeyInput {
         }
     }
 
-    public void handle(CustomPayloadEvent.Context ctx) {
+    public void handle(LocalPlayer localPlayer, PacketSender packetSender) {
         Entity entity = Minecraft.getInstance().level.getEntity(this.entityId);
         if (entity != null) {
-            entity.getCapability(PowerCap.CAPABILITY).ifPresent(cap -> {
+            PowerCap cap = PowerCap.getCap(entity);
+            if (cap != null) {
                 Ability ability = cap.getAbility(this.id);
                 ability.keys.copyFrom(this.keys);
                 ability.conditionManager.conditions().forEach(Condition::keyEvent);
-            });
+            }
         }
-        ctx.setPacketHandled(true);
+        
     }
 }

@@ -1,33 +1,36 @@
 package chappie.modulus.common.capability.anim;
 
+import chappie.modulus.Modulus;
 import chappie.modulus.client.model.anim.FPPlayerGeoModel;
 import chappie.modulus.client.model.anim.PlayerGeoModel;
 import chappie.modulus.networking.ModNetworking;
 import chappie.modulus.networking.client.ClientTriggerPlayerAnim;
-import chappie.modulus.util.events.RegisterPlayerControllerEvent;
+import chappie.modulus.util.events.RegisterPlayerControllerCallback;
+import dev.onyxstudios.cca.api.v3.component.ComponentKey;
+import dev.onyxstudios.cca.api.v3.component.ComponentRegistryV3;
+import dev.onyxstudios.cca.api.v3.component.ComponentV3;
+import dev.onyxstudios.cca.api.v3.component.sync.AutoSyncedComponent;
 import net.minecraft.client.Minecraft;
 import net.minecraft.nbt.CompoundTag;
 import net.minecraft.world.entity.Entity;
 import net.minecraft.world.entity.player.Player;
-import net.minecraftforge.common.MinecraftForge;
-import net.minecraftforge.common.capabilities.Capability;
-import net.minecraftforge.common.capabilities.CapabilityManager;
-import net.minecraftforge.common.capabilities.CapabilityToken;
-import net.minecraftforge.network.PacketDistributor;
 import org.apache.commons.compress.utils.Lists;
+import org.jetbrains.annotations.Nullable;
 import software.bernie.geckolib.core.animatable.GeoAnimatable;
 import software.bernie.geckolib.core.animatable.instance.AnimatableInstanceCache;
 import software.bernie.geckolib.core.animation.AnimatableManager;
 import software.bernie.geckolib.core.animation.AnimationController;
 import software.bernie.geckolib.util.GeckoLibUtil;
 
-import javax.annotation.Nullable;
 import java.util.List;
 
-public class PlayerAnimCap implements GeoAnimatable {
+public class PlayerAnimCap implements GeoAnimatable, AutoSyncedComponent, ComponentV3 {
 
-    public static Capability<PlayerAnimCap> CAPABILITY = CapabilityManager.get(new CapabilityToken<>() {
-    });
+    public static final ComponentKey<PlayerAnimCap> KEY = ComponentRegistryV3.INSTANCE.getOrCreate(Modulus.id("player_anim"), PlayerAnimCap.class);
+
+    public static PlayerAnimCap getCap(Object provider) {
+        return KEY.get(provider);
+    }
 
     public final Player player;
     private final AnimatableInstanceCache cache = GeckoLibUtil.createInstanceCache(this, true);
@@ -37,11 +40,6 @@ public class PlayerAnimCap implements GeoAnimatable {
 
     public PlayerAnimCap(Player player) {
         this.player = player;
-    }
-
-    @Nullable
-    public static PlayerAnimCap getCap(Entity entity) {
-        return entity.getCapability(PlayerAnimCap.CAPABILITY).orElse(null);
     }
 
     public void triggerAnim(@Nullable String controllerName, String animName) {
@@ -57,7 +55,7 @@ public class PlayerAnimCap implements GeoAnimatable {
                 controller.tryTriggerAnimation(animName);
             }
         } else {
-            ModNetworking.INSTANCE.send(new ClientTriggerPlayerAnim(this.player.getId(), controllerName, firstPerson, animName), PacketDistributor.TRACKING_ENTITY_AND_SELF.with(this.player));
+            ModNetworking.sendToTrackingEntityAndSelf(new ClientTriggerPlayerAnim(this.player.getId(), controllerName, firstPerson, animName), this.player);
         }
     }
 
@@ -83,8 +81,8 @@ public class PlayerAnimCap implements GeoAnimatable {
     }
 
     public void registerNewPlayerControllers() {
-        List<RegisterPlayerControllerEvent.PlayerAnimationController> animationControllers = Lists.newArrayList();
-        MinecraftForge.EVENT_BUS.post(new RegisterPlayerControllerEvent(this, this.player, animationControllers));
+        List<RegisterPlayerControllerCallback.PlayerAnimationController> animationControllers = Lists.newArrayList();
+        RegisterPlayerControllerCallback.EVENT.invoker().event(new RegisterPlayerControllerCallback.RegisterPlayerControllerEvent(this, this.player, animationControllers));
         for (AnimationController<PlayerAnimCap> controller : animationControllers) {
             if (controller.getName().contains("_first_person")) {
                 AnimatableManager<PlayerAnimCap> manager = this.cache.getManagerForId(this.player.getUUID().hashCode() + "first_person".hashCode());
@@ -110,12 +108,13 @@ public class PlayerAnimCap implements GeoAnimatable {
         return ((Entity) object).tickCount + Minecraft.getInstance().getFrameTime();
     }
 
-    public CompoundTag serializeNBT() {
-        CompoundTag tag = new CompoundTag();
-        return tag;
+    @Override
+    public void readFromNbt(CompoundTag tag) {
+        this.registerNewPlayerControllers();
     }
 
-    public void deserializeNBT(CompoundTag tag) {
-        this.registerNewPlayerControllers();
+    @Override
+    public void writeToNbt(CompoundTag tag) {
+
     }
 }

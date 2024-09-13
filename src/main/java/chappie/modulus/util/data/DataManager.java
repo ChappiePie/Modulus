@@ -8,7 +8,6 @@ import com.google.common.collect.Maps;
 import com.mojang.logging.LogUtils;
 import net.minecraft.nbt.CompoundTag;
 import net.minecraft.world.entity.Entity;
-import net.minecraftforge.network.PacketDistributor;
 import org.slf4j.Logger;
 
 import java.util.Map;
@@ -43,7 +42,7 @@ public class DataManager {
             dataValue.set(value);
             this.ability.onDataUpdated(accessor);
             if (!entity.getCommandSenderWorld().isClientSide) {
-                ModNetworking.INSTANCE.send(new ClientSyncData(entity.getId(), accessor.key(), this.ability.builder.id, dataValue.serialize(new CompoundTag(), true)), PacketDistributor.TRACKING_ENTITY_AND_SELF.with(entity));
+                ModNetworking.sendToTrackingEntityAndSelf(new ClientSyncData(entity.getId(), accessor.key(), this.ability.builder.id, dataValue.serialize(new CompoundTag(), true)), entity);
             }
         }
         return this;
@@ -52,7 +51,7 @@ public class DataManager {
     public <T> DataManager setFromClient(DataAccessor<T> accessor, T value) {
         DataValue<T> dataValue = this.getDataValue(accessor);
         if (this.ability.entity.getCommandSenderWorld().isClientSide && dataValue.get() != value) {
-            ModNetworking.INSTANCE.send(new ServerSetData(accessor.key(), this.ability.builder.id, dataValue.serialize(new CompoundTag(), value, true)), PacketDistributor.SERVER.noArg());
+            ModNetworking.sendToServer(new ServerSetData(accessor.key(), this.ability.builder.id, dataValue.serialize(new CompoundTag(), value, true)));
         }
         return this;
     }

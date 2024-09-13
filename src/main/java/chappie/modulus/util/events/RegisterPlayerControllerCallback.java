@@ -2,9 +2,10 @@ package chappie.modulus.util.events;
 
 import chappie.modulus.client.model.anim.PlayerGeoModel;
 import chappie.modulus.common.capability.anim.PlayerAnimCap;
+import net.fabricmc.fabric.api.event.Event;
+import net.fabricmc.fabric.api.event.EventFactory;
 import net.minecraft.resources.ResourceLocation;
 import net.minecraft.world.entity.player.Player;
-import net.minecraftforge.event.entity.player.PlayerEvent;
 import software.bernie.geckolib.GeckoLibException;
 import software.bernie.geckolib.cache.GeckoLibCache;
 import software.bernie.geckolib.core.animation.Animation;
@@ -23,82 +24,78 @@ import java.util.List;
 import java.util.Queue;
 import java.util.function.Consumer;
 
-/**
- * Registration controllers for player animations
- */
-public class RegisterPlayerControllerEvent extends PlayerEvent {
+public interface RegisterPlayerControllerCallback {
+    Event<RegisterPlayerControllerCallback> EVENT = EventFactory.createArrayBacked(RegisterPlayerControllerCallback.class,
+            (listeners) -> (event) -> {
+                for (RegisterPlayerControllerCallback listener : listeners) {
+                    listener.event(event);
+                }
+            });
 
-    private final PlayerAnimCap capability;
-    private final List<PlayerAnimationController> controllers;
+    void event(RegisterPlayerControllerCallback.RegisterPlayerControllerEvent event);
 
-    public RegisterPlayerControllerEvent(PlayerAnimCap capability, Player player, List<PlayerAnimationController> controllers) {
-        super(player);
-        this.capability = capability;
-        this.controllers = controllers;
-    }
+    /**
+     * Registration controllers for player animations
+     */
+    record RegisterPlayerControllerEvent(PlayerAnimCap capability, Player player,
+                                         List<RegisterPlayerControllerCallback.PlayerAnimationController> controllers) {
 
-    public PlayerAnimCap getCapability() {
-        return capability;
-    }
-
-    public List<PlayerAnimationController> getControllers() {
-        return controllers;
-    }
-
-    public void registerControllers(Consumer<Builder> consumer, Consumer<PlayerAnimationController> controllerConsumer) {
-        this.registerController(consumer, controllerConsumer);
-        this.registerController((b) -> {
-            consumer.accept(b);
-            b.name(b.name + "_first_person");
-            b.animationFile(b.animationFile.withPath(b.animationFile.getPath().replace(".animation.json", "_first_person.animation.json")));
-        }, controllerConsumer);
-    }
-
-    public void registerController(Consumer<Builder> consumer, Consumer<PlayerAnimationController> controllerConsumer) {
-        Builder builder = new Builder(this.capability);
-        consumer.accept(builder);
-        PlayerAnimationController animationController = builder.build();
-        controllerConsumer.accept(animationController);
-        this.controllers.add(animationController);
-    }
-
-    public static class Builder {
-        protected final PlayerAnimCap animatable;
-        protected ResourceLocation animationFile;
-        protected String name = "base_controller";
-        protected int transitionTickTime;
-        protected AnimationController.AnimationStateHandler<PlayerAnimCap> animationHandler = (p) -> PlayState.CONTINUE;
-
-        Builder(PlayerAnimCap animatable) {
-            this.animatable = animatable;
+        public void registerControllers(Consumer<Builder> consumer, Consumer<RegisterPlayerControllerCallback.PlayerAnimationController> controllerConsumer) {
+            this.registerController(consumer, controllerConsumer);
+            this.registerController((b) -> {
+                consumer.accept(b);
+                b.name(b.name + "_first_person");
+                b.animationFile(b.animationFile.withPath(b.animationFile.getPath().replace(".animation.json", "_first_person.animation.json")));
+            }, controllerConsumer);
         }
 
-        public Builder name(String name) {
-            this.name = name;
-            return this;
+        public void registerController(Consumer<Builder> consumer, Consumer<RegisterPlayerControllerCallback.PlayerAnimationController> controllerConsumer) {
+            Builder builder = new Builder(this.capability);
+            consumer.accept(builder);
+            RegisterPlayerControllerCallback.PlayerAnimationController animationController = builder.build();
+            controllerConsumer.accept(animationController);
+            this.controllers.add(animationController);
         }
 
-        public Builder animationFile(ResourceLocation animationFile) {
-            this.animationFile = animationFile;
-            return this;
+        public static class Builder {
+            protected final PlayerAnimCap animatable;
+            protected ResourceLocation animationFile;
+            protected String name = "base_controller";
+            protected int transitionTickTime;
+            protected AnimationController.AnimationStateHandler<PlayerAnimCap> animationHandler = (p) -> PlayState.CONTINUE;
+
+            Builder(PlayerAnimCap animatable) {
+                this.animatable = animatable;
+            }
+
+            public Builder name(String name) {
+                this.name = name;
+                return this;
+            }
+
+            public Builder animationFile(ResourceLocation animationFile) {
+                this.animationFile = animationFile;
+                return this;
+            }
+
+            public Builder transitionTickTime(int transitionTickTime) {
+                this.transitionTickTime = transitionTickTime;
+                return this;
+            }
+
+            public Builder animationHandler(AnimationController.AnimationStateHandler<PlayerAnimCap> animationHandler) {
+                this.animationHandler = animationHandler;
+                return this;
+            }
+
+            public RegisterPlayerControllerCallback.PlayerAnimationController build() {
+                return new RegisterPlayerControllerCallback.PlayerAnimationController(this.animatable, this.animationFile, this.name, this.transitionTickTime, this.animationHandler);
+            }
         }
 
-        public Builder transitionTickTime(int transitionTickTime) {
-            this.transitionTickTime = transitionTickTime;
-            return this;
-        }
-
-        public Builder animationHandler(AnimationController.AnimationStateHandler<PlayerAnimCap> animationHandler) {
-            this.animationHandler = animationHandler;
-            return this;
-        }
-
-        public PlayerAnimationController build() {
-            return new PlayerAnimationController(this.animatable, this.animationFile, this.name, this.transitionTickTime, this.animationHandler);
-        }
     }
 
-    public static class PlayerAnimationController extends AnimationController<PlayerAnimCap> {
+    class PlayerAnimationController extends AnimationController<PlayerAnimCap> {
         private final ResourceLocation animationFile;
 
         public PlayerAnimationController(PlayerAnimCap animatable, ResourceLocation animationFile, String name, int transitionTickTime, AnimationStateHandler<PlayerAnimCap> animationHandler) {
@@ -113,7 +110,7 @@ public class RegisterPlayerControllerEvent extends PlayerEvent {
             }
             return this.animationFile;
         }
-        
+
         @Override
         public void setAnimation(RawAnimation rawAnimation) {
             if (rawAnimation == null || rawAnimation.getAnimationStages().isEmpty()) {

@@ -4,11 +4,11 @@ import chappie.modulus.client.AbilityLayerRenderer;
 import chappie.modulus.client.model.anim.PlayerGeoModel;
 import chappie.modulus.common.capability.anim.PlayerAnimCap;
 import chappie.modulus.util.PlayerPart;
-import chappie.modulus.util.events.RendererChangeEvent;
-import chappie.modulus.util.events.SetupAnimEvent;
+import chappie.modulus.util.events.RendererChangeCallback;
+import chappie.modulus.util.events.SetupAnimCallback;
 import chappie.modulus.util.model.IHasModelProperties;
 import com.google.common.collect.Iterables;
-import com.llamalad7.mixinextras.injector.WrapWithCondition;
+import com.llamalad7.mixinextras.injector.v2.WrapWithCondition;
 import com.llamalad7.mixinextras.sugar.Local;
 import com.mojang.blaze3d.vertex.PoseStack;
 import com.mojang.blaze3d.vertex.VertexConsumer;
@@ -22,7 +22,6 @@ import net.minecraft.client.renderer.entity.LivingEntityRenderer;
 import net.minecraft.client.renderer.entity.layers.RenderLayer;
 import net.minecraft.world.entity.LivingEntity;
 import net.minecraft.world.entity.player.Player;
-import net.minecraftforge.common.MinecraftForge;
 import org.spongepowered.asm.mixin.Final;
 import org.spongepowered.asm.mixin.Mixin;
 import org.spongepowered.asm.mixin.Shadow;
@@ -44,9 +43,13 @@ import java.util.List;
 public abstract class LivingEntityRendererMixin<T extends LivingEntity, M extends EntityModel<T>> {
     @Shadow protected M model;
 
-    @Shadow public abstract boolean addLayer(RenderLayer<T, M> p_115327_);
+    @Unique
+    private RendererChangeCallback.RendererChangeEvent<T, M> modulus$event;
 
     @Shadow @Final protected List<RenderLayer<?, ?>> layers;
+
+    @Shadow
+    protected abstract boolean addLayer(RenderLayer<T, M> p_115327_);
 
     @Inject(method = "<init>(Lnet/minecraft/client/renderer/entity/EntityRendererProvider$Context;Lnet/minecraft/client/model/EntityModel;F)V", at = @At("TAIL"))
     public void mixinInit(EntityRendererProvider.Context context, M model, float shadowSize, CallbackInfo ci) {
@@ -62,60 +65,60 @@ public abstract class LivingEntityRendererMixin<T extends LivingEntity, M extend
         }
     }
 
-    @Unique private RendererChangeEvent<T, M> modulus$event;
+    @Shadow
+    protected abstract float getWhiteOverlayProgress(T livingEntity, float partialTicks);
 
-    @Inject(method = "render*", at = @At(value = "INVOKE", target = "Lnet/minecraft/client/model/EntityModel;renderToBuffer(Lcom/mojang/blaze3d/vertex/PoseStack;Lcom/mojang/blaze3d/vertex/VertexConsumer;IIFFFF)V"))
-    public void setup(T entity, float entityYaw, float partialTicks, PoseStack matrixStack, MultiBufferSource buffer, int light, CallbackInfo ci, @Local(ordinal = 0) RenderType type, @Local(ordinal = 1) int overlay) {
+    @Inject(method = "render*", at = @At(value = "INVOKE", target = "Lnet/minecraft/client/renderer/entity/LivingEntityRenderer;getOverlayCoords(Lnet/minecraft/world/entity/LivingEntity;F)I"))
+    public void setup(T entity, float entityYaw, float partialTicks, PoseStack matrixStack, MultiBufferSource buffer, int light, CallbackInfo ci, @Local(ordinal = 0) RenderType type) {
         LivingEntityRenderer<T, M> renderer = (LivingEntityRenderer<T, M>) (Object) this;
-        if (false && this.model instanceof IHasModelProperties iModel) {
-            this.modulus$event = new RendererChangeEvent<>(entity, renderer, iModel.modelProperties(), matrixStack, buffer, type, light, overlay);
+        if (this.model instanceof IHasModelProperties iModel) {
+            this.modulus$event = new RendererChangeCallback.RendererChangeEvent<>(entity, renderer, iModel.modelProperties(), matrixStack, buffer, type, light, LivingEntityRenderer.getOverlayCoords(entity, this.getWhiteOverlayProgress(entity, partialTicks)));
             if (this.model instanceof HumanoidModel<?> humanoidModel) {
-                MinecraftForge.EVENT_BUS.post(new SetupAnimEvent<>(entity, (HumanoidModel<T>) this.model, iModel.modelProperties()));
+                SetupAnimCallback.EVENT.invoker().event(new SetupAnimCallback.SetupAnimEvent(entity, (HumanoidModel<T>) this.model, iModel.modelProperties()));
                 if (entity instanceof Player player && humanoidModel instanceof PlayerModel<?> playerModel) {
-                    entity.getCapability(PlayerAnimCap.CAPABILITY).ifPresent(cap -> {
-                        {
-                            cap.getFPAnimatedModel().getBakedModel(cap.getFPAnimatedModel().getModelResource(cap));
-                            AnimationState<PlayerAnimCap> animationState = new AnimationState<>(cap, iModel.modelProperties().limbSwing(), iModel.modelProperties().limbSwingAmount(), partialTicks, false);
-                            long instanceId = player.getUUID().hashCode() + "first_person".hashCode();
-
-                            animationState.setData(DataTickets.TICK, cap.getTick(player));
-                            animationState.setData(DataTickets.ENTITY, player);
-                            animationState.setData(PlayerGeoModel.PLAYER_MODEL_DATA, playerModel);
-                            cap.getFPAnimatedModel().addAdditionalStateData(cap, instanceId, animationState::setData);
-                            cap.getFPAnimatedModel().handleAnimations(cap, instanceId, animationState);
-                        }
-
-                        cap.getAnimatedModel().getBakedModel(cap.getAnimatedModel().getModelResource(cap));
+                    PlayerAnimCap cap = PlayerAnimCap.getCap(player);
+                    {
+                        cap.getFPAnimatedModel().getBakedModel(cap.getFPAnimatedModel().getModelResource(cap));
                         AnimationState<PlayerAnimCap> animationState = new AnimationState<>(cap, iModel.modelProperties().limbSwing(), iModel.modelProperties().limbSwingAmount(), partialTicks, false);
-                        long instanceId = player.getUUID().hashCode();
+                        long instanceId = player.getUUID().hashCode() + "first_person".hashCode();
 
                         animationState.setData(DataTickets.TICK, cap.getTick(player));
                         animationState.setData(DataTickets.ENTITY, player);
                         animationState.setData(PlayerGeoModel.PLAYER_MODEL_DATA, playerModel);
-                        cap.getAnimatedModel().addAdditionalStateData(cap, instanceId, animationState::setData);
-                        cap.getAnimatedModel().handleAnimations(cap, instanceId, animationState);
+                        cap.getFPAnimatedModel().addAdditionalStateData(cap, instanceId, animationState::setData);
+                        cap.getFPAnimatedModel().handleAnimations(cap, instanceId, animationState);
+                    }
 
-                        for (AnimationController<?> controller : cap.getAnimatableInstanceCache().getManagerForId(instanceId).getAnimationControllers().values()) {
-                            if (controller.getName().contains("first_person")) continue;
-                            if (controller.getCurrentAnimation() != null && controller.getAnimationState() != AnimationController.State.STOPPED) {
-                                for (String s : Iterables.concat(PlayerPart.bodyParts().stream().map(p ->
-                                        p.name().toLowerCase()).toList(), Collections.singleton("player"))) {
-                                    cap.getAnimatedModel().getBone(s).ifPresent(bone -> {
-                                        for (BoneAnimation boneAnimation : controller.getCurrentAnimation().animation().boneAnimations()) {
-                                            if (boneAnimation.boneName().equals(s)) {
-                                                if (s.equals("player")) {
-                                                    RenderUtils.prepMatrixForBone(matrixStack, bone);
-                                                    break;
-                                                }
-                                                PlayerGeoModel.setupPlayerBones(bone, PlayerPart.byName(s).modelPart(playerModel), true);
+                    cap.getAnimatedModel().getBakedModel(cap.getAnimatedModel().getModelResource(cap));
+                    AnimationState<PlayerAnimCap> animationState = new AnimationState<>(cap, iModel.modelProperties().limbSwing(), iModel.modelProperties().limbSwingAmount(), partialTicks, false);
+                    long instanceId = player.getUUID().hashCode();
+
+                    animationState.setData(DataTickets.TICK, cap.getTick(player));
+                    animationState.setData(DataTickets.ENTITY, player);
+                    animationState.setData(PlayerGeoModel.PLAYER_MODEL_DATA, playerModel);
+                    cap.getAnimatedModel().addAdditionalStateData(cap, instanceId, animationState::setData);
+                    cap.getAnimatedModel().handleAnimations(cap, instanceId, animationState);
+
+                    for (AnimationController<?> controller : cap.getAnimatableInstanceCache().getManagerForId(instanceId).getAnimationControllers().values()) {
+                        if (controller.getName().contains("first_person")) continue;
+                        if (controller.getCurrentAnimation() != null && controller.getAnimationState() != AnimationController.State.STOPPED) {
+                            for (String s : Iterables.concat(PlayerPart.bodyParts().stream().map(p ->
+                                    p.name().toLowerCase()).toList(), Collections.singleton("player"))) {
+                                cap.getAnimatedModel().getBone(s).ifPresent(bone -> {
+                                    for (BoneAnimation boneAnimation : controller.getCurrentAnimation().animation().boneAnimations()) {
+                                        if (boneAnimation.boneName().equals(s)) {
+                                            if (s.equals("player")) {
+                                                RenderUtils.prepMatrixForBone(matrixStack, bone);
+                                                break;
                                             }
+                                            PlayerGeoModel.setupPlayerBones(bone, PlayerPart.byName(s).modelPart(playerModel), true);
                                         }
-                                    });
-                                }
-
+                                    }
+                                });
                             }
+
                         }
-                    });
+                    }
                 }
 
                 // Copy angles to wear
@@ -138,9 +141,9 @@ public abstract class LivingEntityRendererMixin<T extends LivingEntity, M extend
     private boolean renderIfAllowed(M model, PoseStack pPoseStack, VertexConsumer pBuffer, int pPackedLight, int pPackedOverlay, float pRed, float pGreen, float pBlue, float pAlpha) {
         if (this.modulus$event != null) {
             this.modulus$event.setColor(pRed, pGreen, pBlue, pAlpha);
-            MinecraftForge.EVENT_BUS.post(this.modulus$event);
+            boolean b = RendererChangeCallback.EVENT.invoker().event(this.modulus$event);
             this.modulus$event.multiBufferSource().getBuffer(this.modulus$event.renderType()); // rollback texture of entity
-            return !this.modulus$event.isCanceled();
+            return !b;
         }
         return true;
     }

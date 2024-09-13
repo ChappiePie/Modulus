@@ -6,14 +6,13 @@ import chappie.modulus.networking.client.ClientSyncAbility;
 import chappie.modulus.util.KeyMap;
 import chappie.modulus.util.data.DataAccessor;
 import chappie.modulus.util.data.DataManager;
+import net.fabricmc.api.EnvType;
+import net.fabricmc.loader.api.FabricLoader;
 import net.minecraft.nbt.CompoundTag;
 import net.minecraft.server.level.ServerPlayer;
 import net.minecraft.world.entity.Entity;
 import net.minecraft.world.entity.LivingEntity;
 import net.minecraft.world.entity.player.Player;
-import net.minecraftforge.api.distmarker.Dist;
-import net.minecraftforge.fml.loading.FMLEnvironment;
-import net.minecraftforge.network.PacketDistributor;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -36,7 +35,7 @@ public class Ability {
         this.builder = builder;
         this.defineData();
         this.conditionManager = new AbilityBuilder.ConditionManager(this);
-        if (FMLEnvironment.dist == Dist.CLIENT) {
+        if (FabricLoader.getInstance().getEnvironmentType() == EnvType.CLIENT) {
             this.initializeClient(this.clientProperties::add);
         }
     }
@@ -104,13 +103,13 @@ public class Ability {
 
     public void sync(Entity entity) {
         if (entity instanceof ServerPlayer player) {
-            ModNetworking.INSTANCE.send(new ClientSyncAbility(player.getId(), this.builder.id, this.serializeNBT()), player.connection.getConnection());
+            ModNetworking.send(new ClientSyncAbility(player.getId(), this.builder.id, this.serializeNBT()), player);
         }
     }
 
     public void syncToAll(Entity entity) {
         if (!entity.getCommandSenderWorld().isClientSide) {
-            ModNetworking.INSTANCE.send(new ClientSyncAbility(entity.getId(), this.builder.id, this.serializeNBT()), PacketDistributor.TRACKING_ENTITY_AND_SELF.with(entity));
+            ModNetworking.sendToTrackingEntityAndSelf(new ClientSyncAbility(entity.getId(), this.builder.id, this.serializeNBT()), entity);
         }
     }
 }

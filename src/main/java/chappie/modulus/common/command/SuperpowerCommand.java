@@ -19,7 +19,7 @@ import net.minecraft.world.entity.Entity;
 import java.util.Collection;
 
 public class SuperpowerCommand {
-    private static final SuggestionProvider<CommandSourceStack> SUGGEST_SUPERPOWERS = (context, builder) -> SharedSuggestionProvider.suggestResource(Superpower.REGISTRY.get().getKeys(), builder);
+    private static final SuggestionProvider<CommandSourceStack> SUGGEST_SUPERPOWERS = (context, builder) -> SharedSuggestionProvider.suggestResource(Superpower.REGISTRY.keySet(), builder);
     public static final DynamicCommandExceptionType DIDNT_EXIST = new DynamicCommandExceptionType((object) -> Component.translatable("commands.modulus.DidntExist", object));
 
     public static void register(CommandDispatcher<CommandSourceStack> dispatcher) {
@@ -70,7 +70,7 @@ public class SuperpowerCommand {
 
     public static Superpower getSuperpower(CommandContext<CommandSourceStack> context, String key) throws CommandSyntaxException {
         ResourceLocation id = context.getArgument(key, ResourceLocation.class);
-        Superpower superpower = Superpower.REGISTRY.get().getValue(id);
+        Superpower superpower = Superpower.REGISTRY.get(id);
         if (superpower == null) {
             throw DIDNT_EXIST.create(id);
         } else {

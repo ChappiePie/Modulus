@@ -1,137 +1,122 @@
 plugins {
-    id 'eclipse'
-    id 'maven-publish'
-    id 'net.minecraftforge.gradle' version '[6.0.16,6.2)'
-    id 'org.parchmentmc.librarian.forgegradle' version '1.+'
-    id 'org.spongepowered.mixin' version '0.7.+'
+	id 'fabric-loom' version '1.7-SNAPSHOT'
+	id 'maven-publish'
 }
 
-version = "${mod_version}"
-group = 'chappie.modulus'
-archivesBaseName = 'modulus'
+version = project.mod_version
+group = project.maven_group
 
-java.toolchain.languageVersion = JavaLanguageVersion.of(17)
-
-//println "Java: ${System.getProperty 'java.version'}, JVM: ${System.getProperty 'java.vm.version'} (${System.getProperty 'java.vendor'}), Arch: ${System.getProperty 'os.arch'}"
-
-jarJar.enable()
-
-mixin {
-    add sourceSets.main, "modulus.refmap.json"
-    config 'modulus.mixins.json'
-
-    debug.verbose = true
-    debug.export = true
-    dumpTargetOnFailure = true
-    quiet
+base {
+	archivesName = project.archives_base_name
 }
 
-minecraft {
-    mappings channel: 'parchment', version: "2024.04.14-1.20.4"
-    //mappings channel: 'parchment', version: "2023.03.12-${minecraft_version}"
-    //mappings channel: 'official', version: '${minecraft_version}'
-
-    accessTransformer = file('src/main/resources/META-INF/accesstransformer.cfg')
-
-    runs {
-        configureEach {
-            workingDirectory project.file('run')
-            property 'forge.logging.markers', 'REGISTRIES'
-            property 'forge.logging.console.level', 'debug'
-            property 'forge.enabledGameTestNamespaces', 'modulus'
-        }
-        client {}
-        clientWithCredentials {
-            parent runs.client
-            args '--username', 'ChappiePie', '--uuid', '8464971c-f5ac-4eb5-87aa-511a0eec65f6'
-        }
-        server {}
-        data {
-            args '--mod', 'modulus', '--all', '--output', file('src/generated/resources/'), '--existing', file('src/main/resources/')
-        }
-    }
+loom {
+	accessWidenerPath = file("src/main/resources/${project.archives_base_name}.accesswidener")
 }
 
 repositories {
-    mavenCentral()
-    maven {
-        name = 'GeckoLib'
-        url 'https://dl.cloudsmith.io/public/geckolib3/geckolib/maven/'
-    }
-    maven {
-        name = 'BlameJared Maven (CrT / Bookshelf)'
-        url = 'https://maven.blamejared.com'
-    }
+	exclusiveContent {
+		forRepository {
+			maven {
+				name = "Modrinth"
+				url = "https://api.modrinth.com/maven"
+			}
+		}
+		filter {
+			includeGroup "maven.modrinth"
+		}
+	}
+	maven {
+		name = 'GeckoLib'
+		url 'https://dl.cloudsmith.io/public/geckolib3/geckolib/maven/'
+		content {
+			includeGroupByRegex("software\\.bernie.*")
+			includeGroup("com.eliotlash.mclib")
+		}
+	}
+	maven {
+		name = "Ladysnake Mods"
+		url = 'https://maven.ladysnake.org/releases'
+	}
+	maven {
+		name = 'ParchmentMC'
+		url = 'https://maven.parchmentmc.org'
+	}
+	maven {
+		name = 'BlameJared Maven (CrT / Bookshelf)'
+		url = 'https://maven.blamejared.com'
+	}
 }
 
 dependencies {
-    minecraft "net.minecraftforge:forge:${minecraft_version}-${forge_version}"
-    compileOnly(annotationProcessor("io.github.llamalad7:mixinextras-common:${mixin_extras_version}"))
-    implementation(jarJar("io.github.llamalad7:mixinextras-forge:${mixin_extras_version}")) {
-        jarJar.ranged(it, "[${mixin_extras_version},)")
-    }
+	minecraft "com.mojang:minecraft:${project.minecraft_version}"
+	mappings loom.layered() {
+		officialMojangMappings()
+		parchment("org.parchmentmc.data:parchment-1.20.4:2024.04.14@zip")
+	}
+	modImplementation "net.fabricmc:fabric-loader:${project.loader_version}"
 
-    implementation(fg.deobf(jarJar("software.bernie.geckolib:geckolib-forge-${minecraft_version}:${geckolib_version}") {
-        jarJar.ranged(it, "[${geckolib_version},)")
-    }))
-    compileOnly("com.eliotlash.mclib:mclib:20")
+	compileOnly(annotationProcessor("io.github.llamalad7:mixinextras-common:${mixin_extras_version}"))
+	modImplementation(include("io.github.llamalad7:mixinextras-fabric:${mixin_extras_version}"))
 
-    if (System.getProperty('idea.sync.active') != 'true') {
-        //annotationProcessor "org.spongepowered:mixin:${mixin_version}:processor"
-    }
+	// Fabric API. This is technically optional, but you probably want it anyway.
+	modImplementation "net.fabricmc.fabric-api:fabric-api:${project.fabric_version}"
+
+	modImplementation include("software.bernie.geckolib:geckolib-fabric-${minecraft_version}:${geckolib_version}")
+	implementation("com.eliotlash.mclib:mclib:20")
+
+	modImplementation include("dev.onyxstudios.cardinal-components-api:cardinal-components-base:${project.cca_version}")
+	modImplementation include("dev.onyxstudios.cardinal-components-api:cardinal-components-entity:${project.cca_version}")
+
+	modRuntimeOnly "maven.modrinth:modmenu:9.0.0"
+
+//	modImplementation include("maven.modrinth:AdditionalEntityAttributes:1.7.3+1.20.4")
+	modImplementation include("foundry.veil:Veil-fabric-${project.minecraft_version}:${project.veil_version}") {
+		exclude group: "maven.modrinth"
+	}
 }
 
-sourceSets.main.resources { srcDir 'src/generated/resources' }
+processResources {
+	inputs.property "version", project.version
 
-jar {
-    manifest {
-        attributes([
-                "Specification-Title"     : "modulus",
-                "Specification-Vendor"    : "modulussareus",
-                "Specification-Version"   : "1",
-                "Implementation-Title"    : project.name,
-                "Implementation-Version"  : project.jar.archiveVersion,
-                "Implementation-Vendor"   : "modulussareus",
-                "Implementation-Timestamp": new Date().format("yyyy-MM-dd'T'HH:mm:ssZ")
-        ])
-    }
-}
-
-jar.finalizedBy('reobfJar')
-
-tasks.build.dependsOn tasks.jarJar
-
-reobf.create('jarJar')
-
-afterEvaluate {
-    tasks.jarJar {
-        archiveClassifier = ''
-    }
-    jar {
-        archiveClassifier = 'partial'
-    }
+	filesMatching("fabric.mod.json") {
+		expand "version": project.version
+	}
 }
 
 tasks.withType(JavaCompile).configureEach {
-    options.encoding = 'UTF-8'
+	it.options.release = 17
+}
+
+java {
+	// Loom will automatically attach sourcesJar to a RemapSourcesJar task and to the "build" task
+	// if it is present.
+	// If you remove this line, sources will not be generated.
+	withSourcesJar()
+
+	sourceCompatibility = JavaVersion.VERSION_17
+	targetCompatibility = JavaVersion.VERSION_17
+}
+
+jar {
+	from("LICENSE") {
+		rename { "${it}_${project.base.archivesName.get()}" }
+	}
 }
 
 publishing {
-    publications {
-        mavenJava(MavenPublication) {
-            artifact tasks.jarJar
-            artifactId = "modulus"
-        }
-    }
-    repositories {
-        maven {
-            url "file://${project.projectDir}/mcmodsrepo"
-        }
-    }
-}
-
-sourceSets.each {
-    def dir = layout.buildDirectory.dir("sourcesSets/$it.name")
-    it.output.resourcesDir = dir
-    it.java.destinationDirectory = dir
+	publications {
+		mavenJava(MavenPublication) {
+			artifact(remapJar) {
+				builtBy remapJar
+			}
+			artifact(sourcesJar) {
+				builtBy remapSourcesJar
+			}
+			artifactId = "modulus"
+		}
+	}
+	repositories {
+		mavenLocal()
+	}
 }

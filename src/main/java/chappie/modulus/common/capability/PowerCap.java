@@ -1,27 +1,38 @@
 package chappie.modulus.common.capability;
 
+import chappie.modulus.Modulus;
+import chappie.modulus.client.ClientEvents;
 import chappie.modulus.common.ability.base.Ability;
 import chappie.modulus.common.ability.base.AbilityBuilder;
 import chappie.modulus.common.ability.base.Superpower;
-import chappie.modulus.networking.ModNetworking;
-import chappie.modulus.networking.client.ClientSyncPowerCap;
+import chappie.modulus.util.CommonUtil;
+import chappie.modulus.util.IHasTimer;
 import com.google.common.collect.Maps;
+import dev.onyxstudios.cca.api.v3.component.ComponentKey;
+import dev.onyxstudios.cca.api.v3.component.ComponentRegistryV3;
+import dev.onyxstudios.cca.api.v3.component.ComponentV3;
+import dev.onyxstudios.cca.api.v3.component.CopyableComponent;
+import dev.onyxstudios.cca.api.v3.component.sync.AutoSyncedComponent;
+import dev.onyxstudios.cca.api.v3.component.tick.CommonTickingComponent;
 import net.minecraft.nbt.CompoundTag;
 import net.minecraft.resources.ResourceLocation;
 import net.minecraft.server.level.ServerPlayer;
-import net.minecraft.world.entity.Entity;
 import net.minecraft.world.entity.LivingEntity;
-import net.minecraftforge.common.capabilities.Capability;
-import net.minecraftforge.common.capabilities.CapabilityManager;
-import net.minecraftforge.common.capabilities.CapabilityToken;
+import net.minecraft.world.entity.player.Player;
+import org.jetbrains.annotations.Nullable;
 
-import javax.annotation.Nullable;
 import java.util.Collection;
 import java.util.Map;
+import java.util.Objects;
 
-public class PowerCap {
+public class PowerCap implements AutoSyncedComponent, CopyableComponent<PowerCap>, CommonTickingComponent, ComponentV3 {
 
-    public static Capability<PowerCap> CAPABILITY = CapabilityManager.get(new CapabilityToken<>(){});
+    public static final ComponentKey<PowerCap> KEY = ComponentRegistryV3.INSTANCE.getOrCreate(Modulus.id("powers"), PowerCap.class);
+
+    @Nullable
+    public static PowerCap getCap(Object provider) {
+        return KEY.maybeGet(provider).orElse(null);
+    }
 
     private final LivingEntity livingEntity;
     private Superpower superpower;
@@ -29,11 +40,6 @@ public class PowerCap {
 
     public PowerCap(LivingEntity livingEntity) {
         this.livingEntity = livingEntity;
-    }
-
-    @Nullable
-    public static PowerCap getCap(Entity entity) {
-        return entity.getCapability(PowerCap.CAPABILITY).orElse(null);
     }
 
     public void setSuperpower(Superpower superpower) {
@@ -67,38 +73,46 @@ public class PowerCap {
 
     public void sync() {
         if (this.livingEntity instanceof ServerPlayer player) {
-            ModNetworking.INSTANCE.send(new ClientSyncPowerCap(this.livingEntity.getId(), this.serializeNBT()), player.connection.getConnection());
+            KEY.sync(player);
         }
     }
 
     public void syncToAll() {
-        this.sync();
         for (LivingEntity livingEntity : this.livingEntity.getCommandSenderWorld().players()) {
             if (livingEntity instanceof ServerPlayer player) {
-                ModNetworking.INSTANCE.send(new ClientSyncPowerCap(this.livingEntity.getId(), this.serializeNBT()), player.connection.getConnection());
+                KEY.sync(player);
             }
         }
     }
 
-    public CompoundTag serializeNBT() {
-        CompoundTag tag = new CompoundTag();
-        CompoundTag superpower = new CompoundTag();
-        if (this.superpower != null) {
-            superpower.putString("Id", Superpower.REGISTRY.get().getKey(this.superpower).toString());
-
-            CompoundTag abilities = new CompoundTag();
-            this.abilities.forEach((s, a) -> abilities.put(s.id, a.serializeNBT()));
-            superpower.put("Abilities", abilities);
-        }
-        tag.put("Superpower", superpower);
-        return tag;
+    @Override
+    public void copyFrom(PowerCap other) {
+        this.superpower = other.superpower;
+        this.abilities.clear();
+        this.abilities.putAll(other.abilities);
     }
 
-    public void deserializeNBT(CompoundTag tag) {
+    @Override
+    public void tick() {
+        if (this.livingEntity.getCommandSenderWorld().isClientSide) {
+            if (this.livingEntity instanceof Player player) {
+                ClientEvents.playerTick(player);
+            } else {
+                for (Ability ability : CommonUtil.getAbilities(this.livingEntity)) {
+                    if (ability instanceof IHasTimer iHasTimer) {
+                        iHasTimer.timers().forEach(IHasTimer.Timer::update);
+                    }
+                }
+            }
+        }
+    }
+
+    @Override
+    public void readFromNbt(CompoundTag tag) {
         CompoundTag compoundTag = tag.getCompound("Superpower");
         this.abilities.clear();
         if (!compoundTag.getString("Id").isEmpty()) {
-            Superpower superpower = Superpower.REGISTRY.get().getValue(new ResourceLocation(compoundTag.getString("Id")));
+            Superpower superpower = Superpower.REGISTRY.get(new ResourceLocation(compoundTag.getString("Id")));
             this.superpower = superpower;
             if (superpower != null) {
                 CompoundTag abilities = compoundTag.getCompound("Abilities");
@@ -115,5 +129,18 @@ public class PowerCap {
         } else {
             this.superpower = null;
         }
+    }
+
+    @Override
+    public void writeToNbt(CompoundTag tag) {
+        CompoundTag superpower = new CompoundTag();
+        if (this.superpower != null) {
+            superpower.putString("Id", Objects.requireNonNull(Superpower.REGISTRY.getKey(this.superpower)).toString());
+
+            CompoundTag abilities = new CompoundTag();
+            this.abilities.forEach((s, a) -> abilities.put(s.id, a.serializeNBT()));
+            superpower.put("Abilities", abilities);
+        }
+        tag.put("Superpower", superpower);
     }
 }

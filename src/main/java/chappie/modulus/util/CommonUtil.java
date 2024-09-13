@@ -9,6 +9,7 @@ import com.google.gson.JsonParser;
 import net.minecraft.Util;
 import net.minecraft.client.player.AbstractClientPlayer;
 import net.minecraft.network.chat.Component;
+import net.minecraft.server.level.ServerPlayer;
 import net.minecraft.world.entity.Entity;
 import net.minecraft.world.entity.projectile.ProjectileUtil;
 import net.minecraft.world.phys.AABB;
@@ -32,8 +33,14 @@ public class CommonUtil {
 
     public static List<Ability> getAbilities(Entity entity) {
         List<Ability> list = new ArrayList<>();
-        if (!entity.isSpectator()) {
-            entity.getCapability(PowerCap.CAPABILITY).ifPresent((a) -> list.addAll(a.getAbilities()));
+        PowerCap cap = PowerCap.getCap(entity);
+        if (cap == null) return list;
+        if (entity instanceof ServerPlayer player && player.gameMode != null) {
+            if (!player.isSpectator()) {
+                list.addAll(cap.getAbilities());
+            }
+        } else {
+            list.addAll(cap.getAbilities());
         }
         return list;
     }

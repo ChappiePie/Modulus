@@ -1,11 +1,7 @@
 package chappie.modulus.client.gui;
 
 import chappie.modulus.Modulus;
-import chappie.modulus.common.ModSounds;
-import chappie.modulus.util.ClientUtil;
-import chappie.modulus.util.CommonUtil;
-import chappie.modulus.util.IHasTimer;
-import chappie.modulus.util.IOneScaleScreen;
+import chappie.modulus.util.*;
 import com.google.common.collect.ImmutableList;
 import com.mojang.blaze3d.systems.RenderSystem;
 import com.mojang.blaze3d.vertex.PoseStack;
@@ -33,9 +29,9 @@ import java.util.function.Supplier;
 
 public class ModulusMainScreen extends Screen implements IOneScaleScreen {
 
-    public static final ResourceLocation MENU = new ResourceLocation(Modulus.MODID, "textures/gui/menu.png");
-    public static final ResourceLocation LOGO = new ResourceLocation(Modulus.MODID, "textures/gui/logo.png");
-    public static final ResourceLocation MODULUS_SCREEN = new ResourceLocation(Modulus.MODID, "modulus_screen");
+    public static final ResourceLocation MENU = Modulus.id("textures/gui/menu.png");
+    public static final ResourceLocation LOGO = Modulus.id("textures/gui/logo.png");
+    public static final ResourceLocation MODULUS_SCREEN = Modulus.id("modulus_screen");
     private static final Supplier<ResourceLocation> CHAPPIE_TEXTURE = ClientUtil.getTextureFromLink(MODULUS_SCREEN, "chappie", "https://raw.githubusercontent.com/ChappiePie/ModulusResources/main/chappie.png");
     private final Screen lastScreen;
     private final List<TabButton> tabs = Lists.newArrayList();
@@ -113,7 +109,7 @@ public class ModulusMainScreen extends Screen implements IOneScaleScreen {
     @Override
     public void render(GuiGraphics guiGraphics, int pMouseX, int pMouseY, float pPartialTick) {
         this.atChappieTimer.update();
-        for (Renderable renderable : this.renderables) {
+        for (GuiEventListener renderable : this.children()) {
             if (renderable instanceof IHasTimer timer) {
                 for (IHasTimer.Timer t : timer.timers()) {
                     t.update();
@@ -270,7 +266,7 @@ public class ModulusMainScreen extends Screen implements IOneScaleScreen {
     @Override
     public void onClose() {
         this.minecraft.setScreen(this.lastScreen instanceof PauseScreen ? null : this.lastScreen);
-        this.minecraft.getSoundManager().play(SimpleSoundInstance.forUI(ModSounds.NET, 1.0F));
+        this.minecraft.getSoundManager().play(SimpleSoundInstance.forUI(ModRegistries.NET, 1.0F));
     }
 
     @Override
