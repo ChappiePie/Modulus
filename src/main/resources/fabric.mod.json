@@ -1,0 +1,47 @@
+{
+  "schemaVersion": 1,
+  "id": "modulus",
+  "version": "${version}",
+  "name": "Modulus",
+  "description": "This is an example description! Tell everyone what your mod is about!",
+  "authors": [
+    "Me!"
+  ],
+  "accessWidener": "modulus.accesswidener",
+  "contact": {
+    "homepage": "https://fabricmc.net/",
+    "sources": "https://github.com/FabricMC/fabric-example-mod"
+  },
+  "license": "CC0-1.0",
+  "icon": "assets/modulus/icon.png",
+  "environment": "*",
+  "entrypoints": {
+    "main": [
+      "chappie.modulus.Modulus"
+    ],
+    "client": [
+      "chappie.modulus.ModulusClient"
+    ],
+    "cardinal-components": [
+      "chappie.modulus.ModulusComponents"
+    ]
+  },
+  "custom": {
+    "cardinal-components": [
+      "modulus:powers",
+      "modulus:player_anim"
+    ]
+  },
+  "mixins": [
+    "modulus.mixins.json"
+  ],
+  "depends": {
+    "fabricloader": ">=0.16.4",
+    "minecraft": "~1.20.4",
+    "java": ">=17",
+    "fabric-api": "*"
+  },
+  "suggests": {
+    "another-mod": "*"
+  }
+}
