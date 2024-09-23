@@ -90,7 +90,7 @@ public class ClientEvents {
         }
     }
 
-    private static KeyMapping getMappingFromType(KeyMap.KeyType type) {
+    public static KeyMapping getMappingFromType(KeyMap.KeyType type) {
         return switch (type) {
             case FIRST -> KEY_MAPPINGS[0];
             case SECOND -> KEY_MAPPINGS[1];

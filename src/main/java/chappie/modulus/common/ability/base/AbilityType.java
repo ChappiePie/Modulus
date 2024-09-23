@@ -4,8 +4,11 @@ import chappie.modulus.Modulus;
 import chappie.modulus.common.ability.HelloWorldAbility;
 import net.fabricmc.fabric.api.event.registry.FabricRegistryBuilder;
 import net.minecraft.core.Registry;
+import net.minecraft.network.chat.Component;
 import net.minecraft.resources.ResourceKey;
 import net.minecraft.world.entity.LivingEntity;
+
+import java.util.Objects;
 
 public record AbilityType(AbilitySupplier supplier) {
     public static final ResourceKey<Registry<AbilityType>> ABILITY_TYPES = ResourceKey.createRegistryKey(Modulus.id("ability_types"));
@@ -16,6 +19,10 @@ public record AbilityType(AbilitySupplier supplier) {
         Ability ability = this.supplier.create(livingEntity, builder);
         builder.additionalData.forEach(data -> data.accept(ability));
         return ability;
+    }
+
+    public Component displayName() {
+        return Component.translatable("abilities.%s".formatted(Objects.requireNonNull(REGISTRY.getKey(this)).toString().replace(":", ".")));
     }
 
     public static void init() {

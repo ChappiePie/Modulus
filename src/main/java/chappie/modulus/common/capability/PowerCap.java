@@ -11,7 +11,6 @@ import com.google.common.collect.Maps;
 import dev.onyxstudios.cca.api.v3.component.ComponentKey;
 import dev.onyxstudios.cca.api.v3.component.ComponentRegistryV3;
 import dev.onyxstudios.cca.api.v3.component.ComponentV3;
-import dev.onyxstudios.cca.api.v3.component.CopyableComponent;
 import dev.onyxstudios.cca.api.v3.component.sync.AutoSyncedComponent;
 import dev.onyxstudios.cca.api.v3.component.tick.CommonTickingComponent;
 import net.minecraft.nbt.CompoundTag;
@@ -25,7 +24,7 @@ import java.util.Collection;
 import java.util.Map;
 import java.util.Objects;
 
-public class PowerCap implements AutoSyncedComponent, CopyableComponent<PowerCap>, CommonTickingComponent, ComponentV3 {
+public class PowerCap implements AutoSyncedComponent, CommonTickingComponent, ComponentV3 {
 
     public static final ComponentKey<PowerCap> KEY = ComponentRegistryV3.INSTANCE.getOrCreate(Modulus.id("powers"), PowerCap.class);
 
@@ -86,13 +85,6 @@ public class PowerCap implements AutoSyncedComponent, CopyableComponent<PowerCap
     }
 
     @Override
-    public void copyFrom(PowerCap other) {
-        this.superpower = other.superpower;
-        this.abilities.clear();
-        this.abilities.putAll(other.abilities);
-    }
-
-    @Override
     public void tick() {
         if (this.livingEntity.getCommandSenderWorld().isClientSide) {
             if (this.livingEntity instanceof Player player) {
@@ -104,6 +96,9 @@ public class PowerCap implements AutoSyncedComponent, CopyableComponent<PowerCap
                     }
                 }
             }
+        }
+        for (Ability ability : CommonUtil.getAbilities(this.livingEntity)) {
+            ability.updateTick(this.livingEntity);
         }
     }
 

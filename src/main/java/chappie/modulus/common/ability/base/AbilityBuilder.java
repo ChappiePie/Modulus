@@ -6,6 +6,7 @@ import chappie.modulus.util.data.DataAccessor;
 import com.google.common.collect.Maps;
 import net.minecraft.nbt.CompoundTag;
 import net.minecraft.nbt.ListTag;
+import net.minecraft.network.chat.Component;
 import net.minecraft.world.entity.LivingEntity;
 import org.apache.commons.compress.utils.Lists;
 
@@ -20,6 +21,7 @@ public class AbilityBuilder {
 
     public final String id;
     public final AbilityType type;
+    Component displayName = null;
     boolean hidden;
     List<Consumer<Ability>> additionalData = Lists.newArrayList();
     final HashMap<String, List<Function<Ability, Condition>>> funcConditions = Maps.newHashMap();
@@ -35,6 +37,11 @@ public class AbilityBuilder {
 
     public AbilityBuilder hide() {
         this.hidden = true;
+        return this;
+    }
+
+    public AbilityBuilder hidden(boolean hidden) {
+        this.hidden = hidden;
         return this;
     }
 
@@ -59,6 +66,10 @@ public class AbilityBuilder {
 
     public Ability build(LivingEntity livingEntity) {
         return this.type.create(livingEntity, this);
+    }
+
+    public Component displayName() {
+        return this.displayName == null ? this.type.displayName() : this.displayName;
     }
 
     public static class ConditionManager {

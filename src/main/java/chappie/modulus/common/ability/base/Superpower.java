@@ -43,7 +43,7 @@ public class Superpower {
     }
 
     public AbilityBuilder getBuilderByName(String name) {
-        for (AbilityBuilder abilityBuilder : this.list) {
+        for (AbilityBuilder abilityBuilder : this.getBuilders()) {
             if (abilityBuilder.id.equals(name)) {
                 return abilityBuilder;
             }
