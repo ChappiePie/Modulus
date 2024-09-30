@@ -106,7 +106,7 @@ public class AbilityBuilder {
         }
 
         public List<Condition> conditionsFor(String method) {
-            return this.conditions.get(method);
+            return this.conditions.getOrDefault(method, List.of());
         }
 
         public List<Condition> conditions() {

@@ -8,7 +8,7 @@ public class KeyCondition extends Condition {
 
     public KeyMap.KeyType keyType = KeyMap.KeyType.FIRST;
     protected Action action = Action.ACTION;
-    private boolean enabled;
+    protected boolean enabled;
 
     public KeyCondition(Ability ability) {
         super(ability, (c) -> c instanceof KeyCondition k && k.enabled);
