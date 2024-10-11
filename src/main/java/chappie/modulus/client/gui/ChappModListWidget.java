@@ -118,7 +118,7 @@ public class ChappModListWidget extends ContainerObjectSelectionList<ChappModLis
         x.set(initX + (b ? left : entryWidth - 128));
     };
 
-    public class MyButton extends Button {
+    public static class MyButton extends Button {
 
         private final Vec2 oldSize;
 
@@ -165,7 +165,7 @@ public class ChappModListWidget extends ContainerObjectSelectionList<ChappModLis
                 j = Mth.sin((float)(Util.getMillis() % 10000L) / 10000.0F * ((float)Math.PI * 2F)) / 2F;
                 guiGraphics.enableScissor(this.getX() + 2, this.getY(), this.getX() + this.getWidth() + 2, this.getY() + this.getHeight());
             }
-            guiGraphics.drawCenteredString(minecraft.font, this.getMessage(), (int) (43 + j * 10), 6, 10526880 | Mth.ceil(1 * 255.0F) << 24);
+            guiGraphics.drawCenteredString(Minecraft.getInstance().font, this.getMessage(), (int) (43 + j * i * 0.7), 6, 10526880 | Mth.ceil(1 * 255.0F) << 24);
             if (i > this.getWidth() * f) {
                 guiGraphics.disableScissor();
             }

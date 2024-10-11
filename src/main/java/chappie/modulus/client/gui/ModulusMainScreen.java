@@ -216,11 +216,14 @@ public class ModulusMainScreen extends Screen implements IOneScaleScreen {
 
                 Component pTooltip = Component.literal("ChappiePie");
                 if (isMouseOverObj(pMouseX, pMouseY, x - 1 - this.minecraft.font.width(s) * 0.75F, y - 1, (this.minecraft.font.width(s) * 0.75F) * 2, this.minecraft.font.lineHeight * 1.5F - 1)) {
+                    pPoseStack.pushPose();
+                    pPoseStack.translate(0, 0, 50);
                     int i = pMouseX + 2;
                     int j = pMouseY - 10;
                     int k = this.font.width(pTooltip);
                     guiGraphics.fillGradient(i - 3, j - 3, i + k + 3, j + 8 + 3, -1073741824, -1073741824);
                     guiGraphics.drawString(this.font, pTooltip, i, j, 16777215, true);
+                    pPoseStack.popPose();
                 }
             }
         }

@@ -69,11 +69,6 @@ dependencies {
 	modImplementation include("dev.onyxstudios.cardinal-components-api:cardinal-components-entity:${project.cca_version}")
 
 	modRuntimeOnly "maven.modrinth:modmenu:9.0.0"
-
-//	modImplementation include("maven.modrinth:AdditionalEntityAttributes:1.7.3+1.20.4")
-	modImplementation include("foundry.veil:Veil-fabric-${project.minecraft_version}:${project.veil_version}") {
-		exclude group: "maven.modrinth"
-	}
 }
 
 processResources {

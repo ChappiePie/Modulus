@@ -28,7 +28,7 @@ public class MinecraftMixin {
     @Nullable
     public LocalPlayer player;
 
-    @Inject(method = "startAttack", at = @At("HEAD"), cancellable = true)
+    @Inject(method = "startAttack()Z", at = @At("HEAD"), cancellable = true)
     public void cancelAttack(CallbackInfoReturnable<Boolean> cir) {
         if (this.player == null) return;
         for (Ability ability : CommonUtil.getAbilities(this.player)) {
@@ -50,7 +50,7 @@ public class MinecraftMixin {
         }
     }
 
-    @Inject(method = "startUseItem", at = @At("HEAD"), cancellable = true)
+    @Inject(method = "startUseItem()V", at = @At("HEAD"), cancellable = true)
     public void cancelUseItem(CallbackInfo ci) {
         if (this.player == null) return;
         for (Ability ability : CommonUtil.getAbilities(this.player)) {

@@ -71,14 +71,13 @@ public class PowerCap implements AutoSyncedComponent, CommonTickingComponent, Co
     }
 
     public void sync() {
-        if (this.livingEntity instanceof ServerPlayer player) {
-            KEY.sync(player);
-        }
+        KEY.sync(this.livingEntity);
     }
 
     public void syncToAll() {
+        this.sync();
         for (LivingEntity livingEntity : this.livingEntity.getCommandSenderWorld().players()) {
-            if (livingEntity instanceof ServerPlayer player) {
+            if (livingEntity instanceof ServerPlayer player && this.livingEntity != livingEntity) {
                 KEY.sync(player);
             }
         }
