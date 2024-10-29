@@ -95,6 +95,12 @@ public class PowerCap implements AutoSyncedComponent, CommonTickingComponent, Co
                     }
                 }
             }
+        } else {
+            for (Ability ability : CommonUtil.getAbilities(this.livingEntity)) {
+                if (ability instanceof IHasTimer iHasTimer) {
+                    iHasTimer.timers().forEach(IHasTimer.Timer::update);
+                }
+            }
         }
         for (Ability ability : CommonUtil.getAbilities(this.livingEntity)) {
             ability.updateTick(this.livingEntity);

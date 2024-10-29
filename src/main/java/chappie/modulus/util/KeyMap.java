@@ -28,7 +28,7 @@ public class KeyMap {
     }
 
     public enum KeyType {
-        FIRST, SECOND, THIRD, FOURTH, FIFTH, MOUSE_LEFT(true), MOUSE_RIGHT(true), JUMP;
+        FIRST, SECOND, THIRD, FOURTH, FIFTH, MOUSE_LEFT(true), MOUSE_RIGHT(true), JUMP, SPRINT, CROUCH;
 
         public final boolean isMouse;
 

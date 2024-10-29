@@ -39,21 +39,26 @@ public class ModNetworking {
     }
 
     public static void send(FabricPacket packet, ServerPlayer player) {
-        ServerPlayNetworking.send(player, packet);
+        try {
+            ServerPlayNetworking.send(player, packet);
+        } catch (Throwable throwable) {
+            throwable.fillInStackTrace();
+        }
     }
 
     public static void sendToTrackingEntityAndSelf(FabricPacket packet, Entity entityToTrack) {
         for (ServerPlayer trackingPlayer : PlayerLookup.tracking(entityToTrack)) {
-            ServerPlayNetworking.send(trackingPlayer, packet);
+            ModNetworking.send(packet, trackingPlayer);
         }
 
-        if (entityToTrack instanceof ServerPlayer serverPlayer)
-            ServerPlayNetworking.send(serverPlayer, packet);
+        if (entityToTrack instanceof ServerPlayer serverPlayer) {
+            ModNetworking.send(packet, serverPlayer);
+        }
     }
 
     public static void sendToEntitiesTrackingChunk(FabricPacket packet, ServerLevel level, BlockPos blockPos) {
         for (ServerPlayer trackingPlayer : PlayerLookup.tracking(level, blockPos)) {
-            ServerPlayNetworking.send(trackingPlayer, packet);
+            ModNetworking.send(packet, trackingPlayer);
         }
     }
 

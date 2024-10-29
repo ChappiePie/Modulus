@@ -8,9 +8,32 @@ public interface IHasTimer {
 
     Iterable<Timer> timers();
 
+    class Cooldown extends Timer {
+        public Cooldown() {
+            super(() -> 0, () -> false);
+        }
+
+        @Override
+        public void update() {
+            this.prevTimer = this.timer;
+            if (this.timer > 0) {
+                this.timer--;
+            }
+        }
+
+        public void start(int timer) {
+            this.maxTimer = () -> timer;
+            this.timer = timer;
+        }
+
+        public boolean end() {
+            return this.prevTimer == 0 && this.timer == 0;
+        }
+    }
+
     class Timer {
-        protected int prevTimer, timer;
-        protected final Supplier<Integer> maxTimer;
+        public int prevTimer, timer;
+        public Supplier<Integer> maxTimer;
         public Supplier<Boolean> predicate;
 
         public Timer(Supplier<Integer> maxTimer, Supplier<Boolean> predicate) {

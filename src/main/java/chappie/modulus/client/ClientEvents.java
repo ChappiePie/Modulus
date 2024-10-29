@@ -98,6 +98,8 @@ public class ClientEvents {
             case FOURTH -> KEY_MAPPINGS[3];
             case FIFTH -> KEY_MAPPINGS[4];
             case JUMP -> Minecraft.getInstance().options.keyJump;
+            case SPRINT -> Minecraft.getInstance().options.keySprint;
+            case CROUCH -> Minecraft.getInstance().options.keyShift;
             default -> throw new IllegalStateException("Unexpected value: " + type);
         };
     }
