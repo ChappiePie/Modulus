@@ -1,7 +1,10 @@
 package chappie.modulus.mixin;
 
+import chappie.modulus.common.ability.DamageResistanceAbility;
+import chappie.modulus.util.CommonUtil;
 import chappie.modulus.util.ModRegistries;
 import net.minecraft.util.Mth;
+import net.minecraft.world.damagesource.DamageSource;
 import net.minecraft.world.entity.Entity;
 import net.minecraft.world.entity.EntityType;
 import net.minecraft.world.entity.LivingEntity;
@@ -50,5 +53,15 @@ public abstract class LivingEntityMixin extends Entity {
             cir.setReturnValue(cir.getReturnValue() + Mth.ceil(-jumpBoost.getValue() * damageMultiplier));
         }
 
+    }
+
+    @Inject(method = "getDamageAfterMagicAbsorb", at = @At("RETURN"), cancellable = true)
+    public void mixin$getDamageAfterMagicAbsorb(DamageSource damageSource, float damageAmount, CallbackInfoReturnable<Float> cir) {
+        LivingEntity entity = (LivingEntity) (Object) this;
+        for (DamageResistanceAbility a : CommonUtil.listOfType(DamageResistanceAbility.class, CommonUtil.getAbilities(entity))) {
+            if (a.isEnabled()) {
+                cir.setReturnValue(damageAmount * (1.0F / a.dataManager.get(DamageResistanceAbility.AMPLIFIER)));
+            }
+        }
     }
 }

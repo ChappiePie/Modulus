@@ -49,6 +49,26 @@ public class ClientUtil {
         return Minecraft.getInstance().isPaused() ? 0 : Minecraft.getInstance().getFrameTime();
     }
 
+    public static void renderTextureOverlay(ResourceLocation resourceLocation, int height, int width, float red, float green, float blue, float alpha) {
+        RenderSystem.disableDepthTest();
+        RenderSystem.depthMask(false);
+        RenderSystem.enableBlend();
+        RenderSystem.defaultBlendFunc();
+        RenderSystem.setShaderColor(red, green, blue, alpha);
+        RenderSystem.setShaderTexture(0, resourceLocation);
+        Tesselator tesselator = Tesselator.getInstance();
+        BufferBuilder bufferbuilder = tesselator.getBuilder();
+        bufferbuilder.begin(VertexFormat.Mode.QUADS, DefaultVertexFormat.POSITION_TEX);
+        bufferbuilder.vertex(0.0D, height, -90.0D).uv(0.0F, 1.0F).endVertex();
+        bufferbuilder.vertex(width, height, -90.0D).uv(1.0F, 1.0F).endVertex();
+        bufferbuilder.vertex(width, 0.0D, -90.0D).uv(1.0F, 0.0F).endVertex();
+        bufferbuilder.vertex(0.0D, 0.0D, -90.0D).uv(0.0F, 0.0F).endVertex();
+        tesselator.end();
+        RenderSystem.depthMask(true);
+        RenderSystem.enableDepthTest();
+        RenderSystem.setShaderColor(1.0F, 1.0F, 1.0F, 1.0F);
+    }
+
     public static void blit(GuiGraphics guiGraphics, float pX, float pY, float pWidth, float pHeight, float pUOffset, float pVOffset, int pUWidth, int pVHeight, int pTextureWidth, int pTextureHeight) {
         blit(guiGraphics.pose(), pX, pX + pWidth, pY, pY + pHeight, 0, pUWidth, pVHeight, pUOffset, pVOffset, pTextureWidth, pTextureHeight);
     }

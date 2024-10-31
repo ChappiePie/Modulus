@@ -8,10 +8,17 @@ import com.google.gson.JsonObject;
 import com.google.gson.JsonParser;
 import net.minecraft.Util;
 import net.minecraft.client.player.AbstractClientPlayer;
+import net.minecraft.core.particles.ParticleOptions;
 import net.minecraft.network.chat.Component;
+import net.minecraft.network.protocol.game.ClientboundLevelParticlesPacket;
 import net.minecraft.server.level.ServerPlayer;
 import net.minecraft.world.entity.Entity;
+import net.minecraft.world.entity.LivingEntity;
+import net.minecraft.world.entity.ai.attributes.Attribute;
+import net.minecraft.world.entity.ai.attributes.AttributeInstance;
+import net.minecraft.world.entity.ai.attributes.AttributeModifier;
 import net.minecraft.world.entity.projectile.ProjectileUtil;
+import net.minecraft.world.level.Level;
 import net.minecraft.world.phys.AABB;
 import net.minecraft.world.phys.EntityHitResult;
 import net.minecraft.world.phys.HitResult;
@@ -24,6 +31,7 @@ import java.net.URL;
 import java.util.ArrayList;
 import java.util.Collection;
 import java.util.List;
+import java.util.UUID;
 import java.util.concurrent.CompletableFuture;
 import java.util.concurrent.atomic.AtomicReference;
 import java.util.function.Supplier;
@@ -54,6 +62,29 @@ public class CommonUtil {
             return ((AbstractClientPlayer) entity).getSkin().model().id().equalsIgnoreCase("slim");
         }
         return false;
+    }
+
+    public static void spawnParticleForAll(Level world, ParticleOptions particleIn, boolean longDistanceIn, Vec3 posVc3d, Vec3 offsetVc3d, float speedIn, int countIn) {
+        for (ServerPlayer player : world.getEntitiesOfClass(ServerPlayer.class, CommonUtil.boxWithRange(posVc3d, 20))) {
+            player.connection.send(new ClientboundLevelParticlesPacket(particleIn, longDistanceIn, posVc3d.x, posVc3d.y, posVc3d.z, (float) offsetVc3d.x, (float) offsetVc3d.y, (float) offsetVc3d.z, speedIn, countIn));
+        }
+    }
+
+    public static void setAttribute(LivingEntity entity, String name, Attribute attribute, UUID uuid, double amount, AttributeModifier.Operation operation) {
+        AttributeInstance instance = entity.getAttribute(attribute);
+        if (instance == null || entity.getCommandSenderWorld().isClientSide) {
+            return;
+        }
+
+        AttributeModifier modifier = instance.getModifier(uuid);
+        if (modifier != null && (amount == 0 || (modifier.getAmount() != amount || modifier.getOperation() != operation))) {
+            instance.removeModifier(uuid);
+            return;
+        }
+
+        if (modifier == null && amount != 0) {
+            instance.addTransientModifier(new AttributeModifier(uuid, name, amount, operation));
+        }
     }
 
     public static AABB boxWithRange(Vec3 vec3, double range) {
