@@ -1,9 +1,9 @@
 package chappie.modulus.networking.client;
 
 import chappie.modulus.Modulus;
+import chappie.modulus.common.ability.base.Ability;
 import chappie.modulus.common.capability.PowerCap;
 import chappie.modulus.util.data.DataAccessor;
-import chappie.modulus.util.data.DataManager;
 import net.fabricmc.fabric.api.networking.v1.FabricPacket;
 import net.fabricmc.fabric.api.networking.v1.PacketSender;
 import net.fabricmc.fabric.api.networking.v1.PacketType;
@@ -52,11 +52,13 @@ public class ClientSyncData implements FabricPacket {
         if (entity != null) {
             PowerCap cap = PowerCap.getCap(entity);
             if (cap != null) {
-                DataManager dataManager = cap.getAbility(this.abilityName).dataManager;
-                DataAccessor<?> accessor = dataManager.getAccessorById(this.id);
-                if (accessor != null) {
-                    dataManager.getDataValue(accessor).deserialize(this.tag, true);
-                    cap.getAbility(this.abilityName).onDataUpdated(accessor);
+                Ability ability = cap.getAbility(this.abilityName);
+                if (ability != null) {
+                    DataAccessor<?> accessor = ability.dataManager.getAccessorById(this.id);
+                    if (accessor != null) {
+                        ability.dataManager.getDataValue(accessor).deserialize(this.tag, true);
+                        cap.getAbility(this.abilityName).onDataUpdated(accessor);
+                    }
                 }
             }
         }

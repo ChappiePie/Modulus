@@ -17,7 +17,6 @@ import net.minecraft.client.model.HumanoidModel;
 import net.minecraft.client.model.PlayerModel;
 import net.minecraft.client.renderer.MultiBufferSource;
 import net.minecraft.client.renderer.RenderType;
-import net.minecraft.client.renderer.entity.EntityRendererProvider;
 import net.minecraft.client.renderer.entity.LivingEntityRenderer;
 import net.minecraft.client.renderer.entity.layers.RenderLayer;
 import net.minecraft.world.entity.LivingEntity;
@@ -51,17 +50,14 @@ public abstract class LivingEntityRendererMixin<T extends LivingEntity, M extend
     @Shadow
     protected abstract boolean addLayer(RenderLayer<T, M> p_115327_);
 
-    @Inject(method = "<init>(Lnet/minecraft/client/renderer/entity/EntityRendererProvider$Context;Lnet/minecraft/client/model/EntityModel;F)V", at = @At("TAIL"))
-    public void mixinInit(EntityRendererProvider.Context context, M model, float shadowSize, CallbackInfo ci) {
-        if (model instanceof IHasModelProperties) {
-            this.addLayer(new AbilityLayerRenderer<>(context, (LivingEntityRenderer<T, M>) (Object) this));
-        }
-    }
-
     @Inject(method = "render*", at = @At(value = "INVOKE", target = "Lnet/minecraft/client/model/EntityModel;setupAnim(Lnet/minecraft/world/entity/Entity;FFFFF)V"))
     public void setupModelProperties(T entity, float entityYaw, float partialTicks, PoseStack matrixStack, MultiBufferSource buffer, int light, CallbackInfo ci, @Local(ordinal = 8) float f5, @Local(ordinal = 7) float f8, @Local(ordinal = 6) float f7, @Local(ordinal = 2) float f2, @Local(ordinal = 4) float f6) {
         if (this.model instanceof IHasModelProperties iModel) {
             iModel.setup(f5, f8, f7, f2, f6, partialTicks, this.layers);
+            if (this.layers.stream().noneMatch(p -> p instanceof AbilityLayerRenderer)) {
+                this.addLayer(new AbilityLayerRenderer<>((LivingEntityRenderer<T, M>) (Object) this));
+            }
+
         }
     }
 
