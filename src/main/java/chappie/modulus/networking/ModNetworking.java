@@ -4,9 +4,9 @@ import chappie.modulus.Modulus;
 import chappie.modulus.networking.client.ClientKeyInput;
 import chappie.modulus.networking.client.ClientSyncAbility;
 import chappie.modulus.networking.client.ClientSyncData;
-import chappie.modulus.networking.client.ClientTriggerPlayerAnim;
 import chappie.modulus.networking.server.ServerKeyInput;
 import chappie.modulus.networking.server.ServerSetData;
+import chappie.playeranim.PlayerAnimationUtil;
 import net.fabricmc.fabric.api.client.networking.v1.ClientPlayNetworking;
 import net.fabricmc.fabric.api.networking.v1.FabricPacket;
 import net.fabricmc.fabric.api.networking.v1.PlayerLookup;
@@ -26,7 +26,9 @@ public class ModNetworking {
     }
 
     public static void registerClientMessages() {
-        ClientPlayNetworking.registerGlobalReceiver(ClientTriggerPlayerAnim.PACKET, ClientTriggerPlayerAnim::handle);
+        if (PlayerAnimationUtil.initialized()) {
+            PlayerAnimationUtil.registerClientMessages();
+        }
         ClientPlayNetworking.registerGlobalReceiver(ClientSyncAbility.PACKET, ClientSyncAbility::handle);
         ClientPlayNetworking.registerGlobalReceiver(ClientSyncData.PACKET, ClientSyncData::handle);
         ClientPlayNetworking.registerGlobalReceiver(ClientKeyInput.PACKET, ClientKeyInput::handle);

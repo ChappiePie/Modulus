@@ -1,8 +1,7 @@
 package chappie.modulus.mixin.client;
 
-import chappie.modulus.common.capability.anim.PlayerAnimCap;
-import chappie.modulus.util.ClientUtil;
 import chappie.modulus.util.events.FirstPersonAdditionalHandCallback;
+import chappie.playeranim.PlayerAnimationUtil;
 import com.llamalad7.mixinextras.injector.wrapoperation.Operation;
 import com.llamalad7.mixinextras.injector.wrapoperation.WrapOperation;
 import com.mojang.blaze3d.vertex.PoseStack;
@@ -30,18 +29,18 @@ public abstract class ItemInHandRendererMixin {
     )
     private void onlyFlyIfAllowed(ItemInHandRenderer instance, AbstractClientPlayer pPlayer, float pPartialTicks, float pPitch, InteractionHand pHand, float pSwingProgress, ItemStack pStack, float pEquippedProgress, PoseStack pMatrixStack, MultiBufferSource pBuffer, int pCombinedLight, Operation<Void> original) {
         pMatrixStack.pushPose();
-        PlayerAnimCap cap = PlayerAnimCap.getCap(pPlayer);
         AtomicBoolean renderArm = new AtomicBoolean(false);
-        if (cap != null) {
-            AtomicReference<Float> swingProgress = new AtomicReference<>(pSwingProgress);
-            AtomicReference<Float> equippedProgress = new AtomicReference<>(pEquippedProgress);
-            renderArm.set(ClientUtil.rotationFromAnimation(cap, instance, pPlayer, pPartialTicks, pPitch, pHand, swingProgress, pStack, equippedProgress, pMatrixStack, pBuffer, pCombinedLight));
+        AtomicReference<Float> swingProgress = new AtomicReference<>(pSwingProgress);
+        AtomicReference<Float> equippedProgress = new AtomicReference<>(pEquippedProgress);
 
-            FirstPersonAdditionalHandCallback.EVENT.invoker().event(new FirstPersonAdditionalHandCallback.FirstPersonAdditionalHandEvent(instance, renderArm, pPlayer, pPartialTicks, pPitch, pHand, pHand == InteractionHand.MAIN_HAND ? pPlayer.getMainArm() : pPlayer.getMainArm().getOpposite(), swingProgress, pStack, equippedProgress, pMatrixStack, pBuffer, pCombinedLight));
-
-            pSwingProgress = swingProgress.get();
-            pEquippedProgress = equippedProgress.get();
+        if (PlayerAnimationUtil.initialized()) {
+            renderArm.set(PlayerAnimationUtil.rotationInFirst(instance, pPlayer, pPartialTicks, pPitch, pHand, swingProgress, pStack, equippedProgress, pMatrixStack, pBuffer, pCombinedLight));
         }
+
+        FirstPersonAdditionalHandCallback.EVENT.invoker().event(new FirstPersonAdditionalHandCallback.FirstPersonAdditionalHandEvent(instance, renderArm, pPlayer, pPartialTicks, pPitch, pHand, pHand == InteractionHand.MAIN_HAND ? pPlayer.getMainArm() : pPlayer.getMainArm().getOpposite(), swingProgress, pStack, equippedProgress, pMatrixStack, pBuffer, pCombinedLight));
+
+        pSwingProgress = swingProgress.get();
+        pEquippedProgress = equippedProgress.get();
 
         if (renderArm.get() && !pPlayer.isScoping() && !pPlayer.isInvisible()) {
             this.renderPlayerArm(pMatrixStack, pBuffer, pCombinedLight, pEquippedProgress, pSwingProgress, pHand == InteractionHand.MAIN_HAND ? pPlayer.getMainArm() : pPlayer.getMainArm().getOpposite());

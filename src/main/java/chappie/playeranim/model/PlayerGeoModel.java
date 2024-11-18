@@ -1,11 +1,11 @@
-package chappie.modulus.client.model.anim;
+package chappie.playeranim.model;
 
 import chappie.modulus.Modulus;
-import chappie.modulus.common.capability.anim.PlayerAnimCap;
 import chappie.modulus.util.ClientUtil;
 import chappie.modulus.util.PlayerPart;
 import chappie.modulus.util.model.IHasModelProperties;
 import chappie.modulus.util.model.ModelProperties;
+import chappie.playeranim.capability.PlayerAnimCap;
 import net.fabricmc.api.EnvType;
 import net.fabricmc.api.Environment;
 import net.minecraft.client.model.PlayerModel;

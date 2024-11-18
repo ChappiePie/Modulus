@@ -60,7 +60,7 @@ public abstract class LivingEntityMixin extends Entity {
         LivingEntity entity = (LivingEntity) (Object) this;
         for (DamageResistanceAbility a : CommonUtil.listOfType(DamageResistanceAbility.class, CommonUtil.getAbilities(entity))) {
             if (a.isEnabled()) {
-                cir.setReturnValue(damageAmount * (1.0F / a.dataManager.get(DamageResistanceAbility.AMPLIFIER)));
+                cir.setReturnValue(a.modifiedDamageAmount(damageSource, damageAmount));
             }
         }
     }

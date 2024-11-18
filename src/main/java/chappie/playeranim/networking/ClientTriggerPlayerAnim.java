@@ -1,7 +1,8 @@
-package chappie.modulus.networking.client;
+package chappie.playeranim.networking;
 
 import chappie.modulus.Modulus;
-import chappie.modulus.common.capability.anim.PlayerAnimCap;
+import chappie.playeranim.PlayerAnimationUtil;
+import chappie.playeranim.capability.PlayerAnimCap;
 import net.fabricmc.fabric.api.networking.v1.FabricPacket;
 import net.fabricmc.fabric.api.networking.v1.PacketSender;
 import net.fabricmc.fabric.api.networking.v1.PacketType;
@@ -48,7 +49,7 @@ public class ClientTriggerPlayerAnim implements FabricPacket {
 
     public void handle(LocalPlayer localPlayer, PacketSender packetSender) {
         Entity entity = Minecraft.getInstance().level.getEntity(this.entityId);
-        if (entity != null) {
+        if (entity != null && PlayerAnimationUtil.initialized()) {
             PlayerAnimCap.getCap(entity).triggerAnim(this.controllerName, this.firstPerson, this.animName);
         }
 

@@ -1,13 +1,10 @@
 package chappie.modulus.mixin.client;
 
 import chappie.modulus.client.AbilityLayerRenderer;
-import chappie.modulus.client.model.anim.PlayerGeoModel;
-import chappie.modulus.common.capability.anim.PlayerAnimCap;
-import chappie.modulus.util.PlayerPart;
 import chappie.modulus.util.events.RendererChangeCallback;
 import chappie.modulus.util.events.SetupAnimCallback;
 import chappie.modulus.util.model.IHasModelProperties;
-import com.google.common.collect.Iterables;
+import chappie.playeranim.PlayerAnimationUtil;
 import com.llamalad7.mixinextras.injector.v2.WrapWithCondition;
 import com.llamalad7.mixinextras.sugar.Local;
 import com.mojang.blaze3d.vertex.PoseStack;
@@ -28,13 +25,7 @@ import org.spongepowered.asm.mixin.Unique;
 import org.spongepowered.asm.mixin.injection.At;
 import org.spongepowered.asm.mixin.injection.Inject;
 import org.spongepowered.asm.mixin.injection.callback.CallbackInfo;
-import software.bernie.geckolib.constant.DataTickets;
-import software.bernie.geckolib.core.animation.AnimationController;
-import software.bernie.geckolib.core.animation.AnimationState;
-import software.bernie.geckolib.core.keyframe.BoneAnimation;
-import software.bernie.geckolib.util.RenderUtils;
 
-import java.util.Collections;
 import java.util.List;
 
 @SuppressWarnings("unchecked")
@@ -71,50 +62,8 @@ public abstract class LivingEntityRendererMixin<T extends LivingEntity, M extend
             this.modulus$event = new RendererChangeCallback.RendererChangeEvent<>(entity, renderer, iModel.modelProperties(), matrixStack, buffer, type, light, LivingEntityRenderer.getOverlayCoords(entity, this.getWhiteOverlayProgress(entity, partialTicks)));
             if (this.model instanceof HumanoidModel<?> humanoidModel) {
                 SetupAnimCallback.EVENT.invoker().event(new SetupAnimCallback.SetupAnimEvent(entity, (HumanoidModel<T>) this.model, iModel.modelProperties()));
-                if (entity instanceof Player player && humanoidModel instanceof PlayerModel<?> playerModel) {
-                    PlayerAnimCap cap = PlayerAnimCap.getCap(player);
-                    {
-                        cap.getFPAnimatedModel().getBakedModel(cap.getFPAnimatedModel().getModelResource(cap));
-                        AnimationState<PlayerAnimCap> animationState = new AnimationState<>(cap, iModel.modelProperties().limbSwing(), iModel.modelProperties().limbSwingAmount(), partialTicks, false);
-                        long instanceId = player.getUUID().hashCode() + "first_person".hashCode();
-
-                        animationState.setData(DataTickets.TICK, cap.getTick(player));
-                        animationState.setData(DataTickets.ENTITY, player);
-                        animationState.setData(PlayerGeoModel.PLAYER_MODEL_DATA, playerModel);
-                        cap.getFPAnimatedModel().addAdditionalStateData(cap, instanceId, animationState::setData);
-                        cap.getFPAnimatedModel().handleAnimations(cap, instanceId, animationState);
-                    }
-
-                    cap.getAnimatedModel().getBakedModel(cap.getAnimatedModel().getModelResource(cap));
-                    AnimationState<PlayerAnimCap> animationState = new AnimationState<>(cap, iModel.modelProperties().limbSwing(), iModel.modelProperties().limbSwingAmount(), partialTicks, false);
-                    long instanceId = player.getUUID().hashCode();
-
-                    animationState.setData(DataTickets.TICK, cap.getTick(player));
-                    animationState.setData(DataTickets.ENTITY, player);
-                    animationState.setData(PlayerGeoModel.PLAYER_MODEL_DATA, playerModel);
-                    cap.getAnimatedModel().addAdditionalStateData(cap, instanceId, animationState::setData);
-                    cap.getAnimatedModel().handleAnimations(cap, instanceId, animationState);
-
-                    for (AnimationController<?> controller : cap.getAnimatableInstanceCache().getManagerForId(instanceId).getAnimationControllers().values()) {
-                        if (controller.getName().contains("first_person")) continue;
-                        if (controller.getCurrentAnimation() != null && controller.getAnimationState() != AnimationController.State.STOPPED) {
-                            for (String s : Iterables.concat(PlayerPart.bodyParts().stream().map(p ->
-                                    p.name().toLowerCase()).toList(), Collections.singleton("player"))) {
-                                cap.getAnimatedModel().getBone(s).ifPresent(bone -> {
-                                    for (BoneAnimation boneAnimation : controller.getCurrentAnimation().animation().boneAnimations()) {
-                                        if (boneAnimation.boneName().equals(s)) {
-                                            if (s.equals("player")) {
-                                                RenderUtils.prepMatrixForBone(matrixStack, bone);
-                                                break;
-                                            }
-                                            PlayerGeoModel.setupPlayerBones(bone, PlayerPart.byName(s).modelPart(playerModel), true);
-                                        }
-                                    }
-                                });
-                            }
-
-                        }
-                    }
+                if (PlayerAnimationUtil.initialized() && entity instanceof Player player && humanoidModel instanceof PlayerModel<?> playerModel) {
+                    PlayerAnimationUtil.rotationInThird(partialTicks, matrixStack, iModel, player, playerModel);
                 }
 
                 // Copy angles to wear

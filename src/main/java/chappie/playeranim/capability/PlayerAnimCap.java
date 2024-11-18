@@ -1,11 +1,11 @@
-package chappie.modulus.common.capability.anim;
+package chappie.playeranim.capability;
 
 import chappie.modulus.Modulus;
-import chappie.modulus.client.model.anim.FPPlayerGeoModel;
-import chappie.modulus.client.model.anim.PlayerGeoModel;
 import chappie.modulus.networking.ModNetworking;
-import chappie.modulus.networking.client.ClientTriggerPlayerAnim;
-import chappie.modulus.util.events.RegisterPlayerControllerCallback;
+import chappie.playeranim.events.RegisterPlayerControllerCallback;
+import chappie.playeranim.model.FPPlayerGeoModel;
+import chappie.playeranim.model.PlayerGeoModel;
+import chappie.playeranim.networking.ClientTriggerPlayerAnim;
 import dev.onyxstudios.cca.api.v3.component.ComponentKey;
 import dev.onyxstudios.cca.api.v3.component.ComponentRegistryV3;
 import dev.onyxstudios.cca.api.v3.component.ComponentV3;

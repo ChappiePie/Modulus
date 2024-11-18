@@ -1,6 +1,6 @@
-package chappie.modulus.client.model.anim;
+package chappie.playeranim.model;
 
-import chappie.modulus.common.capability.anim.PlayerAnimCap;
+import chappie.playeranim.capability.PlayerAnimCap;
 import net.minecraft.resources.ResourceLocation;
 
 public class FPPlayerGeoModel extends PlayerGeoModel {

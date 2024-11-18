@@ -1,9 +1,9 @@
 package chappie.modulus;
 
-import chappie.modulus.client.model.anim.PlayerGeoModel;
 import chappie.modulus.common.command.SuperpowerCommand;
 import chappie.modulus.networking.ModNetworking;
 import chappie.modulus.util.ModRegistries;
+import chappie.playeranim.model.PlayerGeoModel;
 import net.fabricmc.api.ModInitializer;
 import net.fabricmc.fabric.api.command.v2.CommandRegistrationCallback;
 import net.minecraft.resources.ResourceLocation;

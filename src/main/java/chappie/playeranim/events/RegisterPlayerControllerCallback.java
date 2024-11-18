@@ -1,7 +1,7 @@
-package chappie.modulus.util.events;
+package chappie.playeranim.events;
 
-import chappie.modulus.client.model.anim.PlayerGeoModel;
-import chappie.modulus.common.capability.anim.PlayerAnimCap;
+import chappie.playeranim.capability.PlayerAnimCap;
+import chappie.playeranim.model.PlayerGeoModel;
 import net.fabricmc.fabric.api.event.Event;
 import net.fabricmc.fabric.api.event.EventFactory;
 import net.minecraft.resources.ResourceLocation;
