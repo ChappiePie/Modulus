@@ -2,25 +2,27 @@ package chappie.modulus.networking.client;
 
 import chappie.modulus.Modulus;
 import chappie.modulus.common.capability.PowerCap;
-import net.fabricmc.fabric.api.networking.v1.FabricPacket;
 import net.fabricmc.fabric.api.networking.v1.PacketSender;
-import net.fabricmc.fabric.api.networking.v1.PacketType;
 import net.minecraft.client.Minecraft;
 import net.minecraft.client.player.LocalPlayer;
 import net.minecraft.nbt.CompoundTag;
 import net.minecraft.network.FriendlyByteBuf;
+import net.minecraft.network.codec.StreamCodec;
+import net.minecraft.network.protocol.common.custom.CustomPacketPayload;
+import net.minecraft.resources.ResourceLocation;
 import net.minecraft.world.entity.Entity;
 import net.minecraft.world.entity.LivingEntity;
 
-public class ClientSyncAbility implements FabricPacket {
+public class ClientSyncAbility implements CustomPacketPayload {
 
-    public static final PacketType<ClientSyncAbility> PACKET = PacketType.create(Modulus.id("sync_ability"), ClientSyncAbility::new);
+    public static final ResourceLocation PACKET_ID = Modulus.id("sync_ability");
+    public static final Type<ClientSyncAbility> PACKET = new Type<>(PACKET_ID);
+    public static StreamCodec<FriendlyByteBuf, ClientSyncAbility> CODEC = CustomPacketPayload.codec(ClientSyncAbility::write, ClientSyncAbility::new);
 
     @Override
-    public PacketType<?> getType() {
+    public Type<? extends CustomPacketPayload> type() {
         return PACKET;
     }
-
 
     public int entityId;
     public String id;

@@ -1,7 +1,6 @@
 package chappie.modulus.mixin.client;
 
 import chappie.modulus.util.events.FirstPersonAdditionalHandCallback;
-import chappie.playeranim.PlayerAnimationUtil;
 import com.llamalad7.mixinextras.injector.wrapoperation.Operation;
 import com.llamalad7.mixinextras.injector.wrapoperation.WrapOperation;
 import com.mojang.blaze3d.vertex.PoseStack;
@@ -32,10 +31,6 @@ public abstract class ItemInHandRendererMixin {
         AtomicBoolean renderArm = new AtomicBoolean(false);
         AtomicReference<Float> swingProgress = new AtomicReference<>(pSwingProgress);
         AtomicReference<Float> equippedProgress = new AtomicReference<>(pEquippedProgress);
-
-        if (PlayerAnimationUtil.initialized()) {
-            renderArm.set(PlayerAnimationUtil.rotationInFirst(instance, pPlayer, pPartialTicks, pPitch, pHand, swingProgress, pStack, equippedProgress, pMatrixStack, pBuffer, pCombinedLight));
-        }
 
         FirstPersonAdditionalHandCallback.EVENT.invoker().event(new FirstPersonAdditionalHandCallback.FirstPersonAdditionalHandEvent(instance, renderArm, pPlayer, pPartialTicks, pPitch, pHand, pHand == InteractionHand.MAIN_HAND ? pPlayer.getMainArm() : pPlayer.getMainArm().getOpposite(), swingProgress, pStack, equippedProgress, pMatrixStack, pBuffer, pCombinedLight));
 

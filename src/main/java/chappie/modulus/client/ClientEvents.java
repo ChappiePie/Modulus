@@ -2,7 +2,6 @@ package chappie.modulus.client;
 
 import chappie.modulus.Modulus;
 import chappie.modulus.client.gui.ModulusMainScreen;
-import chappie.modulus.client.gui.ModulusMenuButton;
 import chappie.modulus.common.ability.base.Ability;
 import chappie.modulus.networking.ModNetworking;
 import chappie.modulus.networking.server.ServerKeyInput;
@@ -14,6 +13,7 @@ import net.fabricmc.fabric.api.client.screen.v1.Screens;
 import net.minecraft.client.KeyMapping;
 import net.minecraft.client.Minecraft;
 import net.minecraft.client.gui.components.Button;
+import net.minecraft.client.gui.components.SpriteIconButton;
 import net.minecraft.client.gui.components.events.GuiEventListener;
 import net.minecraft.client.gui.screens.PauseScreen;
 import net.minecraft.client.gui.screens.Screen;
@@ -57,10 +57,20 @@ public class ClientEvents {
             }
 
             if (b) {
-                Screens.getButtons(screen).add(new ModulusMenuButton(x - (screen instanceof PauseScreen ? 24 : 0), y, (button) ->
+                Screens.getButtons(screen).add(ClientEvents.modulusButton(x - (screen instanceof PauseScreen ? 24 : 0), y, (button) ->
                         client.setScreen(new ModulusMainScreen(screen))));
             }
         }
+    }
+
+    public static SpriteIconButton modulusButton(int x, int y, Button.OnPress onPress) {
+        SpriteIconButton b = SpriteIconButton.builder(Component.translatable("narrator.modulus.button"), onPress, true)
+                .size(20, 20)
+                .sprite(Modulus.id("logo"), 16, 16)
+                .build();
+        b.setX(x);
+        b.setY(y);
+        return b;
     }
 
     public static void playerTick(Player player) {
@@ -107,7 +117,7 @@ public class ClientEvents {
     public static class AbilityKeyMapping extends KeyMapping {
 
         public AbilityKeyMapping(int id, int keyCode) {
-            super("%s.key.ability.%s".formatted(Modulus.MODID, id), InputConstants.Type.KEYSYM, keyCode, "key.categories.%s".formatted(Modulus.MODID));
+            super("key.categories.%s.ability.%s".formatted(Modulus.MODID, id), InputConstants.Type.KEYSYM, keyCode, "key.categories.%s".formatted(Modulus.MODID));
         }
     }
 }

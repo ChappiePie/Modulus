@@ -1,8 +1,6 @@
 package chappie.modulus.client.model;
 
 import chappie.modulus.Modulus;
-import com.mojang.blaze3d.vertex.PoseStack;
-import com.mojang.blaze3d.vertex.VertexConsumer;
 import net.minecraft.client.model.Model;
 import net.minecraft.client.model.geom.ModelLayerLocation;
 import net.minecraft.client.model.geom.ModelPart;
@@ -12,11 +10,9 @@ import net.minecraft.client.renderer.RenderType;
 
 public class CapeModel extends Model {
     public static final ModelLayerLocation LAYER_LOCATION = new ModelLayerLocation(Modulus.id("cape"), "main");
-	public final ModelPart main;
 
 	public CapeModel(ModelPart root) {
-		super(RenderType::entityTranslucent);
-		this.main = root.getChild("main");
+		super(root.getChild("main"), RenderType::entityTranslucent);
 	}
 
 	public static LayerDefinition createBodyLayer() {
@@ -28,10 +24,5 @@ public class CapeModel extends Model {
 		main.addOrReplaceChild("cape", CubeListBuilder.create().texOffs(0, 5).addBox(-7.5F, -1.0F, -0.5F, 14.0F, 24.0F, 1.0F, new CubeDeformation(-0.85F)), PartPose.offset(0.0F, -24.0F, 2.5F));
 
 		return LayerDefinition.create(meshdefinition, 64, 32);
-	}
-
-	@Override
-	public void renderToBuffer(PoseStack poseStack, VertexConsumer vertexConsumer, int packedLight, int packedOverlay, float red, float green, float blue, float alpha) {
-		this.main.render(poseStack, vertexConsumer, packedLight, packedOverlay, red, green, blue, alpha);
 	}
 }

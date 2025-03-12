@@ -25,7 +25,7 @@ public interface FirstPersonAdditionalHandCallback {
                 return canceled;
             });
 
-    boolean event(FirstPersonAdditionalHandCallback.FirstPersonAdditionalHandEvent event);
+    boolean event(FirstPersonAdditionalHandEvent event);
 
 
     /**

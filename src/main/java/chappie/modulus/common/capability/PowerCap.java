@@ -8,17 +8,18 @@ import chappie.modulus.common.ability.base.Superpower;
 import chappie.modulus.util.CommonUtil;
 import chappie.modulus.util.IHasTimer;
 import com.google.common.collect.Maps;
-import dev.onyxstudios.cca.api.v3.component.ComponentKey;
-import dev.onyxstudios.cca.api.v3.component.ComponentRegistryV3;
-import dev.onyxstudios.cca.api.v3.component.ComponentV3;
-import dev.onyxstudios.cca.api.v3.component.sync.AutoSyncedComponent;
-import dev.onyxstudios.cca.api.v3.component.tick.CommonTickingComponent;
+import net.minecraft.core.HolderLookup;
 import net.minecraft.nbt.CompoundTag;
 import net.minecraft.resources.ResourceLocation;
 import net.minecraft.server.level.ServerPlayer;
 import net.minecraft.world.entity.LivingEntity;
 import net.minecraft.world.entity.player.Player;
 import org.jetbrains.annotations.Nullable;
+import org.ladysnake.cca.api.v3.component.ComponentKey;
+import org.ladysnake.cca.api.v3.component.ComponentRegistryV3;
+import org.ladysnake.cca.api.v3.component.ComponentV3;
+import org.ladysnake.cca.api.v3.component.sync.AutoSyncedComponent;
+import org.ladysnake.cca.api.v3.component.tick.CommonTickingComponent;
 
 import java.util.Collection;
 import java.util.Map;
@@ -108,11 +109,11 @@ public class PowerCap implements AutoSyncedComponent, CommonTickingComponent, Co
     }
 
     @Override
-    public void readFromNbt(CompoundTag tag) {
+    public void readFromNbt(CompoundTag tag, HolderLookup.Provider registryLookup) {
         CompoundTag compoundTag = tag.getCompound("Superpower");
         this.abilities.clear();
         if (!compoundTag.getString("Id").isEmpty()) {
-            Superpower superpower = Superpower.REGISTRY.get(new ResourceLocation(compoundTag.getString("Id")));
+            Superpower superpower = Superpower.REGISTRY.getValue(ResourceLocation.tryParse(compoundTag.getString("Id")));
             this.superpower = superpower;
             if (superpower != null) {
                 CompoundTag abilities = compoundTag.getCompound("Abilities");
@@ -132,7 +133,7 @@ public class PowerCap implements AutoSyncedComponent, CommonTickingComponent, Co
     }
 
     @Override
-    public void writeToNbt(CompoundTag tag) {
+    public void writeToNbt(CompoundTag tag, HolderLookup.Provider registryLookup) {
         CompoundTag superpower = new CompoundTag();
         if (this.superpower != null) {
             superpower.putString("Id", Objects.requireNonNull(Superpower.REGISTRY.getKey(this.superpower)).toString());

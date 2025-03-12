@@ -6,6 +6,7 @@ import net.minecraft.client.gui.GuiGraphics;
 import net.minecraft.client.gui.components.AbstractWidget;
 import net.minecraft.client.gui.components.WidgetSprites;
 import net.minecraft.client.gui.narration.NarrationElementOutput;
+import net.minecraft.client.renderer.RenderType;
 import net.minecraft.client.sounds.SoundManager;
 import net.minecraft.network.chat.Component;
 import net.minecraft.resources.ResourceLocation;
@@ -13,7 +14,7 @@ import net.minecraft.resources.ResourceLocation;
 import java.util.function.Supplier;
 
 public class TabButton extends AbstractWidget {
-    private static final WidgetSprites SPRITES = new WidgetSprites(new ResourceLocation("widget/tab_selected"), new ResourceLocation("widget/tab"), new ResourceLocation("widget/tab_selected_highlighted"), new ResourceLocation("widget/tab_highlighted"));
+    private static final WidgetSprites SPRITES = new WidgetSprites(ResourceLocation.withDefaultNamespace("widget/tab_selected"), ResourceLocation.withDefaultNamespace("widget/tab"), ResourceLocation.withDefaultNamespace("widget/tab_selected_highlighted"), ResourceLocation.withDefaultNamespace("widget/tab_highlighted"));
 
     public final int tabId;
     private final Supplier<Integer> currentTab;
@@ -27,7 +28,7 @@ public class TabButton extends AbstractWidget {
     @Override
     public void renderWidget(GuiGraphics guiGraphics, int pMouseX, int pMouseY, float pPartialTick) {
         try {
-            guiGraphics.blitSprite(SPRITES.get(this.isSelected(), this.isHovered()), this.getX(), this.getY(), this.width, this.height);
+            guiGraphics.blitSprite(RenderType::guiTextured, SPRITES.get(this.isSelected(), this.isHovered()), this.getX(), this.getY(), this.width, this.height);
         }catch (Throwable e) {
             e.printStackTrace();
         }
@@ -53,19 +54,6 @@ public class TabButton extends AbstractWidget {
         int j = this.getX() + (this.getWidth() - i) / 2;
         int k = this.getY() + this.getHeight() - 2;
         guiGraphics.fill(j, k, j + i, k + 1, p_275367_);
-    }
-
-    protected int getTextureY() {
-        int i = 2;
-        if (this.isSelected() && this.isHoveredOrFocused()) {
-            i = 1;
-        } else if (this.isSelected()) {
-            i = 0;
-        } else if (this.isHoveredOrFocused()) {
-            i = 3;
-        }
-
-        return i * 24;
     }
 
     @Override

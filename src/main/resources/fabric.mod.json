@@ -7,7 +7,9 @@
   "authors": [
     "ChappiePie"
   ],
-  "accessWidener": "modulus.accesswidener",
+  "contact": {
+    "homepage": "https://discord.gg/DwTaMAr"
+  },
   "license": "ARR",
   "icon": "assets/modulus/icon.png",
   "environment": "*",
@@ -16,10 +18,13 @@
       "chappie.modulus.Modulus"
     ],
     "client": [
-      "chappie.modulus.ModulusClient"
+      "chappie.modulus.client.ModulusClient"
     ],
     "cardinal-components": [
       "chappie.modulus.ModulusComponents"
+    ],
+    "fabric-datagen": [
+      "chappie.modulus.ModulusDataGenerator"
     ]
   },
   "custom": {
@@ -32,9 +37,9 @@
     "modulus.mixins.json"
   ],
   "depends": {
-    "fabricloader": ">=0.16.4",
-    "minecraft": ">=1.20.4",
-    "java": ">=17",
+    "fabricloader": ">=0.16.10",
+    "minecraft": "~1.21.4",
+    "java": ">=21",
     "fabric-api": "*"
   },
   "suggests": {

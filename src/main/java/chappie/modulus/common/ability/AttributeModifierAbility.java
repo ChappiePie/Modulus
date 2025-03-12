@@ -1,9 +1,11 @@
 package chappie.modulus.common.ability;
 
+import chappie.modulus.Modulus;
 import chappie.modulus.common.ability.base.Ability;
 import chappie.modulus.common.ability.base.AbilityBuilder;
 import chappie.modulus.common.ability.base.AbilityType;
 import chappie.modulus.util.CommonUtil;
+import net.minecraft.resources.ResourceLocation;
 import net.minecraft.world.entity.LivingEntity;
 import net.minecraft.world.entity.ai.attributes.Attribute;
 import net.minecraft.world.entity.ai.attributes.AttributeModifier;
@@ -37,13 +39,13 @@ public class AttributeModifierAbility extends Ability {
     @Override
     public void update(LivingEntity entity, boolean enabled) {
         super.update(entity, enabled);
-        CommonUtil.setAttribute(entity, this.builder.id, this.attributeBuilder.attribute,
-                this.attributeBuilder.uuid, enabled ? this.attributeBuilder.amount : 0, this.attributeBuilder.operation);
+        CommonUtil.setAttribute(entity, this.attributeBuilder.name, this.attributeBuilder.attribute,
+                enabled ? this.attributeBuilder.amount : 0, this.attributeBuilder.operation);
         entity.setHealth(entity.getHealth());
     }
 
     public static class AttributeBuilder {
-        protected final UUID uuid = UUID.randomUUID();
+        protected final ResourceLocation name = ResourceLocation.fromNamespaceAndPath(Modulus.MODID, UUID.randomUUID().toString());
         protected Attribute attribute;
         protected double amount;
         protected AttributeModifier.Operation operation;

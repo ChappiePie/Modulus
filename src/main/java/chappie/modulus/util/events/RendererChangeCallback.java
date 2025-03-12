@@ -8,6 +8,7 @@ import net.minecraft.client.model.EntityModel;
 import net.minecraft.client.renderer.MultiBufferSource;
 import net.minecraft.client.renderer.RenderType;
 import net.minecraft.client.renderer.entity.LivingEntityRenderer;
+import net.minecraft.client.renderer.entity.state.LivingEntityRenderState;
 import net.minecraft.world.entity.LivingEntity;
 
 public interface RendererChangeCallback {
@@ -31,9 +32,9 @@ public interface RendererChangeCallback {
      * This event is suitable for any additional renders you want to apply to the entity,
      * or to render a model other than the entity.
      */
-    class RendererChangeEvent<T extends LivingEntity, M extends EntityModel<T>> {
+    class RendererChangeEvent<T extends LivingEntity, S extends LivingEntityRenderState, M extends EntityModel<? super S>> {
 
-        private final LivingEntityRenderer<T, M> renderer;
+        private final LivingEntityRenderer<T, S, M> renderer;
         private final ModelProperties modelProperties;
         private final PoseStack poseStack;
         private final MultiBufferSource multiBufferSource;
@@ -42,7 +43,7 @@ public interface RendererChangeCallback {
         private final T entity;
         private float red, green, blue, alpha;
 
-        public RendererChangeEvent(T entity, LivingEntityRenderer<T, M> renderer, ModelProperties modelProperties, PoseStack poseStack, MultiBufferSource multiBufferSource, RenderType renderType, int packedLight, int packedOverlay) {
+        public RendererChangeEvent(T entity, LivingEntityRenderer<T, S, M> renderer, ModelProperties modelProperties, PoseStack poseStack, MultiBufferSource multiBufferSource, RenderType renderType, int packedLight, int packedOverlay) {
             this.entity = entity;
             this.renderer = renderer;
             this.modelProperties = modelProperties;
@@ -62,10 +63,10 @@ public interface RendererChangeCallback {
 
         @SuppressWarnings("unchecked")
         public T getEntity() {
-            return (T) this.entity;
+            return this.entity;
         }
 
-        public LivingEntityRenderer<T, M> renderer() {
+        public LivingEntityRenderer<T, S, M> renderer() {
             return renderer;
         }
 

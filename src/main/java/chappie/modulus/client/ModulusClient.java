@@ -1,6 +1,5 @@
-package chappie.modulus;
+package chappie.modulus.client;
 
-import chappie.modulus.client.ClientEvents;
 import chappie.modulus.client.model.CapeModel;
 import chappie.modulus.client.model.SuitModel;
 import chappie.modulus.networking.ModNetworking;
@@ -33,7 +32,6 @@ public class ModulusClient implements ClientModInitializer {
                 if (c.rendererChange(event)) {
                     b.set(true);
                 }
-                ;
             }));
             return b.get();
         }));

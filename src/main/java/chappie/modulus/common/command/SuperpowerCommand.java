@@ -70,7 +70,7 @@ public class SuperpowerCommand {
 
     public static Superpower getSuperpower(CommandContext<CommandSourceStack> context, String key) throws CommandSyntaxException {
         ResourceLocation id = context.getArgument(key, ResourceLocation.class);
-        Superpower superpower = Superpower.REGISTRY.get(id);
+        Superpower superpower = Superpower.REGISTRY.getValue(id);
         if (superpower == null) {
             throw DIDNT_EXIST.create(id);
         } else {

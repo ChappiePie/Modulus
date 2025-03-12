@@ -1,18 +1,16 @@
 package chappie.modulus.util.model;
 
-import net.minecraft.client.model.geom.ModelPart;
 import net.minecraft.client.renderer.entity.layers.RenderLayer;
+import net.minecraft.client.renderer.entity.state.LivingEntityRenderState;
+import net.minecraft.world.entity.LivingEntity;
 
 import java.util.List;
-import java.util.stream.Stream;
 
 public interface IHasModelProperties {
 
-    void setup(float limbSwing, float limbSwingAmount, float ageInTicks, float netHeadYaw, float headPitch, float partialTicks, List<RenderLayer<?, ?>> layers);
+    void setup(LivingEntityRenderState renderstate, float partialTicks, List<RenderLayer<?, ?>> layers);
+
+    void setEntity(LivingEntity entity);
 
     ModelProperties modelProperties();
-
-    default Stream<ModelPart> allParts() {
-        return modelProperties().root().getAllParts();
-    }
 }

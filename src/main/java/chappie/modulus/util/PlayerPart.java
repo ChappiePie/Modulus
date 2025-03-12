@@ -29,11 +29,11 @@ public enum PlayerPart {
         this.parent = parent;
     }
 
-    public void setVisibility(PlayerModel<?> model, boolean visible) {
+    public void setVisibility(PlayerModel model, boolean visible) {
         this.setVisibility(model, visible, 1F);
     }
 
-    public void setVisibility(PlayerModel<?> model, boolean visible, float size) {
+    public void setVisibility(PlayerModel model, boolean visible, float size) {
         ModelPart modelPart = this.modelPart(model);
         if (modelPart != null) {
             if (bodyParts().contains(this)) {
@@ -54,7 +54,7 @@ public enum PlayerPart {
         }
     }
 
-    public ModelPart modelPart(PlayerModel<?> model) {
+    public ModelPart modelPart(PlayerModel model) {
         return switch (this) {
             case HEAD_WEAR -> model.hat;
             case CHEST_WEAR -> model.jacket;

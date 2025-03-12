@@ -1,5 +1,5 @@
 plugins {
-	id 'fabric-loom' version '1.7-SNAPSHOT'
+	id 'fabric-loom' version '1.9-SNAPSHOT'
 	id 'maven-publish'
 }
 
@@ -14,6 +14,13 @@ loom {
 	accessWidenerPath = file("src/main/resources/${project.archives_base_name}.accesswidener")
 }
 
+fabricApi {
+	configureDataGeneration {
+		client = true
+	}
+}
+
+
 repositories {
 	exclusiveContent {
 		forRepository {
@@ -24,14 +31,6 @@ repositories {
 		}
 		filter {
 			includeGroup "maven.modrinth"
-		}
-	}
-	maven {
-		name = 'GeckoLib'
-		url 'https://dl.cloudsmith.io/public/geckolib3/geckolib/maven/'
-		content {
-			includeGroupByRegex("software\\.bernie.*")
-			includeGroup("com.eliotlash.mclib")
 		}
 	}
 	maven {
@@ -49,26 +48,24 @@ repositories {
 }
 
 dependencies {
+	// To change the versions see the gradle.properties file
 	minecraft "com.mojang:minecraft:${project.minecraft_version}"
 	mappings loom.layered() {
 		officialMojangMappings()
-		parchment("org.parchmentmc.data:parchment-1.20.4:2024.04.14@zip")
+		parchment("org.parchmentmc.data:parchment-1.21.4:2025.01.05@zip")
 	}
 	modImplementation "net.fabricmc:fabric-loader:${project.loader_version}"
-
-	compileOnly(annotationProcessor("io.github.llamalad7:mixinextras-common:${mixin_extras_version}"))
-	modImplementation(include("io.github.llamalad7:mixinextras-fabric:${mixin_extras_version}"))
 
 	// Fabric API. This is technically optional, but you probably want it anyway.
 	modImplementation "net.fabricmc.fabric-api:fabric-api:${project.fabric_version}"
 
-	modImplementation include("software.bernie.geckolib:geckolib-fabric-${minecraft_version}:${geckolib_version}")
-	implementation("com.eliotlash.mclib:mclib:20")
+	compileOnly(annotationProcessor("io.github.llamalad7:mixinextras-common:${project.mixin_extras_version}"))
+	modImplementation(include("io.github.llamalad7:mixinextras-fabric:${project.mixin_extras_version}"))
 
 	modImplementation include("dev.onyxstudios.cardinal-components-api:cardinal-components-base:${project.cca_version}")
 	modImplementation include("dev.onyxstudios.cardinal-components-api:cardinal-components-entity:${project.cca_version}")
 
-	modRuntimeOnly "maven.modrinth:modmenu:9.0.0"
+	modRuntimeOnly "maven.modrinth:modmenu:${project.mod_menu_version}"
 }
 
 processResources {
@@ -80,7 +77,7 @@ processResources {
 }
 
 tasks.withType(JavaCompile).configureEach {
-	it.options.release = 17
+	it.options.release = 21
 }
 
 java {
@@ -89,8 +86,8 @@ java {
 	// If you remove this line, sources will not be generated.
 	withSourcesJar()
 
-	sourceCompatibility = JavaVersion.VERSION_17
-	targetCompatibility = JavaVersion.VERSION_17
+	sourceCompatibility = JavaVersion.VERSION_21
+	targetCompatibility = JavaVersion.VERSION_21
 }
 
 jar {
@@ -99,19 +96,20 @@ jar {
 	}
 }
 
+// configure the maven publication
 publishing {
 	publications {
-		mavenJava(MavenPublication) {
-			artifact(remapJar) {
-				builtBy remapJar
-			}
-			artifact(sourcesJar) {
-				builtBy remapSourcesJar
-			}
-			artifactId = "modulus"
+		create("mavenJava", MavenPublication) {
+			artifactId = project.archives_base_name
+			from components.java
 		}
 	}
+
+	// See https://docs.gradle.org/current/userguide/publishing_maven.html for information on how to set up publishing.
 	repositories {
-		mavenLocal()
+		// Add repositories to publish to here.
+		// Notice: This block does NOT have the same function as the block in the top level.
+		// The repositories here will be used for publishing your artifact, not for
+		// retrieving dependencies.
 	}
 }
