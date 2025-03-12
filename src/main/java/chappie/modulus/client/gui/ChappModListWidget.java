@@ -1,6 +1,5 @@
 package chappie.modulus.client.gui;
 
-import chappie.modulus.Modulus;
 import chappie.modulus.util.ClientUtil;
 import chappie.modulus.util.CommonUtil;
 import chappie.modulus.util.IHasTimer;
@@ -207,7 +206,7 @@ public class ChappModListWidget extends ContainerObjectSelectionList<ChappModLis
                                TextRenderable textRenderable) {
 
         public ChappModInfo(String modId, String version, String url, List<Component> text, String textureId, TextRenderable textRenderable) {
-            this(modId, version, url, text, Modulus.id("textures/gui/mods_author/%s.png".formatted(textureId)), textRenderable);
+            this(modId, version, url, text, ModulusMainScreen.getTexByName("mods/%s".formatted(textureId)), textRenderable);
         }
 
         public ModMetadata modInfo() {

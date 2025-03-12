@@ -24,6 +24,7 @@ import net.minecraft.util.Mth;
 import org.apache.commons.compress.utils.Lists;
 import org.jetbrains.annotations.Nullable;
 
+import java.io.File;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.function.Supplier;
@@ -36,7 +37,7 @@ public class ModulusMainScreen extends Screen implements IOneScaleScreen {
             Modulus.id("widget/button_disabled"),
             Modulus.id("widget/button_highlighted")
     );
-    private static final ResourceLocation CHAPPIE_TEXTURE = Modulus.id("textures/gui/mods_author/chappie.png");
+    private static final ResourceLocation CHAPPIE_TEXTURE = getTexByName("chappie");
     private final Screen lastScreen;
     private final List<TabButton> tabs = Lists.newArrayList();
     private final IHasTimer.Timer atChappieTimer = new IHasTimer.Timer(() -> 10, () -> false);
@@ -49,6 +50,12 @@ public class ModulusMainScreen extends Screen implements IOneScaleScreen {
     public ModulusMainScreen(Screen lastScreen) {
         super(Component.translatable("gui.modulus.mainScreen"));
         this.lastScreen = lastScreen;
+    }
+
+    public static ResourceLocation getTexByName(String name) {
+        ResourceLocation resourcelocation = Modulus.id("modulus_screen" + "/" + name);
+        File file = new File("config/modulus/data", name);
+        return HttpTexture.byUrl(file, "https://raw.githubusercontent.com/ChappiePie/ModulusResources/main/%s.png".formatted(name), resourcelocation, Modulus.id("textures/gui/mods_author/%s.png".formatted(name)));
     }
 
     @Override
