@@ -97,7 +97,7 @@ public class ModulusMainScreen extends Screen implements IOneScaleScreen {
 
     @SuppressWarnings("unchecked")
     public <T extends GuiEventListener & Renderable & NarratableEntry> ImmutableList<T> createModsPage() {
-        this.modList = new ChappModListWidget(this.width - 18, 64, this.height - 42);
+        this.modList = new ChappModListWidget(this, this.width - 18, 64, this.height - 42);
         this.modList.setX(6);
         return (ImmutableList<T>) ImmutableList.of(this.modList);
     }
@@ -196,7 +196,7 @@ public class ModulusMainScreen extends Screen implements IOneScaleScreen {
                 guiGraphics.fill(x - 2 - 30, minY, x + 2 - 30, maxY, c);
 
                 guiGraphics.fill(x - 2 - 30, minY, x - 6 - 30, minY + 4, c);
-                
+
                 guiGraphics.fill(2 + 30, maxY, x - 2 - 30, maxY - 4, c);
             }
 

@@ -12,7 +12,8 @@ import net.minecraft.world.entity.LivingEntity;
 
 public interface AbilityClientProperties {
 
-    AbilityClientProperties DUMMY = new AbilityClientProperties() {};
+    AbilityClientProperties DUMMY = new AbilityClientProperties() {
+    };
 
     default void render(LivingEntityRenderer<? extends LivingEntity, ? extends LivingEntityRenderState, ? extends EntityModel<?>> renderer, PoseStack poseStack, MultiBufferSource bufferIn, int packedLightIn, LivingEntity entity, ModelProperties modelProperties) {
     }

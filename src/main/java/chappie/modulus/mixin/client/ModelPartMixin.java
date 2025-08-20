@@ -14,9 +14,13 @@ import java.util.List;
 
 @Mixin(ModelPart.class)
 public abstract class ModelPartMixin implements IChangeableSize {
-    @Mutable @Shadow @Final private List<ModelPart.Cube> cubes;
+    @Mutable
+    @Shadow
+    @Final
+    private List<ModelPart.Cube> cubes;
 
-    @Unique private Vector3f modulus$size = new Vector3f();
+    @Unique
+    private Vector3f modulus$size = new Vector3f();
 
     @SuppressWarnings("ConstantConditions")
     @Override

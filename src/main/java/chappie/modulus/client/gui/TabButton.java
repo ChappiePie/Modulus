@@ -29,7 +29,7 @@ public class TabButton extends AbstractWidget {
     public void renderWidget(GuiGraphics guiGraphics, int pMouseX, int pMouseY, float pPartialTick) {
         try {
             guiGraphics.blitSprite(RenderType::guiTextured, SPRITES.get(this.isSelected(), this.isHovered()), this.getX(), this.getY(), this.width, this.height);
-        }catch (Throwable e) {
+        } catch (Throwable e) {
             e.printStackTrace();
         }
         Font font = Minecraft.getInstance().font;

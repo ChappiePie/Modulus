@@ -14,13 +14,13 @@ import java.util.List;
 import java.util.function.Supplier;
 
 public class ModulusAboutButton extends Button implements IHasTimer {
-    private final Timer timer = new Timer(() -> 10, this::isHoveredOrFocused);
     protected final ResourceLocation resourceLocation;
     protected final int xTexStart;
     protected final int yTexStart;
     protected final int textureWidth;
     protected final int textureHeight;
     protected final int index;
+    private final Timer timer = new Timer(() -> 10, this::isHoveredOrFocused);
 
     public ModulusAboutButton(int pX, int pY, int pScale, int pXTexStart, ResourceLocation pResourceLocation, Supplier<List<String>> links, int index) {
         this(pX, pY, pScale, pScale, pXTexStart, 0, pResourceLocation, (b) -> {

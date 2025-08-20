@@ -18,16 +18,9 @@ public class ClientSyncAbility implements CustomPacketPayload {
     public static final ResourceLocation PACKET_ID = Modulus.id("sync_ability");
     public static final Type<ClientSyncAbility> PACKET = new Type<>(PACKET_ID);
     public static StreamCodec<FriendlyByteBuf, ClientSyncAbility> CODEC = CustomPacketPayload.codec(ClientSyncAbility::write, ClientSyncAbility::new);
-
-    @Override
-    public Type<? extends CustomPacketPayload> type() {
-        return PACKET;
-    }
-
     public int entityId;
     public String id;
     public CompoundTag nbt;
-
     public ClientSyncAbility(int entityId, String id, CompoundTag nbt) {
         this.entityId = entityId;
         this.id = id;
@@ -38,6 +31,11 @@ public class ClientSyncAbility implements CustomPacketPayload {
         this.entityId = buffer.readInt();
         this.id = buffer.readUtf();
         this.nbt = buffer.readNbt();
+    }
+
+    @Override
+    public Type<? extends CustomPacketPayload> type() {
+        return PACKET;
     }
 
     public void write(FriendlyByteBuf buffer) {
@@ -54,6 +52,6 @@ public class ClientSyncAbility implements CustomPacketPayload {
                 cap.getAbility(this.id).deserializeNBT(this.nbt);
             }
         }
-        
+
     }
 }

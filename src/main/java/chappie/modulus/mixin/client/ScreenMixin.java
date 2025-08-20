@@ -15,12 +15,12 @@ import org.spongepowered.asm.mixin.injection.callback.CallbackInfo;
 @Mixin(Screen.class)
 public abstract class ScreenMixin implements IScreenExtender {
 
+    @Shadow
+    public int width;
+    @Shadow
+    public int height;
     @Unique
     private boolean modulus$removed = false;
-
-    @Shadow public int width;
-
-    @Shadow public int height;
 
     @Inject(method = "added", at = @At("TAIL"))
     private void mixin$added(CallbackInfo ci) {

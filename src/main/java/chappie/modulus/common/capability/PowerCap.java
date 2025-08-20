@@ -28,18 +28,21 @@ import java.util.Objects;
 public class PowerCap implements AutoSyncedComponent, CommonTickingComponent, ComponentV3 {
 
     public static final ComponentKey<PowerCap> KEY = ComponentRegistryV3.INSTANCE.getOrCreate(Modulus.id("powers"), PowerCap.class);
+    private final LivingEntity livingEntity;
+    private final Map<AbilityBuilder, Ability> abilities = Maps.newLinkedHashMap();
+    private Superpower superpower;
+    
+    public PowerCap(LivingEntity livingEntity) {
+        this.livingEntity = livingEntity;
+    }
 
     @Nullable
     public static PowerCap getCap(Object provider) {
         return KEY.maybeGet(provider).orElse(null);
     }
 
-    private final LivingEntity livingEntity;
-    private Superpower superpower;
-    private final Map<AbilityBuilder, Ability> abilities = Maps.newLinkedHashMap();
-
-    public PowerCap(LivingEntity livingEntity) {
-        this.livingEntity = livingEntity;
+    public Superpower getSuperpower() {
+        return superpower;
     }
 
     public void setSuperpower(Superpower superpower) {
@@ -52,10 +55,6 @@ public class PowerCap implements AutoSyncedComponent, CommonTickingComponent, Co
             }
         }
         this.syncToAll();
-    }
-
-    public Superpower getSuperpower() {
-        return superpower;
     }
 
     public Collection<Ability> getAbilities() {

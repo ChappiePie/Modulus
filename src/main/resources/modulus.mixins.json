@@ -4,8 +4,8 @@
   "compatibilityLevel": "JAVA_21",
   "client": [
     "client.CubeMixin",
+    "client.EntityModelMixin",
     "client.EntityRenderDispatcherMixin",
-    "client.EntityRenderersAccessor",
     "client.ItemInHandRendererMixin",
     "client.LivingEntityRendererMixin",
     "client.LivingEntityRenderStateMixin",

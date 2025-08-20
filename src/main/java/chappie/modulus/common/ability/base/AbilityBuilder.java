@@ -21,10 +21,10 @@ public class AbilityBuilder {
 
     public final String id;
     public final AbilityType type;
+    final HashMap<String, List<Function<Ability, Condition>>> funcConditions = Maps.newHashMap();
     Component displayName = null;
     boolean hidden;
     List<Consumer<Ability>> additionalData = Lists.newArrayList();
-    final HashMap<String, List<Function<Ability, Condition>>> funcConditions = Maps.newHashMap();
 
     AbilityBuilder(String id, AbilityType type) {
         this.id = id;

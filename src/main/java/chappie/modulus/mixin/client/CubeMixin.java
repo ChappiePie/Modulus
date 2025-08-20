@@ -14,17 +14,34 @@ import java.util.Set;
 @Mixin(ModelPart.Cube.class)
 public class CubeMixin implements IChangeableSize {
 
-    @Mutable @Shadow @Final private ModelPart.Polygon[] polygons;
-    @Mutable @Shadow @Final public float minX;
-    @Mutable @Shadow @Final public float minY;
-    @Mutable @Shadow @Final public float minZ;
-
-    @Unique public int p_273701_, p_273034_;
-    @Unique public float p_273591_, p_273313_;
-    @Unique public float p_273722_, p_273763_, p_272823_;
-    @Unique public float modulus$growX, modulus$growY, modulus$growZ;
-    @Unique public boolean p_273589_;
-    @Unique public Set<Direction> p_273291_;
+    @Mutable
+    @Shadow
+    @Final
+    public float minX;
+    @Mutable
+    @Shadow
+    @Final
+    public float minY;
+    @Mutable
+    @Shadow
+    @Final
+    public float minZ;
+    @Unique
+    public int p_273701_, p_273034_;
+    @Unique
+    public float p_273591_, p_273313_;
+    @Unique
+    public float p_273722_, p_273763_, p_272823_;
+    @Unique
+    public float modulus$growX, modulus$growY, modulus$growZ;
+    @Unique
+    public boolean p_273589_;
+    @Unique
+    public Set<Direction> p_273291_;
+    @Mutable
+    @Shadow
+    @Final
+    private ModelPart.Polygon[] polygons;
 
     @Inject(at = @At("TAIL"), method = "<init>")
     public void mixinInit(int u, int v, float minX, float minY, float minZ, float dimensionX, float dimensionY, float dimensionZ, float growX, float growY, float growZ, boolean mirror, float texWidth, float texHeight, Set<Direction> directions, CallbackInfo ci) {
@@ -75,15 +92,15 @@ public class CubeMixin implements IChangeableSize {
         ModelPart.Vertex modelpart$vertex4 = new ModelPart.Vertex(f, p_273777_, f2, 0.0F, 8.0F);
         ModelPart.Vertex modelpart$vertex5 = new ModelPart.Vertex(f, f1, f2, 8.0F, 8.0F);
         ModelPart.Vertex modelpart$vertex6 = new ModelPart.Vertex(p_272824_, f1, f2, 8.0F, 0.0F);
-        float f4 = (float)p_273701_;
-        float f5 = (float)p_273701_ + p_272823_;
-        float f6 = (float)p_273701_ + p_272823_ + p_273722_;
-        float f7 = (float)p_273701_ + p_272823_ + p_273722_ + p_273722_;
-        float f8 = (float)p_273701_ + p_272823_ + p_273722_ + p_272823_;
-        float f9 = (float)p_273701_ + p_272823_ + p_273722_ + p_272823_ + p_273722_;
-        float f10 = (float)p_273034_;
-        float f11 = (float)p_273034_ + p_272823_;
-        float f12 = (float)p_273034_ + p_272823_ + p_273763_;
+        float f4 = (float) p_273701_;
+        float f5 = (float) p_273701_ + p_272823_;
+        float f6 = (float) p_273701_ + p_272823_ + p_273722_;
+        float f7 = (float) p_273701_ + p_272823_ + p_273722_ + p_273722_;
+        float f8 = (float) p_273701_ + p_272823_ + p_273722_ + p_272823_;
+        float f9 = (float) p_273701_ + p_272823_ + p_273722_ + p_272823_ + p_273722_;
+        float f10 = (float) p_273034_;
+        float f11 = (float) p_273034_ + p_272823_;
+        float f12 = (float) p_273034_ + p_272823_ + p_273763_;
         int i = 0;
         if (p_273291_.contains(Direction.DOWN)) {
             this.polygons[i++] = new ModelPart.Polygon(new ModelPart.Vertex[]{modelpart$vertex4, modelpart$vertex3, modelpart$vertex7, modelpart$vertex}, f5, f10, f6, f11, p_273591_, p_273313_, p_273589_, Direction.DOWN);

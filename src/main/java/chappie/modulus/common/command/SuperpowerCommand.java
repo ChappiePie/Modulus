@@ -19,8 +19,8 @@ import net.minecraft.world.entity.Entity;
 import java.util.Collection;
 
 public class SuperpowerCommand {
-    private static final SuggestionProvider<CommandSourceStack> SUGGEST_SUPERPOWERS = (context, builder) -> SharedSuggestionProvider.suggestResource(Superpower.REGISTRY.keySet(), builder);
     public static final DynamicCommandExceptionType DIDNT_EXIST = new DynamicCommandExceptionType((object) -> Component.translatable("commands.modulus.DidntExist", object));
+    private static final SuggestionProvider<CommandSourceStack> SUGGEST_SUPERPOWERS = (context, builder) -> SharedSuggestionProvider.suggestResource(Superpower.REGISTRY.keySet(), builder);
 
     public static void register(CommandDispatcher<CommandSourceStack> dispatcher) {
         dispatcher.register(Commands.literal("superpower").requires((player) -> player.hasPermission(2))

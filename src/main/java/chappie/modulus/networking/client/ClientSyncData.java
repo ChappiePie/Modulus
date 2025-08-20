@@ -18,16 +18,9 @@ public class ClientSyncData implements CustomPacketPayload {
     public static final ResourceLocation PACKET_ID = Modulus.id("sync_data");
     public static final Type<ClientSyncData> PACKET = new Type<>(PACKET_ID);
     public static StreamCodec<FriendlyByteBuf, ClientSyncData> CODEC = CustomPacketPayload.codec(ClientSyncData::write, ClientSyncData::new);
-
-    @Override
-    public Type<? extends CustomPacketPayload> type() {
-        return PACKET;
-    }
-
     public int entityId;
     public String id, abilityName;
     public CompoundTag tag;
-
     public ClientSyncData(int entityId, String id, String abilityName, CompoundTag tag) {
         this.entityId = entityId;
         this.id = id;
@@ -40,6 +33,11 @@ public class ClientSyncData implements CustomPacketPayload {
         this.id = buf.readUtf();
         this.abilityName = buf.readUtf();
         this.tag = buf.readNbt();
+    }
+
+    @Override
+    public Type<? extends CustomPacketPayload> type() {
+        return PACKET;
     }
 
     public void write(FriendlyByteBuf buf) {

@@ -19,17 +19,9 @@ public class ClientKeyInput implements CustomPacketPayload {
     public static final ResourceLocation PACKET_ID = Modulus.id("client_key_input");
     public static final Type<ClientKeyInput> PACKET = new Type<>(PACKET_ID);
     public static StreamCodec<FriendlyByteBuf, ClientKeyInput> CODEC = CustomPacketPayload.codec(ClientKeyInput::write, ClientKeyInput::new);
-
-    @Override
-    public Type<? extends CustomPacketPayload> type() {
-        return PACKET;
-    }
-
-
     private final int entityId;
     private final String id;
     private final KeyMap keys;
-
     public ClientKeyInput(int entityId, String id, KeyMap keys) {
         this.entityId = entityId;
         this.id = id;
@@ -44,6 +36,11 @@ public class ClientKeyInput implements CustomPacketPayload {
             map.setDown(type, buf.readBoolean());
         }
         this.keys = map;
+    }
+
+    @Override
+    public Type<? extends CustomPacketPayload> type() {
+        return PACKET;
     }
 
     public void write(FriendlyByteBuf buf) {
@@ -64,6 +61,6 @@ public class ClientKeyInput implements CustomPacketPayload {
                 ability.conditionManager.conditions().forEach(Condition::keyEvent);
             }
         }
-        
+
     }
 }

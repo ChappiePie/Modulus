@@ -29,6 +29,23 @@ public enum PlayerPart {
         this.parent = parent;
     }
 
+    public static PlayerPart byName(String name) {
+        for (PlayerPart playerPart : values()) {
+            if (name.equalsIgnoreCase(playerPart.name().toLowerCase())) {
+                return playerPart;
+            }
+        }
+        return PlayerPart.HEAD;
+    }
+
+    public static List<PlayerPart> bodyParts() {
+        return ImmutableList.of(HEAD, CHEST, RIGHT_ARM, LEFT_ARM, RIGHT_LEG, LEFT_LEG);
+    }
+
+    public static List<PlayerPart> wearParts() {
+        return ImmutableList.of(HEAD_WEAR, CHEST_WEAR, RIGHT_ARM_WEAR, LEFT_ARM_WEAR, RIGHT_LEG_WEAR, LEFT_LEG_WEAR);
+    }
+
     public void setVisibility(PlayerModel model, boolean visible) {
         this.setVisibility(model, visible, 1F);
     }
@@ -82,23 +99,14 @@ public enum PlayerPart {
         switch (this) {
             case HEAD, HEAD_WEAR -> list.add(EquipmentSlot.HEAD);
             case CHEST, RIGHT_ARM, LEFT_ARM,
-                    CHEST_WEAR, RIGHT_ARM_WEAR, LEFT_ARM_WEAR -> list.add(EquipmentSlot.CHEST);
+                 CHEST_WEAR, RIGHT_ARM_WEAR, LEFT_ARM_WEAR -> list.add(EquipmentSlot.CHEST);
             case RIGHT_LEG, LEFT_LEG,
-                    RIGHT_LEG_WEAR, LEFT_LEG_WEAR -> {
+                 RIGHT_LEG_WEAR, LEFT_LEG_WEAR -> {
                 list.add(EquipmentSlot.LEGS);
                 list.add(EquipmentSlot.FEET);
             }
         }
         return list;
-    }
-
-    public static PlayerPart byName(String name) {
-        for (PlayerPart playerPart : values()) {
-            if (name.equalsIgnoreCase(playerPart.name().toLowerCase())) {
-                return playerPart;
-            }
-        }
-        return PlayerPart.HEAD;
     }
 
     public PlayerPart getParent() {
@@ -108,14 +116,6 @@ public enum PlayerPart {
             }
         }
         return null;
-    }
-
-    public static List<PlayerPart> bodyParts() {
-        return ImmutableList.of(HEAD, CHEST, RIGHT_ARM, LEFT_ARM, RIGHT_LEG, LEFT_LEG);
-    }
-
-    public static List<PlayerPart> wearParts() {
-        return ImmutableList.of(HEAD_WEAR, CHEST_WEAR, RIGHT_ARM_WEAR, LEFT_ARM_WEAR, RIGHT_LEG_WEAR, LEFT_LEG_WEAR);
     }
 
 }

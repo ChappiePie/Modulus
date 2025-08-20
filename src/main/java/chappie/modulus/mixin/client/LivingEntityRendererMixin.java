@@ -12,7 +12,6 @@ import com.mojang.blaze3d.vertex.PoseStack;
 import com.mojang.blaze3d.vertex.VertexConsumer;
 import net.minecraft.client.model.EntityModel;
 import net.minecraft.client.model.HumanoidModel;
-import net.minecraft.client.model.PlayerModel;
 import net.minecraft.client.renderer.MultiBufferSource;
 import net.minecraft.client.renderer.RenderType;
 import net.minecraft.client.renderer.entity.LivingEntityRenderer;
@@ -33,12 +32,13 @@ import java.util.List;
 @SuppressWarnings("unchecked")
 @Mixin(LivingEntityRenderer.class)
 public abstract class LivingEntityRendererMixin<T extends LivingEntity, S extends LivingEntityRenderState, M extends EntityModel<? super S>> {
-    @Shadow protected M model;
-
+    @Shadow
+    protected M model;
+    @Shadow
+    @Final
+    protected List<RenderLayer<?, ?>> layers;
     @Unique
     private RendererChangeCallback.RendererChangeEvent<T, S, M> modulus$event;
-
-    @Shadow @Final protected List<RenderLayer<?, ?>> layers;
 
     @Shadow
     protected abstract boolean addLayer(RenderLayer<S, M> p_115327_);
@@ -60,7 +60,6 @@ public abstract class LivingEntityRendererMixin<T extends LivingEntity, S extend
             if (this.layers.stream().noneMatch(p -> p instanceof AbilityLayerRenderer)) {
                 this.addLayer(new AbilityLayerRenderer<>((LivingEntityRenderer<T, S, M>) (Object) this));
             }
-
         }
     }
 
@@ -70,18 +69,8 @@ public abstract class LivingEntityRendererMixin<T extends LivingEntity, S extend
         if (this.model instanceof IHasModelProperties iModel && livingEntityRenderState instanceof IRenderStateEntity e) {
             T entity = (T) e.modulus$entity();
             this.modulus$event = new RendererChangeCallback.RendererChangeEvent<>(entity, renderer, iModel.modelProperties(), poseStack, multiBufferSource, type, i, LivingEntityRenderer.getOverlayCoords(livingEntityRenderState, this.getWhiteOverlayProgress(livingEntityRenderState)));
-            if (this.model instanceof HumanoidModel<?> humanoidModel) {
+            if (this.model instanceof HumanoidModel<?>) {
                 SetupAnimCallback.EVENT.invoker().event(new SetupAnimCallback.SetupAnimEvent(entity, livingEntityRenderState, (HumanoidModel<? super S>) this.model, iModel.modelProperties()));
-
-                // Copy angles to wear
-                humanoidModel.hat.copyFrom(humanoidModel.head);
-                if (humanoidModel instanceof PlayerModel playerModel) {
-                    playerModel.jacket.copyFrom(humanoidModel.body);
-                    playerModel.rightSleeve.copyFrom(humanoidModel.rightArm);
-                    playerModel.leftSleeve.copyFrom(humanoidModel.leftArm);
-                    playerModel.leftPants.copyFrom(humanoidModel.leftLeg);
-                    playerModel.rightPants.copyFrom(humanoidModel.rightLeg);
-                }
             }
         }
     }

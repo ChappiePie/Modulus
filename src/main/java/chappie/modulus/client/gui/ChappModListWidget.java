@@ -34,17 +34,14 @@ import java.util.function.BiFunction;
 import java.util.function.Consumer;
 import java.util.function.Supplier;
 
-// Список модов
 public class ChappModListWidget extends ContainerObjectSelectionList<ChappModListWidget.ChappEntry> {
 
-    // Что происходит когда тыкаешь на лого мода в списке
     public static final Map<String, Consumer<ChappEntry>> MOD_CLICKED = Maps.newHashMap();
-    // Список с данными о модах
+
     private static final Supplier<JsonObject> JSON_LIST = CommonUtil.getJsonFromLink("https://raw.githubusercontent.com/ChappiePie/ModulusResources/main/modList.json");
 
-    // Длина списка
     private final int listWidth;
-    // Обычное оформление текста модов
+
     private final TextRenderable DEFAULT_TEXT = (entry, font, x, guiGraphics, entryIdx, top, left, entryWidth, entryHeight, mouseX, mouseY, isHovered, partialTick) -> {
         boolean b = entryIdx % 2 == 0;
         int initX = x.get();
@@ -75,37 +72,39 @@ public class ChappModListWidget extends ContainerObjectSelectionList<ChappModLis
         x.set(initX + (b ? left : entryWidth - 128));
     };
 
-    // Создание самого виджета
-    // #super(майнкрафт, ширина, высота, позиция по y, высота предмета)
-    public ChappModListWidget(int listWidth, int top, int bottom) {
+    private final ModulusMainScreen screen;
+
+
+    public ChappModListWidget(ModulusMainScreen screen, int listWidth, int top, int bottom) {
         super(Minecraft.getInstance(), listWidth, bottom - top, top, 110);
+        this.screen = screen;
         this.listWidth = listWidth;
-        this.refreshList(); // Обновляем список для новых данных
+        this.refreshList();
     }
 
-    // Убираем рендер фона для списка
+
     @Override
     protected void renderListBackground(GuiGraphics guiGraphics) {
     }
 
-    // Позиция списка
+
     @Override
     protected int scrollBarX() {
         return this.listWidth;
     }
 
-    // Ширина поля для объекта
+
     @Override
     public int getRowWidth() {
         return this.listWidth - 20;
     }
 
-    // Обновить список, ради новых данных
+
     public void refreshList() {
         this.clearEntries();
         for (Map.Entry<String, JsonElement> e : JSON_LIST.get().entrySet()) {
             if (e.getValue() instanceof JsonObject json) {
-                this.addEntry(new ChappEntry(new ChappModInfo(e.getKey(),
+                this.addEntry(new ChappEntry(this.screen, new ChappModInfo(e.getKey(),
                         json.get("version").getAsString(),
                         json.get("url").getAsString(),
                         CommonUtil.parseDescriptionLines(json.get("description")),
@@ -115,7 +114,7 @@ public class ChappModListWidget extends ContainerObjectSelectionList<ChappModLis
         }
     }
 
-    // Рендер предметов в списке
+
     @Override
     protected void renderItem(GuiGraphics guiGraphics, int pMouseX, int pMouseY, float pPartialTick, int pIndex, int pLeft, int pTop, int pWidth, int pHeight) {
         int colorIn = ARGB.color(150, 0, 0, 0);
@@ -124,21 +123,21 @@ public class ChappModListWidget extends ContainerObjectSelectionList<ChappModLis
         super.renderItem(guiGraphics, pMouseX, pMouseY, pPartialTick, pIndex, pLeft, pTop, pWidth, pHeight);
     }
 
-    // Пытаться постоянно обновить список, если он пустой или ты не смог синхронизировать его с тем что в интернете.
+
     public void tick() {
         if (!JSON_LIST.get().isEmpty() && this.children().isEmpty()) {
             this.refreshList();
         }
     }
 
-    // 098765432
+
     @FunctionalInterface
     public interface TextRenderable {
 
         void render(ChappEntry entry, Font font, AtomicInteger x, GuiGraphics guiGraphics, int entryIdx, int top, int left, int entryWidth, int entryHeight, int mouseX, int mouseY, boolean isHovered, float partialTick);
     }
 
-    // Кнопка под иконкой. (Скачать или версия мода)
+
     public static class MyButton extends Button {
 
         private final Vec2 oldSize;
@@ -156,10 +155,10 @@ public class ChappModListWidget extends ContainerObjectSelectionList<ChappModLis
         public void renderWidget(GuiGraphics guiGraphics, int pMouseX, int pMouseY, float pPartialTick) {
             PoseStack pPoseStack = guiGraphics.pose();
 
-            RenderSystem.enableBlend(); // Добавляем смешивание и глубину ради прозрачности
+            RenderSystem.enableBlend();
             RenderSystem.enableDepthTest();
 
-            // Рендер уменьшенной кнопки
+
             pPoseStack.pushPose();
             float f = 0.75F;
             pPoseStack.scale(f, f, 1.0F);
@@ -174,7 +173,7 @@ public class ChappModListWidget extends ContainerObjectSelectionList<ChappModLis
             );
             pPoseStack.popPose();
 
-            // Рендер уменьшенного текста, который может перелистываться, если слишком длинный.
+
             pPoseStack.pushPose();
 
             float f1 = 0.5F;
@@ -187,13 +186,13 @@ public class ChappModListWidget extends ContainerObjectSelectionList<ChappModLis
 
             pPoseStack.popPose();
 
-            // Изменяем некоторые данные ради
+
             this.setWidth((int) ((this.oldSize.x - 5) / f));
             this.setHeight((int) (this.oldSize.y / f));
             this.setX(this.getX() - 2);
         }
 
-        // Отменяем возвращение клика
+
         @Override
         public boolean mouseClicked(double pMouseX, double pMouseY, int pButton) {
             super.mouseClicked(pMouseX, pMouseY, pButton);
@@ -201,7 +200,7 @@ public class ChappModListWidget extends ContainerObjectSelectionList<ChappModLis
         }
     }
 
-    // Информация о моде
+
     public record ChappModInfo(String modId, String version, String url, List<Component> text, ResourceLocation texture,
                                TextRenderable textRenderable) {
 
@@ -215,31 +214,30 @@ public class ChappModListWidget extends ContainerObjectSelectionList<ChappModLis
         }
     }
 
-    // Предмет в списке
+
     public static class ChappEntry extends Entry<ChappEntry> implements IHasTimer {
 
         public final Map<AbstractWidget, BiFunction<Integer, Integer, Vec2>> children;
         public final ChappModInfo modInfo;
-
-        // Анимация приближения
+        public final ModulusMainScreen parent;
         private final Timer titleTimer = new Timer(() -> 10, () -> false);
-        // Анимация подсветки, если мод имеет событие в ChappModListWidget#MOD_CLICKED
         private final Timer highlightTimer = new Timer(() -> 10, () -> false);
 
-        ChappEntry(ChappModInfo info) {
+        ChappEntry(ModulusMainScreen parent, ChappModInfo info) {
+            this.parent = parent;
             this.modInfo = info;
             this.children = new HashMap<>();
             var modFile = info.modInfo();
-            // Брать версию из файла мода, если он установлен, иначе брать версию с JSON.
+
             String version = modFile != null ? modFile.getVersion().getFriendlyString() : info.version;
             if (version.equals("${version}")) {
                 version = "1.0";
             }
             MyButton versionButton = new MyButton(68, 16, Component.translatable("screen.modulus.modEntry.version", version), (b) -> {
             });
-            versionButton.active = false; // Кнопка версии не должна быть активной.
+            versionButton.active = false;
             this.children.put(versionButton, (x, y) -> new Vec2(4 + x, 76 + y));
-            // При отсутствии мода, добавлять кнопку скачать.
+
             if (modFile == null) {
                 this.children.put(new MyButton(68, 16, Component.translatable("screen.modulus.modEntry.download"), (b) -> {
                     Util.getPlatform().openUri(info.url);
@@ -247,16 +245,16 @@ public class ChappModListWidget extends ContainerObjectSelectionList<ChappModLis
             }
         }
 
-        // Рендер
+
         @Override
         public void render(GuiGraphics guiGraphics, int entryIdx, int top, int left, int entryWidth, int entryHeight, int mouseX, int mouseY, boolean isHovered, float partialTick) {
-            //GuiComponent.enableScissor(left, top, left + entryWidth, top + entryHeight - 10);
-            //guiGraphics.fill( left, top, left + entryWidth, top + entryHeight, entryIdx % 2 == 0 ? -16777216 : -1);
+
+
             Font font = Minecraft.getInstance().font;
             AtomicInteger x = new AtomicInteger(6);
             int y = top;
 
-            this.modInfo.textRenderable.render(this, font, x, guiGraphics,  entryIdx, y, left, entryWidth, entryHeight, mouseX, mouseY, isHovered, partialTick);
+            this.modInfo.textRenderable.render(this, font, x, guiGraphics, entryIdx, y, left, entryWidth, entryHeight, mouseX, mouseY, isHovered, partialTick);
             y += 6;
             {
                 int mainColor = ARGB.color(255, 108, 108, 108);
@@ -264,18 +262,18 @@ public class ChappModListWidget extends ContainerObjectSelectionList<ChappModLis
                 int minX = x.get() - 4, minY = y - 4;
                 int maxX = x.get() + 128 + 4, maxY = y + 67 + 7;
                 boolean isHoveredMod = mouseX > minX && mouseX < maxX && mouseY > minY && mouseY < maxY;
-                guiGraphics.fill( minX, minY, maxX, maxY, mainColor);
-                guiGraphics.fill( minX, maxY, maxX, maxY + 15, offColor);
+                guiGraphics.fill(minX, minY, maxX, maxY, mainColor);
+                guiGraphics.fill(minX, maxY, maxX, maxY + 15, offColor);
 
                 this.titleTimer.predicate = () -> isHoveredMod;
                 this.titleTimer.update();
                 float f = this.titleTimer.value(partialTick);
-                f *= Mth.sin(entryIdx + (float)(Util.getMillis() % 1000L) / 1000.0F * ((float)Math.PI * 2F)) / 2F;
+                f *= Mth.sin(entryIdx + (float) (Util.getMillis() % 1000L) / 1000.0F * ((float) Math.PI * 2F)) / 2F;
                 this.highlightTimer.predicate = () -> isHoveredMod;
                 this.highlightTimer.update();
-                float ht = 1 - this.highlightTimer.value(partialTick) * 0.5F;
+                float ht = 0.75F - this.highlightTimer.value(partialTick) * 0.5F;
                 if (MOD_CLICKED.containsKey(this.modInfo.modId)) {
-                    ht = 1 + this.highlightTimer.value(partialTick);
+                    ht = 0.75F + this.highlightTimer.value(partialTick) * 0.25F;
                 }
 
                 ClientUtil.blit(guiGraphics, this.modInfo.texture, x.get() + 6 * f, y + 2 + 3 * f, 0, 0, 128 / (1.0F + f / 10F), 64 / (1.0F + f / 10F), 2048, 1024, 2048, 1024, ARGB.colorFromFloat(1, ht, ht, ht));
@@ -284,14 +282,11 @@ public class ChappModListWidget extends ContainerObjectSelectionList<ChappModLis
                 Vec2 vec2 = e.getValue().apply(x.get(), y);
                 e.getKey().setX((int) vec2.x);
                 e.getKey().setY((int) vec2.y);
-                e.getKey().render(guiGraphics,  mouseX, mouseY, partialTick);
+                e.getKey().render(guiGraphics, mouseX, mouseY, partialTick);
             }
-
-            //GuiComponent.disableScissor();
         }
 
 
-        // Использовать событие при клике мыши
         @Override
         public boolean mouseClicked(double pMouseX, double pMouseY, int pButton) {
             if (this.titleTimer.predicate.get() && pButton == 0) {

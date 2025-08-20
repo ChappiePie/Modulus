@@ -163,10 +163,6 @@ public class ClientUtil {
 
     public static class ModRenderTypes extends RenderType {
 
-        public ModRenderTypes(String nameIn, VertexFormat formatIn, VertexFormat.Mode drawModeIn, int bufferSizeIn, boolean useDelegateIn, boolean needsSortingIn, Runnable setupTaskIn, Runnable clearTaskIn) {
-            super(nameIn, formatIn, drawModeIn, bufferSizeIn, useDelegateIn, needsSortingIn, setupTaskIn, clearTaskIn);
-        }
-
         public static final RenderType LASER = create(Modulus.MODID + ":laser", DefaultVertexFormat.POSITION_COLOR_LIGHTMAP, VertexFormat.Mode.QUADS, 256, false, true, CompositeState.builder()
                 .setShaderState(RENDERTYPE_LIGHTNING_SHADER)
                 .setTextureState(NO_TEXTURE)
@@ -176,12 +172,15 @@ public class ClientUtil {
                 .setTransparencyState(RenderStateShard.LIGHTNING_TRANSPARENCY)
                 .setLayeringState(RenderStateShard.VIEW_OFFSET_Z_LAYERING)
                 .createCompositeState(true));
-
         public static final RenderType MAIN_LASER = create(Modulus.MODID + ":main_laser", DefaultVertexFormat.POSITION_COLOR_LIGHTMAP, VertexFormat.Mode.QUADS, 256, false, true, CompositeState.builder()
                 .setShaderState(RENDERTYPE_LIGHTNING_SHADER)
                 .setTransparencyState(RenderStateShard.TRANSLUCENT_TRANSPARENCY)
                 .setLayeringState(RenderStateShard.VIEW_OFFSET_Z_LAYERING)
                 .createCompositeState(true));
+
+        public ModRenderTypes(String nameIn, VertexFormat formatIn, VertexFormat.Mode drawModeIn, int bufferSizeIn, boolean useDelegateIn, boolean needsSortingIn, Runnable setupTaskIn, Runnable clearTaskIn) {
+            super(nameIn, formatIn, drawModeIn, bufferSizeIn, useDelegateIn, needsSortingIn, setupTaskIn, clearTaskIn);
+        }
 
         public static RenderType glow(ResourceLocation texture) {
             return create(Modulus.MODID + ":light", DefaultVertexFormat.NEW_ENTITY, VertexFormat.Mode.QUADS, 256, false, true, CompositeState.builder().setShaderState(RENDERTYPE_ENERGY_SWIRL_SHADER)

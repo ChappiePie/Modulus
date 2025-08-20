@@ -10,17 +10,17 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 public class Modulus implements ModInitializer {
-	public static final String MODID = "modulus";
-	public static final Logger LOGGER = LoggerFactory.getLogger(MODID);
+    public static final String MODID = "modulus";
+    public static final Logger LOGGER = LoggerFactory.getLogger(MODID);
 
-	public static ResourceLocation id(String id) {
-		return ResourceLocation.fromNamespaceAndPath(MODID, id);
-	}
+    public static ResourceLocation id(String id) {
+        return ResourceLocation.fromNamespaceAndPath(MODID, id);
+    }
 
-	@Override
-	public void onInitialize() {
-		ModRegistries.init();
-		ModNetworking.registerMessages();
-		CommandRegistrationCallback.EVENT.register((dispatcher, registryAccess, environment) -> SuperpowerCommand.register(dispatcher));
-	}
+    @Override
+    public void onInitialize() {
+        ModRegistries.init();
+        ModNetworking.registerMessages();
+        CommandRegistrationCallback.EVENT.register((dispatcher, registryAccess, environment) -> SuperpowerCommand.register(dispatcher));
+    }
 }

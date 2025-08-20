@@ -20,7 +20,8 @@ import java.util.concurrent.atomic.AtomicReference;
 @Mixin(ItemInHandRenderer.class)
 public abstract class ItemInHandRendererMixin {
 
-    @Shadow protected abstract void renderPlayerArm(PoseStack pMatrixStack, MultiBufferSource pBuffer, int pCombinedLight, float pEquippedProgress, float pSwingProgress, HumanoidArm pSide);
+    @Shadow
+    protected abstract void renderPlayerArm(PoseStack pMatrixStack, MultiBufferSource pBuffer, int pCombinedLight, float pEquippedProgress, float pSwingProgress, HumanoidArm pSide);
 
     @WrapOperation(
             method = "renderHandsWithItems(FLcom/mojang/blaze3d/vertex/PoseStack;Lnet/minecraft/client/renderer/MultiBufferSource$BufferSource;Lnet/minecraft/client/player/LocalPlayer;I)V",
