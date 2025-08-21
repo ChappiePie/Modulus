@@ -14,13 +14,9 @@ import java.util.List;
 
 @Mixin(ModelPart.class)
 public abstract class ModelPartMixin implements IChangeableSize {
-    @Mutable
-    @Shadow
-    @Final
-    private List<ModelPart.Cube> cubes;
+    @Mutable @Shadow @Final private List<ModelPart.Cube> cubes;
 
-    @Unique
-    private Vector3f modulus$size = new Vector3f();
+    @Unique private Vector3f modulus$size = new Vector3f();
 
     @SuppressWarnings("ConstantConditions")
     @Override
@@ -35,15 +31,15 @@ public abstract class ModelPartMixin implements IChangeableSize {
         return modulus$size;
     }
 
-    @Inject(method = "render(Lcom/mojang/blaze3d/vertex/PoseStack;Lcom/mojang/blaze3d/vertex/VertexConsumer;III)V", at = @At("HEAD"))
-    private void setSize(PoseStack poseStack, VertexConsumer buffer, int packedLight, int packedOverlay, int color, CallbackInfo ci) {
+    @Inject(method = "render(Lcom/mojang/blaze3d/vertex/PoseStack;Lcom/mojang/blaze3d/vertex/VertexConsumer;IIFFFF)V", at = @At("HEAD"))
+    private void setSize(PoseStack pPoseStack, VertexConsumer pVertexConsumer, int pPackedLight, int pPackedOverlay, float pRed, float pGreen, float pBlue, float pAlpha, CallbackInfo ci) {
         for (ModelPart.Cube cube : this.cubes) {
             ((IChangeableSize) cube).setSize(this.modulus$size);
         }
     }
 
-    @Inject(method = "render(Lcom/mojang/blaze3d/vertex/PoseStack;Lcom/mojang/blaze3d/vertex/VertexConsumer;III)V", at = @At("TAIL"))
-    private void resetSize(PoseStack poseStack, VertexConsumer buffer, int packedLight, int packedOverlay, int color, CallbackInfo ci) {
+    @Inject(method = "render(Lcom/mojang/blaze3d/vertex/PoseStack;Lcom/mojang/blaze3d/vertex/VertexConsumer;IIFFFF)V", at = @At("TAIL"))
+    private void resetSize(PoseStack pPoseStack, VertexConsumer pVertexConsumer, int pPackedLight, int pPackedOverlay, float pRed, float pGreen, float pBlue, float pAlpha, CallbackInfo ci) {
         this.setSize(new Vector3f());
     }
 }

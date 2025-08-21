@@ -22,14 +22,6 @@ public record AbilityType(AbilitySupplier supplier) {
     public static final AbilityType DAMAGE_IMMUNITY = AbilityType.register("damage_immunity", DamageImmunityAbility::new);
     public static final AbilityType DAMAGE_RESISTANCE = AbilityType.register("damage_resistance", DamageResistanceAbility::new);
 
-    private static <T extends AbilitySupplier> AbilityType register(String id, T ability) {
-        return Registry.register(AbilityType.REGISTRY, Modulus.id(id), new AbilityType(ability));
-    }
-
-    public static void init() {
-
-    }
-
     public Ability create(LivingEntity livingEntity, AbilityBuilder builder) {
         Ability ability = this.supplier.create(livingEntity, builder);
         builder.additionalData.forEach(data -> data.accept(ability));
@@ -38,6 +30,14 @@ public record AbilityType(AbilitySupplier supplier) {
 
     public Component displayName() {
         return Component.translatable("abilities.%s".formatted(Objects.requireNonNull(REGISTRY.getKey(this)).toString().replace(":", ".")));
+    }
+
+    private static <T extends AbilitySupplier> AbilityType register(String id, T ability) {
+        return Registry.register(AbilityType.REGISTRY, Modulus.id(id), new AbilityType(ability));
+    }
+
+    public static void init() {
+
     }
 
     @FunctionalInterface

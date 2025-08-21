@@ -7,18 +7,20 @@ import chappie.modulus.common.capability.PowerCap;
 import chappie.modulus.networking.ModNetworking;
 import chappie.modulus.networking.client.ClientKeyInput;
 import chappie.modulus.util.KeyMap;
+import net.fabricmc.fabric.api.networking.v1.FabricPacket;
 import net.fabricmc.fabric.api.networking.v1.PacketSender;
+import net.fabricmc.fabric.api.networking.v1.PacketType;
 import net.minecraft.network.FriendlyByteBuf;
-import net.minecraft.network.codec.StreamCodec;
-import net.minecraft.network.protocol.common.custom.CustomPacketPayload;
-import net.minecraft.resources.ResourceLocation;
 import net.minecraft.server.level.ServerPlayer;
 
-public class ServerKeyInput implements CustomPacketPayload {
+public class ServerKeyInput implements FabricPacket {
 
-    public static final ResourceLocation PACKET_ID = Modulus.id("server_key_input");
-    public static final Type<ServerKeyInput> PACKET = new Type<>(PACKET_ID);
-    public static StreamCodec<FriendlyByteBuf, ServerKeyInput> CODEC = CustomPacketPayload.codec(ServerKeyInput::write, ServerKeyInput::new);
+    public static final PacketType<ServerKeyInput> PACKET = PacketType.create(Modulus.id("server_key_input"), ServerKeyInput::new);
+
+    @Override
+    public PacketType<?> getType() {
+        return PACKET;
+    }
 
     private final String id;
     private final KeyMap keys;
@@ -54,10 +56,5 @@ public class ServerKeyInput implements CustomPacketPayload {
                 ModNetworking.sendToTrackingEntityAndSelf(new ClientKeyInput(player.getId(), this.id, this.keys), player);
             }
         }
-    }
-
-    @Override
-    public Type<? extends CustomPacketPayload> type() {
-        return PACKET;
     }
 }

@@ -15,12 +15,12 @@ import org.spongepowered.asm.mixin.injection.callback.CallbackInfo;
 @Mixin(Screen.class)
 public abstract class ScreenMixin implements IScreenExtender {
 
-    @Shadow
-    public int width;
-    @Shadow
-    public int height;
     @Unique
     private boolean modulus$removed = false;
+
+    @Shadow public int width;
+
+    @Shadow public int height;
 
     @Inject(method = "added", at = @At("TAIL"))
     private void mixin$added(CallbackInfo ci) {
@@ -32,7 +32,7 @@ public abstract class ScreenMixin implements IScreenExtender {
             this.width = window.getGuiScaledWidth();
             this.height = window.getGuiScaledHeight();
 
-            mc.getMainRenderTarget().resize(window.getWidth(), window.getHeight());
+            mc.getMainRenderTarget().resize(window.getWidth(), window.getHeight(), Minecraft.ON_OSX);
             mc.gameRenderer.resize(window.getWidth(), window.getHeight());
             mc.mouseHandler.setIgnoreFirstMove();
         }
@@ -49,7 +49,7 @@ public abstract class ScreenMixin implements IScreenExtender {
             this.width = window.getGuiScaledWidth();
             this.height = window.getGuiScaledHeight();
 
-            mc.getMainRenderTarget().resize(window.getWidth(), window.getHeight());
+            mc.getMainRenderTarget().resize(window.getWidth(), window.getHeight(), Minecraft.ON_OSX);
             mc.gameRenderer.resize(window.getWidth(), window.getHeight());
             mc.mouseHandler.setIgnoreFirstMove();
         }

@@ -8,12 +8,9 @@ import com.google.gson.JsonObject;
 import com.google.gson.JsonParser;
 import net.minecraft.Util;
 import net.minecraft.client.player.AbstractClientPlayer;
-import net.minecraft.core.Holder;
-import net.minecraft.core.RegistryAccess;
 import net.minecraft.core.particles.ParticleOptions;
 import net.minecraft.network.chat.Component;
 import net.minecraft.network.protocol.game.ClientboundLevelParticlesPacket;
-import net.minecraft.resources.ResourceLocation;
 import net.minecraft.server.level.ServerPlayer;
 import net.minecraft.world.entity.Entity;
 import net.minecraft.world.entity.LivingEntity;
@@ -34,6 +31,7 @@ import java.net.URL;
 import java.util.ArrayList;
 import java.util.Collection;
 import java.util.List;
+import java.util.UUID;
 import java.util.concurrent.CompletableFuture;
 import java.util.concurrent.atomic.AtomicReference;
 import java.util.function.Supplier;
@@ -61,32 +59,31 @@ public class CommonUtil {
 
     public static boolean smallArms(Entity entity) {
         if (entity instanceof AbstractClientPlayer) {
-            return ((AbstractClientPlayer) entity).getSkin().model().id().equalsIgnoreCase("slim");
+            return ((AbstractClientPlayer) entity).getModelName().equalsIgnoreCase("slim");
         }
         return false;
     }
 
     public static void spawnParticleForAll(Level world, ParticleOptions particleIn, boolean longDistanceIn, Vec3 posVc3d, Vec3 offsetVc3d, float speedIn, int countIn) {
         for (ServerPlayer player : world.getEntitiesOfClass(ServerPlayer.class, CommonUtil.boxWithRange(posVc3d, 20))) {
-            player.connection.send(new ClientboundLevelParticlesPacket(particleIn, longDistanceIn, true, posVc3d.x, posVc3d.y, posVc3d.z, (float) offsetVc3d.x, (float) offsetVc3d.y, (float) offsetVc3d.z, speedIn, countIn));
+            player.connection.send(new ClientboundLevelParticlesPacket(particleIn, longDistanceIn, posVc3d.x, posVc3d.y, posVc3d.z, (float) offsetVc3d.x, (float) offsetVc3d.y, (float) offsetVc3d.z, speedIn, countIn));
         }
     }
 
-    public static void setAttribute(LivingEntity entity, ResourceLocation name, Attribute attribute, double amount, AttributeModifier.Operation operation) {
-        Holder<Attribute> attributeHolder = Holder.direct(attribute);
-        AttributeInstance instance = entity.getAttribute(attributeHolder);
+    public static void setAttribute(LivingEntity entity, String name, Attribute attribute, UUID uuid, double amount, AttributeModifier.Operation operation) {
+        AttributeInstance instance = entity.getAttribute(attribute);
         if (instance == null || entity.getCommandSenderWorld().isClientSide) {
             return;
         }
 
-        AttributeModifier modifier = instance.getModifier(name);
-        if (modifier != null && (amount == 0 || (modifier.amount() != amount || modifier.operation() != operation))) {
-            instance.removeModifier(name);
+        AttributeModifier modifier = instance.getModifier(uuid);
+        if (modifier != null && (amount == 0 || (modifier.getAmount() != amount || modifier.getOperation() != operation))) {
+            instance.removeModifier(uuid);
             return;
         }
 
         if (modifier == null && amount != 0) {
-            instance.addTransientModifier(new AttributeModifier(name, amount, operation));
+            instance.addTransientModifier(new AttributeModifier(uuid, name, amount, operation));
         }
     }
 
@@ -158,7 +155,7 @@ public class CommonUtil {
                     lines.addAll(parseDescriptionLines(jsonArray.get(i)));
                 }
             } else if (jsonElement.isJsonObject()) {
-                lines.add(Component.Serializer.fromJson(jsonElement, RegistryAccess.EMPTY));
+                lines.add(Component.Serializer.fromJson(jsonElement));
             } else if (jsonElement.isJsonPrimitive()) {
                 lines.add(Component.literal(jsonElement.getAsString()));
             }

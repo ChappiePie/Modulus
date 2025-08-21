@@ -8,8 +8,8 @@ import java.util.function.Predicate;
 
 public class Condition {
 
-    protected final Ability ability;
     private final Predicate<Condition> predicate;
+    protected final Ability ability;
     protected boolean creative, invert;
 
     public Condition(Ability ability, Predicate<Condition> predicate) {

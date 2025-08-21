@@ -2,25 +2,30 @@ package chappie.modulus.networking.client;
 
 import chappie.modulus.Modulus;
 import chappie.modulus.common.capability.PowerCap;
+import net.fabricmc.fabric.api.networking.v1.FabricPacket;
 import net.fabricmc.fabric.api.networking.v1.PacketSender;
+import net.fabricmc.fabric.api.networking.v1.PacketType;
 import net.minecraft.client.Minecraft;
 import net.minecraft.client.player.LocalPlayer;
 import net.minecraft.nbt.CompoundTag;
 import net.minecraft.network.FriendlyByteBuf;
-import net.minecraft.network.codec.StreamCodec;
-import net.minecraft.network.protocol.common.custom.CustomPacketPayload;
-import net.minecraft.resources.ResourceLocation;
 import net.minecraft.world.entity.Entity;
 import net.minecraft.world.entity.LivingEntity;
 
-public class ClientSyncAbility implements CustomPacketPayload {
+public class ClientSyncAbility implements FabricPacket {
 
-    public static final ResourceLocation PACKET_ID = Modulus.id("sync_ability");
-    public static final Type<ClientSyncAbility> PACKET = new Type<>(PACKET_ID);
-    public static StreamCodec<FriendlyByteBuf, ClientSyncAbility> CODEC = CustomPacketPayload.codec(ClientSyncAbility::write, ClientSyncAbility::new);
+    public static final PacketType<ClientSyncAbility> PACKET = PacketType.create(Modulus.id("sync_ability"), ClientSyncAbility::new);
+
+    @Override
+    public PacketType<?> getType() {
+        return PACKET;
+    }
+
+
     public int entityId;
     public String id;
     public CompoundTag nbt;
+
     public ClientSyncAbility(int entityId, String id, CompoundTag nbt) {
         this.entityId = entityId;
         this.id = id;
@@ -31,11 +36,6 @@ public class ClientSyncAbility implements CustomPacketPayload {
         this.entityId = buffer.readInt();
         this.id = buffer.readUtf();
         this.nbt = buffer.readNbt();
-    }
-
-    @Override
-    public Type<? extends CustomPacketPayload> type() {
-        return PACKET;
     }
 
     public void write(FriendlyByteBuf buffer) {
@@ -52,6 +52,6 @@ public class ClientSyncAbility implements CustomPacketPayload {
                 cap.getAbility(this.id).deserializeNBT(this.nbt);
             }
         }
-
+        
     }
 }

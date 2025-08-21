@@ -1,10 +1,11 @@
 package chappie.modulus;
 
 import chappie.modulus.common.capability.PowerCap;
+import dev.onyxstudios.cca.api.v3.entity.EntityComponentFactoryRegistry;
+import dev.onyxstudios.cca.api.v3.entity.EntityComponentInitializer;
+import dev.onyxstudios.cca.api.v3.entity.RespawnCopyStrategy;
 import net.minecraft.world.entity.LivingEntity;
-import org.ladysnake.cca.api.v3.entity.EntityComponentFactoryRegistry;
-import org.ladysnake.cca.api.v3.entity.EntityComponentInitializer;
-import org.ladysnake.cca.api.v3.entity.RespawnCopyStrategy;
+import net.minecraft.world.entity.player.Player;
 
 public class ModulusComponents implements EntityComponentInitializer {
     @Override

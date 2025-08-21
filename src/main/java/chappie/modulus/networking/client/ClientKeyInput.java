@@ -5,23 +5,28 @@ import chappie.modulus.common.ability.base.Ability;
 import chappie.modulus.common.ability.base.condition.Condition;
 import chappie.modulus.common.capability.PowerCap;
 import chappie.modulus.util.KeyMap;
+import net.fabricmc.fabric.api.networking.v1.FabricPacket;
 import net.fabricmc.fabric.api.networking.v1.PacketSender;
+import net.fabricmc.fabric.api.networking.v1.PacketType;
 import net.minecraft.client.Minecraft;
 import net.minecraft.client.player.LocalPlayer;
 import net.minecraft.network.FriendlyByteBuf;
-import net.minecraft.network.codec.StreamCodec;
-import net.minecraft.network.protocol.common.custom.CustomPacketPayload;
-import net.minecraft.resources.ResourceLocation;
 import net.minecraft.world.entity.Entity;
 
-public class ClientKeyInput implements CustomPacketPayload {
+public class ClientKeyInput implements FabricPacket {
 
-    public static final ResourceLocation PACKET_ID = Modulus.id("client_key_input");
-    public static final Type<ClientKeyInput> PACKET = new Type<>(PACKET_ID);
-    public static StreamCodec<FriendlyByteBuf, ClientKeyInput> CODEC = CustomPacketPayload.codec(ClientKeyInput::write, ClientKeyInput::new);
+    public static final PacketType<ClientKeyInput> PACKET = PacketType.create(Modulus.id("client_key_input"), ClientKeyInput::new);
+
+    @Override
+    public PacketType<?> getType() {
+        return PACKET;
+    }
+
+
     private final int entityId;
     private final String id;
     private final KeyMap keys;
+
     public ClientKeyInput(int entityId, String id, KeyMap keys) {
         this.entityId = entityId;
         this.id = id;
@@ -36,11 +41,6 @@ public class ClientKeyInput implements CustomPacketPayload {
             map.setDown(type, buf.readBoolean());
         }
         this.keys = map;
-    }
-
-    @Override
-    public Type<? extends CustomPacketPayload> type() {
-        return PACKET;
     }
 
     public void write(FriendlyByteBuf buf) {
@@ -61,6 +61,6 @@ public class ClientKeyInput implements CustomPacketPayload {
                 ability.conditionManager.conditions().forEach(Condition::keyEvent);
             }
         }
-
+        
     }
 }

@@ -8,7 +8,6 @@ import net.minecraft.network.chat.PlayerChatMessage;
 import net.minecraft.server.level.ServerPlayer;
 import net.minecraft.server.players.PlayerList;
 import net.minecraft.world.entity.LivingEntity;
-import net.minecraft.world.entity.player.Player;
 
 public class HelloWorldAbility extends Ability {
     public HelloWorldAbility(LivingEntity entity, AbilityBuilder builder) {
@@ -22,8 +21,8 @@ public class HelloWorldAbility extends Ability {
             if (entity instanceof ServerPlayer player && player.getServer() != null) {
                 PlayerList playerlist = player.getServer().getPlayerList();
                 playerlist.broadcastChatMessage(PlayerChatMessage.unsigned(player.getUUID(), "Hello World!"), player, ChatType.bind(ChatType.SAY_COMMAND, player));
-            } else if (entity instanceof Player player) {
-                player.displayClientMessage(Component.literal("Hello Client World!"), false);
+            } else {
+                entity.sendSystemMessage(Component.literal("Hello Client World!"));
             }
         }
     }

@@ -1,0 +1,40 @@
+package chappie.modulus.mixin.client;
+
+import chappie.modulus.util.ClientUtil;
+import chappie.modulus.util.model.IHasModelProperties;
+import chappie.modulus.util.model.ModelProperties;
+import net.minecraft.client.model.HumanoidModel;
+import net.minecraft.client.model.geom.ModelPart;
+import net.minecraft.client.renderer.entity.layers.RenderLayer;
+import org.spongepowered.asm.mixin.Mixin;
+import org.spongepowered.asm.mixin.Unique;
+import org.spongepowered.asm.mixin.injection.At;
+import org.spongepowered.asm.mixin.injection.Inject;
+import org.spongepowered.asm.mixin.injection.callback.CallbackInfo;
+
+import java.util.List;
+import java.util.function.Function;
+
+@Mixin(HumanoidModel.class)
+public class HumanoidModelMixin implements IHasModelProperties {
+    @Unique private ModelProperties modulus$modelProperties;
+    @Unique private ModelPart modulus$root;
+
+    @Inject(method = "<init>(Lnet/minecraft/client/model/geom/ModelPart;Ljava/util/function/Function;)V", at = @At(value = "TAIL"))
+    private void mixin$init(ModelPart pRoot, Function pRenderType, CallbackInfo ci) {
+        this.modulus$root = pRoot;
+    }
+
+    @Override
+    public void setup(float limbSwing, float limbSwingAmount, float ageInTicks, float netHeadYaw, float headPitch, float partialTicks, List<RenderLayer<?, ?>> layers) {
+        this.modulus$modelProperties = new ModelProperties(this.modulus$root, limbSwing, limbSwingAmount, ageInTicks, netHeadYaw, headPitch, partialTicks, layers);
+    }
+
+    @Override
+    public ModelProperties modelProperties() {
+        if (this.modulus$modelProperties == null) {
+            this.setup(0, 0, 0, 0, 0, ClientUtil.getPartialTick(), List.of());
+        }
+        return this.modulus$modelProperties;
+    }
+}

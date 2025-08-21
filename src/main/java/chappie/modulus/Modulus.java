@@ -8,19 +8,21 @@ import net.fabricmc.fabric.api.command.v2.CommandRegistrationCallback;
 import net.minecraft.resources.ResourceLocation;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
+import software.bernie.geckolib.GeckoLib;
 
 public class Modulus implements ModInitializer {
-    public static final String MODID = "modulus";
-    public static final Logger LOGGER = LoggerFactory.getLogger(MODID);
+	public static final String MODID = "modulus";
+	public static final Logger LOGGER = LoggerFactory.getLogger(MODID);
 
-    public static ResourceLocation id(String id) {
-        return ResourceLocation.fromNamespaceAndPath(MODID, id);
-    }
+	public static ResourceLocation id(String id) {
+		return new ResourceLocation(MODID, id);
+	}
 
-    @Override
-    public void onInitialize() {
-        ModRegistries.init();
-        ModNetworking.registerMessages();
-        CommandRegistrationCallback.EVENT.register((dispatcher, registryAccess, environment) -> SuperpowerCommand.register(dispatcher));
-    }
+	@Override
+	public void onInitialize() {
+		ModRegistries.init();
+		ModNetworking.registerMessages();
+		GeckoLib.initialize();
+		CommandRegistrationCallback.EVENT.register((dispatcher, registryAccess, environment) -> SuperpowerCommand.register(dispatcher));
+	}
 }

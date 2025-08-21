@@ -1,14 +1,14 @@
 {
-  "open_button": {
-    "sounds": [
-      "modulus:open_button"
-    ],
-    "subtitle": "subtitles.open_button"
+	"ya": {
+		"sounds": ["modulus:ya"],
+		"subtitle": "subtitles.ya"
 	},
-  "close_button": {
-    "sounds": [
-      "modulus:close_button"
-    ],
-    "subtitle": "subtitles.close_button"
+	"net": {
+		"sounds": ["modulus:net"],
+		"subtitle": "subtitles.net"
+	},
+	"button": {
+		"sounds": ["modulus:button"],
+		"subtitle": "subtitles.button"
 	}
 }

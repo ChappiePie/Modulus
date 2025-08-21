@@ -8,18 +8,17 @@ import chappie.modulus.common.ability.base.Superpower;
 import chappie.modulus.util.CommonUtil;
 import chappie.modulus.util.IHasTimer;
 import com.google.common.collect.Maps;
-import net.minecraft.core.HolderLookup;
+import dev.onyxstudios.cca.api.v3.component.ComponentKey;
+import dev.onyxstudios.cca.api.v3.component.ComponentRegistryV3;
+import dev.onyxstudios.cca.api.v3.component.ComponentV3;
+import dev.onyxstudios.cca.api.v3.component.sync.AutoSyncedComponent;
+import dev.onyxstudios.cca.api.v3.component.tick.CommonTickingComponent;
 import net.minecraft.nbt.CompoundTag;
 import net.minecraft.resources.ResourceLocation;
 import net.minecraft.server.level.ServerPlayer;
 import net.minecraft.world.entity.LivingEntity;
 import net.minecraft.world.entity.player.Player;
 import org.jetbrains.annotations.Nullable;
-import org.ladysnake.cca.api.v3.component.ComponentKey;
-import org.ladysnake.cca.api.v3.component.ComponentRegistryV3;
-import org.ladysnake.cca.api.v3.component.ComponentV3;
-import org.ladysnake.cca.api.v3.component.sync.AutoSyncedComponent;
-import org.ladysnake.cca.api.v3.component.tick.CommonTickingComponent;
 
 import java.util.Collection;
 import java.util.Map;
@@ -28,21 +27,18 @@ import java.util.Objects;
 public class PowerCap implements AutoSyncedComponent, CommonTickingComponent, ComponentV3 {
 
     public static final ComponentKey<PowerCap> KEY = ComponentRegistryV3.INSTANCE.getOrCreate(Modulus.id("powers"), PowerCap.class);
-    private final LivingEntity livingEntity;
-    private final Map<AbilityBuilder, Ability> abilities = Maps.newLinkedHashMap();
-    private Superpower superpower;
-    
-    public PowerCap(LivingEntity livingEntity) {
-        this.livingEntity = livingEntity;
-    }
 
     @Nullable
     public static PowerCap getCap(Object provider) {
         return KEY.maybeGet(provider).orElse(null);
     }
 
-    public Superpower getSuperpower() {
-        return superpower;
+    private final LivingEntity livingEntity;
+    private Superpower superpower;
+    private final Map<AbilityBuilder, Ability> abilities = Maps.newLinkedHashMap();
+
+    public PowerCap(LivingEntity livingEntity) {
+        this.livingEntity = livingEntity;
     }
 
     public void setSuperpower(Superpower superpower) {
@@ -55,6 +51,10 @@ public class PowerCap implements AutoSyncedComponent, CommonTickingComponent, Co
             }
         }
         this.syncToAll();
+    }
+
+    public Superpower getSuperpower() {
+        return superpower;
     }
 
     public Collection<Ability> getAbilities() {
@@ -108,11 +108,11 @@ public class PowerCap implements AutoSyncedComponent, CommonTickingComponent, Co
     }
 
     @Override
-    public void readFromNbt(CompoundTag tag, HolderLookup.Provider registryLookup) {
+    public void readFromNbt(CompoundTag tag) {
         CompoundTag compoundTag = tag.getCompound("Superpower");
         this.abilities.clear();
         if (!compoundTag.getString("Id").isEmpty()) {
-            Superpower superpower = Superpower.REGISTRY.getValue(ResourceLocation.tryParse(compoundTag.getString("Id")));
+            Superpower superpower = Superpower.REGISTRY.get(new ResourceLocation(compoundTag.getString("Id")));
             this.superpower = superpower;
             if (superpower != null) {
                 CompoundTag abilities = compoundTag.getCompound("Abilities");
@@ -132,7 +132,7 @@ public class PowerCap implements AutoSyncedComponent, CommonTickingComponent, Co
     }
 
     @Override
-    public void writeToNbt(CompoundTag tag, HolderLookup.Provider registryLookup) {
+    public void writeToNbt(CompoundTag tag) {
         CompoundTag superpower = new CompoundTag();
         if (this.superpower != null) {
             superpower.putString("Id", Objects.requireNonNull(Superpower.REGISTRY.getKey(this.superpower)).toString());
