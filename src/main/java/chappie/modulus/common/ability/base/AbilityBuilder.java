@@ -3,12 +3,12 @@ package chappie.modulus.common.ability.base;
 import chappie.modulus.common.ability.base.condition.Condition;
 import chappie.modulus.common.capability.PowerCap;
 import chappie.modulus.util.data.DataAccessor;
+import com.google.common.collect.Lists;
 import com.google.common.collect.Maps;
 import net.minecraft.nbt.CompoundTag;
 import net.minecraft.nbt.ListTag;
 import net.minecraft.network.chat.Component;
 import net.minecraft.world.entity.LivingEntity;
-import org.apache.commons.compress.utils.Lists;
 
 import java.util.HashMap;
 import java.util.List;

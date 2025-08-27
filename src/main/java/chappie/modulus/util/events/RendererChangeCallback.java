@@ -41,7 +41,7 @@ public interface RendererChangeCallback {
         private final RenderType renderType;
         private final int packedLight, packedOverlay;
         private final T entity;
-        private float red, green, blue, alpha;
+        private int red, green, blue, alpha;
 
         public RendererChangeEvent(T entity, LivingEntityRenderer<T, S, M> renderer, ModelProperties modelProperties, PoseStack poseStack, MultiBufferSource multiBufferSource, RenderType renderType, int packedLight, int packedOverlay) {
             this.entity = entity;
@@ -54,7 +54,7 @@ public interface RendererChangeCallback {
             this.packedOverlay = packedOverlay;
         }
 
-        public void setColor(float red, float green, float blue, float alpha) {
+        public void setColor(int red, int green, int blue, int alpha) {
             this.red = red;
             this.green = green;
             this.blue = blue;
@@ -94,19 +94,19 @@ public interface RendererChangeCallback {
             return modelProperties;
         }
 
-        public float red() {
+        public int red() {
             return red;
         }
 
-        public float green() {
+        public int green() {
             return green;
         }
 
-        public float blue() {
+        public int blue() {
             return blue;
         }
 
-        public float alpha() {
+        public int alpha() {
             return alpha;
         }
     }

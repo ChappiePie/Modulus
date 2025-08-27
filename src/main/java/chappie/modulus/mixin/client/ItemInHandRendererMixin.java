@@ -33,15 +33,15 @@ public abstract class ItemInHandRendererMixin {
         AtomicReference<Float> swingProgress = new AtomicReference<>(pSwingProgress);
         AtomicReference<Float> equippedProgress = new AtomicReference<>(pEquippedProgress);
 
-        FirstPersonAdditionalHandCallback.EVENT.invoker().event(new FirstPersonAdditionalHandCallback.FirstPersonAdditionalHandEvent(instance, renderArm, pPlayer, pPartialTicks, pPitch, pHand, pHand == InteractionHand.MAIN_HAND ? pPlayer.getMainArm() : pPlayer.getMainArm().getOpposite(), swingProgress, pStack, equippedProgress, pMatrixStack, pBuffer, pCombinedLight));
+        if (!FirstPersonAdditionalHandCallback.EVENT.invoker().event(new FirstPersonAdditionalHandCallback.FirstPersonAdditionalHandEvent((ItemInHandRenderer) (Object) this, renderArm, pPlayer, pPartialTicks, pPitch, pHand, pHand == InteractionHand.MAIN_HAND ? pPlayer.getMainArm() : pPlayer.getMainArm().getOpposite(), swingProgress, pStack, equippedProgress, pMatrixStack, pBuffer, pCombinedLight))) {
+            pSwingProgress = swingProgress.get();
+            pEquippedProgress = equippedProgress.get();
 
-        pSwingProgress = swingProgress.get();
-        pEquippedProgress = equippedProgress.get();
-
-        if (renderArm.get() && !pPlayer.isScoping() && !pPlayer.isInvisible()) {
-            this.renderPlayerArm(pMatrixStack, pBuffer, pCombinedLight, pEquippedProgress, pSwingProgress, pHand == InteractionHand.MAIN_HAND ? pPlayer.getMainArm() : pPlayer.getMainArm().getOpposite());
-        } else {
-            original.call(instance, pPlayer, pPartialTicks, pPitch, pHand, pSwingProgress, pStack, pEquippedProgress, pMatrixStack, pBuffer, pCombinedLight);
+            if (renderArm.get() && !pPlayer.isScoping() && !pPlayer.isInvisible()) {
+                this.renderPlayerArm(pMatrixStack, pBuffer, pCombinedLight, pEquippedProgress, pSwingProgress, pHand == InteractionHand.MAIN_HAND ? pPlayer.getMainArm() : pPlayer.getMainArm().getOpposite());
+            } else {
+                original.call(instance, pPlayer, pPartialTicks, pPitch, pHand, pSwingProgress, pStack, pEquippedProgress, pMatrixStack, pBuffer, pCombinedLight);
+            }
         }
         pMatrixStack.popPose();
     }
