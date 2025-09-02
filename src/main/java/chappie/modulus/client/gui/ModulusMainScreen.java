@@ -14,13 +14,11 @@ import net.minecraft.client.gui.components.events.GuiEventListener;
 import net.minecraft.client.gui.narration.NarratableEntry;
 import net.minecraft.client.gui.screens.PauseScreen;
 import net.minecraft.client.gui.screens.Screen;
-import net.minecraft.client.renderer.RenderType;
 import net.minecraft.client.resources.sounds.SimpleSoundInstance;
 import net.minecraft.network.chat.CommonComponents;
 import net.minecraft.network.chat.Component;
 import net.minecraft.network.chat.MutableComponent;
 import net.minecraft.resources.ResourceLocation;
-import net.minecraft.util.ARGB;
 import net.minecraft.util.Mth;
 import org.jetbrains.annotations.Nullable;
 
@@ -130,11 +128,11 @@ public class ModulusMainScreen extends Screen implements IOneScaleScreen {
 
         // Modulus header
         guiGraphics.blitSprite(
-                RenderType::guiTextured,
+
                 SPRITES.get(true, false),
                 this.width / 2 - 60, 3,
                 120, 32,
-                ARGB.white(1.0F)
+                ClientUtil.ARGB32.white(1.0F)
         );
 
         PoseStack pPoseStack = guiGraphics.pose();
@@ -146,11 +144,11 @@ public class ModulusMainScreen extends Screen implements IOneScaleScreen {
 
             int labelXPos = this.width / 2, labelYPos = 10;
 
-            guiGraphics.blit(RenderType::guiTextured, MENU, labelXPos - 52, labelYPos, 0, 0, 104, 29, 104, 29, 256, 256);
+            guiGraphics.blit(MENU, labelXPos - 52, labelYPos, 0, 0, 104, 29, 104, 29, 256, 256);
 
 
             // Line under label
-            int lineColor = ARGB.color(255, 46, 51, 53);
+            int lineColor = ClientUtil.ARGB32.color(255, 46, 51, 53);
             labelYPos += 30;
 
             //RenderSystem.setShaderColor(0.15F, 0.15F, 0.15F, 1F);
@@ -160,8 +158,8 @@ public class ModulusMainScreen extends Screen implements IOneScaleScreen {
 
             pPoseStack.popPose();
         }
-        //guiGraphics.blit(RenderType::guiTextured, Screen.HEADER_SEPARATOR, 0, 56, 0.0F, 0.0F, this.width, 2, 32, 2);
-        //guiGraphics.blit(RenderType::guiTextured, Screen.FOOTER_SEPARATOR, 0, Mth.roundToward(this.height - 36, 2), 0.0F, 0.0F, this.width, 2, 32, 2);
+        //guiGraphics.blit( Screen.HEADER_SEPARATOR, 0, 56, 0.0F, 0.0F, this.width, 2, 32, 2);
+        //guiGraphics.blit( Screen.FOOTER_SEPARATOR, 0, Mth.roundToward(this.height - 36, 2), 0.0F, 0.0F, this.width, 2, 32, 2);
 
         if (this.tabId == 1) {
             int canvasHeight = this.canvasMaxY - this.canvasMinY;
@@ -170,7 +168,7 @@ public class ModulusMainScreen extends Screen implements IOneScaleScreen {
 
             // Two sticks like borders
             {
-                int c = ARGB.color(20, 255, 255, 255);
+                int c = ClientUtil.ARGB32.color(20, 255, 255, 255);
                 int x = 0;
                 int minY = this.canvasMinY + 10;
                 int maxY = this.canvasMaxY - 8;
@@ -210,7 +208,7 @@ public class ModulusMainScreen extends Screen implements IOneScaleScreen {
                 final int width = (int) (canvasHeight / 1.27);
                 final int x1 = x - width / 2, y1 = y + 25;
                 guiGraphics.enableScissor(x1, y1, x1 + width, y1 + (int) (canvasHeight / 1.5));
-                guiGraphics.blit(RenderType::guiTextured, Screen.MENU_BACKGROUND, x1, y1, 0, 0, width, (int) (canvasHeight / 1.5F), 32, 32);
+                guiGraphics.blit(Screen.MENU_BACKGROUND, x1, y1, 0, 0, width, (int) (canvasHeight / 1.5F), 32, 32);
                 //RenderSystem.setShaderColor(1.0F, 1.0F, 1.0F, 1.0F);
 
 

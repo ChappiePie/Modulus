@@ -1,6 +1,5 @@
 package chappie.modulus.mixin.client;
 
-import chappie.modulus.util.render.IRenderStateEntity;
 import net.minecraft.client.renderer.entity.state.LivingEntityRenderState;
 import net.minecraft.world.entity.LivingEntity;
 import org.spongepowered.asm.mixin.Mixin;

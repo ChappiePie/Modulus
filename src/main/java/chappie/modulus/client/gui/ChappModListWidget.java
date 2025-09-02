@@ -21,10 +21,8 @@ import net.minecraft.client.gui.components.ContainerObjectSelectionList;
 import net.minecraft.client.gui.components.MultiLineLabel;
 import net.minecraft.client.gui.components.events.GuiEventListener;
 import net.minecraft.client.gui.narration.NarratableEntry;
-import net.minecraft.client.renderer.RenderType;
 import net.minecraft.network.chat.Component;
 import net.minecraft.resources.ResourceLocation;
-import net.minecraft.util.ARGB;
 import net.minecraft.util.Mth;
 import net.minecraft.world.phys.Vec2;
 
@@ -87,12 +85,10 @@ public class ChappModListWidget extends ContainerObjectSelectionList<ChappModLis
     protected void renderListBackground(GuiGraphics guiGraphics) {
     }
 
-
     @Override
-    protected int scrollBarX() {
+    protected int getScrollbarPosition() {
         return this.listWidth;
     }
-
 
     @Override
     public int getRowWidth() {
@@ -117,8 +113,8 @@ public class ChappModListWidget extends ContainerObjectSelectionList<ChappModLis
 
     @Override
     protected void renderItem(GuiGraphics guiGraphics, int pMouseX, int pMouseY, float pPartialTick, int pIndex, int pLeft, int pTop, int pWidth, int pHeight) {
-        int colorIn = ARGB.color(150, 0, 0, 0);
-        int colorOut = ARGB.color(50, 255, 255, 255);
+        int colorIn = ClientUtil.ARGB32.color(150, 0, 0, 0);
+        int colorOut = ClientUtil.ARGB32.color(50, 255, 255, 255);
         this.renderSelection(guiGraphics, pTop, pWidth, pHeight - 8, colorOut, colorIn);
         super.renderItem(guiGraphics, pMouseX, pMouseY, pPartialTick, pIndex, pLeft, pTop, pWidth, pHeight);
     }
@@ -165,11 +161,11 @@ public class ChappModListWidget extends ContainerObjectSelectionList<ChappModLis
             f = 1.0F / f;
             pPoseStack.translate(this.getX() * f, this.getY() * f, 0);
             guiGraphics.blitSprite(
-                    RenderType::guiTextured,
+
                     ModulusMainScreen.SPRITES.get(this.active, this.isHoveredOrFocused()),
                     0, 0,
                     (int) this.oldSize.x, (int) this.oldSize.y,
-                    ARGB.white(this.alpha)
+                    ClientUtil.ARGB32.white(this.alpha)
             );
             pPoseStack.popPose();
 
@@ -257,8 +253,8 @@ public class ChappModListWidget extends ContainerObjectSelectionList<ChappModLis
             this.modInfo.textRenderable.render(this, font, x, guiGraphics, entryIdx, y, left, entryWidth, entryHeight, mouseX, mouseY, isHovered, partialTick);
             y += 6;
             {
-                int mainColor = ARGB.color(255, 108, 108, 108);
-                int offColor = ARGB.color(255, 56, 56, 56);
+                int mainColor = ClientUtil.ARGB32.color(255, 108, 108, 108);
+                int offColor = ClientUtil.ARGB32.color(255, 56, 56, 56);
                 int minX = x.get() - 4, minY = y - 4;
                 int maxX = x.get() + 128 + 4, maxY = y + 67 + 7;
                 boolean isHoveredMod = mouseX > minX && mouseX < maxX && mouseY > minY && mouseY < maxY;
@@ -276,7 +272,7 @@ public class ChappModListWidget extends ContainerObjectSelectionList<ChappModLis
                     ht = 0.75F + this.highlightTimer.value(partialTick) * 0.25F;
                 }
 
-                ClientUtil.blit(guiGraphics, this.modInfo.texture, x.get() + 6 * f, y + 2 + 3 * f, 0, 0, 128 / (1.0F + f / 10F), 64 / (1.0F + f / 10F), 2048, 1024, 2048, 1024, ARGB.colorFromFloat(1, ht, ht, ht));
+                ClientUtil.blit(guiGraphics, this.modInfo.texture, x.get() + 6 * f, y + 2 + 3 * f, 0, 0, 128 / (1.0F + f / 10F), 64 / (1.0F + f / 10F), 2048, 1024, 2048, 1024, ClientUtil.ARGB32.colorFromFloat(1, ht, ht, ht));
             }
             for (Map.Entry<AbstractWidget, BiFunction<Integer, Integer, Vec2>> e : this.children.entrySet()) {
                 Vec2 vec2 = e.getValue().apply(x.get(), y);

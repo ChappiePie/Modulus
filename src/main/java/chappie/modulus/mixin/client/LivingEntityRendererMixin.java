@@ -5,7 +5,7 @@ import chappie.modulus.util.ClientUtil;
 import chappie.modulus.util.events.RendererChangeCallback;
 import chappie.modulus.util.events.SetupAnimCallback;
 import chappie.modulus.util.model.IHasModelProperties;
-import chappie.modulus.util.render.IRenderStateEntity;
+import chappie.modulus.util.model.RotationProperties;
 import com.llamalad7.mixinextras.injector.v2.WrapWithCondition;
 import com.llamalad7.mixinextras.sugar.Local;
 import com.mojang.blaze3d.vertex.PoseStack;
@@ -16,8 +16,6 @@ import net.minecraft.client.renderer.MultiBufferSource;
 import net.minecraft.client.renderer.RenderType;
 import net.minecraft.client.renderer.entity.LivingEntityRenderer;
 import net.minecraft.client.renderer.entity.layers.RenderLayer;
-import net.minecraft.client.renderer.entity.state.LivingEntityRenderState;
-import net.minecraft.util.ARGB;
 import net.minecraft.world.entity.LivingEntity;
 import org.spongepowered.asm.mixin.Final;
 import org.spongepowered.asm.mixin.Mixin;
@@ -31,39 +29,29 @@ import java.util.List;
 
 @SuppressWarnings("unchecked")
 @Mixin(LivingEntityRenderer.class)
-public abstract class LivingEntityRendererMixin<T extends LivingEntity, S extends LivingEntityRenderState, M extends EntityModel<? super S>> {
+public abstract class LivingEntityRendererMixin<T extends LivingEntity, M extends EntityModel<T>> {
     @Shadow
     protected M model;
     @Shadow
     @Final
     protected List<RenderLayer<?, ?>> layers;
     @Unique
-    private RendererChangeCallback.RendererChangeEvent<T, S, M> modulus$event;
+    private RendererChangeCallback.RendererChangeEvent<T, M> modulus$event;
 
     @Shadow
-    protected abstract boolean addLayer(RenderLayer<S, M> p_115327_);
+    protected abstract boolean addLayer(RenderLayer<T, M> p_115327_);
 
-    @Shadow
-    protected abstract float getWhiteOverlayProgress(S renderState);
-
-    @Inject(method = "extractRenderState(Lnet/minecraft/world/entity/LivingEntity;Lnet/minecraft/client/renderer/entity/state/LivingEntityRenderState;F)V", at = @At("TAIL"))
-    public void setupModelProperties(T livingEntity, S livingEntityRenderState, float f, CallbackInfo ci) {
-        if (livingEntityRenderState instanceof IRenderStateEntity s) {
-            s.modulus$setEntity(livingEntity);
-        }
-    }
-
-    @Inject(method = "render(Lnet/minecraft/client/renderer/entity/state/LivingEntityRenderState;Lcom/mojang/blaze3d/vertex/PoseStack;Lnet/minecraft/client/renderer/MultiBufferSource;I)V", at = @At(value = "INVOKE", target = "Lnet/minecraft/client/model/EntityModel;setupAnim(Lnet/minecraft/client/renderer/entity/state/EntityRenderState;)V"))
-    public void setupModelProperties2(S livingEntityRenderState, PoseStack poseStack, MultiBufferSource multiBufferSource, int i, CallbackInfo ci) {
+    @Inject(method = "render(Lnet/minecraft/world/entity/LivingEntity;FFLcom/mojang/blaze3d/vertex/PoseStack;Lnet/minecraft/client/renderer/MultiBufferSource;I)V", at = @At(value = "INVOKE", target = "Lnet/minecraft/client/model/EntityModel;setupAnim(Lnet/minecraft/world/entity/Entity;FFFFF)V"))
+    public void setupModelProperties2(T entity, float entityYaw, float partialTicks, PoseStack poseStack, MultiBufferSource buffer, int packedLight, CallbackInfo ci, @Local(ordinal = 8) float f5, @Local(ordinal = 7) float f8, @Local(ordinal = 6) float f7, @Local(ordinal = 2) float f2, @Local(ordinal = 4) float f6) {
         if (this.model instanceof IHasModelProperties iModel) {
-            iModel.setup(livingEntityRenderState, ClientUtil.getPartialTick(), this.layers);
+            iModel.setup(new RotationProperties(f5, f8, f7, f2, f6), ClientUtil.getPartialTick(), this.layers);
             if (this.layers.stream().noneMatch(p -> p instanceof AbilityLayerRenderer)) {
                 this.addLayer(new AbilityLayerRenderer<>((LivingEntityRenderer<T, S, M>) (Object) this));
             }
         }
     }
 
-    @Inject(method = "render(Lnet/minecraft/client/renderer/entity/state/LivingEntityRenderState;Lcom/mojang/blaze3d/vertex/PoseStack;Lnet/minecraft/client/renderer/MultiBufferSource;I)V", at = @At(value = "INVOKE", target = "Lnet/minecraft/client/renderer/entity/LivingEntityRenderer;getWhiteOverlayProgress(Lnet/minecraft/client/renderer/entity/state/LivingEntityRenderState;)F"))
+    @Inject(method = "render(Lnet/minecraft/world/entity/LivingEntity;FFLcom/mojang/blaze3d/vertex/PoseStack;Lnet/minecraft/client/renderer/MultiBufferSource;I)V", at = @At(value = "INVOKE", target = "Lnet/minecraft/client/renderer/entity/LivingEntityRenderer;getWhiteOverlayProgress(Lnet/minecraft/client/renderer/entity/state/LivingEntityRenderState;)F"))
     public void setup(S livingEntityRenderState, PoseStack poseStack, MultiBufferSource multiBufferSource, int i, CallbackInfo info, @Local(ordinal = 0) RenderType type) {
         LivingEntityRenderer<T, S, M> renderer = (LivingEntityRenderer<T, S, M>) (Object) this;
         if (this.model instanceof IHasModelProperties iModel && livingEntityRenderState instanceof IRenderStateEntity e) {
@@ -81,7 +69,7 @@ public abstract class LivingEntityRendererMixin<T extends LivingEntity, S extend
     )
     private boolean renderIfAllowed(EntityModel instance, PoseStack poseStack, VertexConsumer vertexConsumer, int pPackedLight, int pPackedOverlay, int pColor) {
         if (this.modulus$event != null) {
-            this.modulus$event.setColor(ARGB.red(pColor), ARGB.green(pColor), ARGB.blue(pColor), ARGB.alpha(pColor));
+            this.modulus$event.setColor(ClientUtil.ARGB32.red(pColor), ClientUtil.ARGB32.green(pColor), ClientUtil.ARGB32.blue(pColor), ClientUtil.ARGB32.alpha(pColor));
             boolean b = RendererChangeCallback.EVENT.invoker().event(this.modulus$event);
             this.modulus$event.multiBufferSource().getBuffer(this.modulus$event.renderType()); // rollback texture of entity
             return !b;

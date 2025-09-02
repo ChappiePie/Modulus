@@ -3,6 +3,7 @@ package chappie.modulus.mixin.client;
 import chappie.modulus.util.ClientUtil;
 import chappie.modulus.util.model.IHasModelProperties;
 import chappie.modulus.util.model.ModelProperties;
+import chappie.modulus.util.model.RotationProperties;
 import net.minecraft.client.model.EntityModel;
 import net.minecraft.client.model.Model;
 import net.minecraft.client.model.geom.ModelPart;
@@ -27,8 +28,8 @@ public abstract class EntityModelMixin extends Model implements IHasModelPropert
     }
 
     @Override
-    public void setup(LivingEntityRenderState renderstate, float partialTicks, List<RenderLayer<?, ?>> layers) {
-        this.modulus$modelProperties = new ModelProperties(this.root(), renderstate, partialTicks, layers);
+    public void setup(RotationProperties rotationProperties, float partialTicks, List<RenderLayer<?, ?>> layers) {
+        this.modulus$modelProperties = new ModelProperties(this.root(), rotationProperties, partialTicks, layers);
     }
 
     @Override
