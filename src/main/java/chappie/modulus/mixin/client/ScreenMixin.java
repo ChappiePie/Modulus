@@ -32,7 +32,7 @@ public abstract class ScreenMixin implements IScreenExtender {
             this.width = window.getGuiScaledWidth();
             this.height = window.getGuiScaledHeight();
 
-            mc.getMainRenderTarget().resize(window.getWidth(), window.getHeight());
+            mc.getMainRenderTarget().resize(window.getWidth(), window.getHeight(), false);
             mc.gameRenderer.resize(window.getWidth(), window.getHeight());
             mc.mouseHandler.setIgnoreFirstMove();
         }
@@ -49,7 +49,7 @@ public abstract class ScreenMixin implements IScreenExtender {
             this.width = window.getGuiScaledWidth();
             this.height = window.getGuiScaledHeight();
 
-            mc.getMainRenderTarget().resize(window.getWidth(), window.getHeight());
+            mc.getMainRenderTarget().resize(window.getWidth(), window.getHeight(), false);
             mc.gameRenderer.resize(window.getWidth(), window.getHeight());
             mc.mouseHandler.setIgnoreFirstMove();
         }

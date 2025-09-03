@@ -5,12 +5,13 @@
   "client": [
     "client.CubeMixin",
     "client.EntityRenderDispatcherMixin",
+    "client.HierarchicalModelMixin",
+    "client.HumanoidModelMixin",
     "client.ItemInHandRendererMixin",
     "client.LivingEntityRendererMixin",
-    "client.LivingEntityRenderStateMixin",
     "client.MinecraftMixin",
-    "client.ModelMixin",
     "client.ModelPartMixin",
+    "client.QuadrupedModelMixin",
     "client.ScreenMixin",
     "client.WindowMixin"
   ],

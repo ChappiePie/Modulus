@@ -112,7 +112,7 @@ public class PowerCap implements AutoSyncedComponent, CommonTickingComponent, Co
         CompoundTag compoundTag = tag.getCompound("Superpower");
         this.abilities.clear();
         if (!compoundTag.getString("Id").isEmpty()) {
-            Superpower superpower = Superpower.REGISTRY.getValue(ResourceLocation.tryParse(compoundTag.getString("Id")));
+            Superpower superpower = Superpower.REGISTRY.get(ResourceLocation.tryParse(compoundTag.getString("Id")));
             this.superpower = superpower;
             if (superpower != null) {
                 CompoundTag abilities = compoundTag.getCompound("Abilities");

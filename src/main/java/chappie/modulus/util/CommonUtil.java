@@ -68,7 +68,7 @@ public class CommonUtil {
 
     public static void spawnParticleForAll(Level world, ParticleOptions particleIn, boolean longDistanceIn, Vec3 posVc3d, Vec3 offsetVc3d, float speedIn, int countIn) {
         for (ServerPlayer player : world.getEntitiesOfClass(ServerPlayer.class, CommonUtil.boxWithRange(posVc3d, 20))) {
-            player.connection.send(new ClientboundLevelParticlesPacket(particleIn, longDistanceIn, true, posVc3d.x, posVc3d.y, posVc3d.z, (float) offsetVc3d.x, (float) offsetVc3d.y, (float) offsetVc3d.z, speedIn, countIn));
+            player.connection.send(new ClientboundLevelParticlesPacket(particleIn, true, posVc3d.x, posVc3d.y, posVc3d.z, (float) offsetVc3d.x, (float) offsetVc3d.y, (float) offsetVc3d.z, speedIn, countIn));
         }
     }
 

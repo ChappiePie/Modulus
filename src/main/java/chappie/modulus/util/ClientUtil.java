@@ -2,19 +2,18 @@ package chappie.modulus.util;
 
 import chappie.modulus.Modulus;
 import chappie.modulus.util.model.IChangeableSize;
-import com.mojang.blaze3d.vertex.DefaultVertexFormat;
-import com.mojang.blaze3d.vertex.PoseStack;
-import com.mojang.blaze3d.vertex.VertexConsumer;
-import com.mojang.blaze3d.vertex.VertexFormat;
+import chappie.modulus.util.model.IHasModelProperties;
+import com.mojang.blaze3d.systems.RenderSystem;
+import com.mojang.blaze3d.vertex.*;
 import net.minecraft.client.Minecraft;
 import net.minecraft.client.gui.GuiGraphics;
 import net.minecraft.client.model.Model;
 import net.minecraft.client.model.geom.ModelPart;
+import net.minecraft.client.renderer.GameRenderer;
 import net.minecraft.client.renderer.RenderStateShard;
 import net.minecraft.client.renderer.RenderType;
 import net.minecraft.network.chat.Style;
 import net.minecraft.resources.ResourceLocation;
-import net.minecraft.util.TriState;
 import net.minecraft.world.phys.AABB;
 import org.joml.Matrix4f;
 
@@ -26,7 +25,7 @@ public class ClientUtil {
     public static final Style BOLD_MINECRAFT = Style.EMPTY.withFont(BOLD_FONT);
 
     public static float getPartialTick() {
-        return Minecraft.getInstance().isPaused() ? 0 : Minecraft.getInstance().getDeltaTracker().getGameTimeDeltaPartialTick(false);
+        return Minecraft.getInstance().isPaused() ? 0 : Minecraft.getInstance().getTimer().getGameTimeDeltaPartialTick(false);
     }
 
     public static void blit(GuiGraphics guiGraphics, ResourceLocation atlasLocation, float x, float y, float uOffset, float vOffset, float uWidth, float vHeight, float width, float height, float textureWidth, float textureHeight, int color) {
@@ -34,13 +33,15 @@ public class ClientUtil {
     }
 
     private static void innerBlit(GuiGraphics guiGraphics, ResourceLocation atlasLocation, float x1, float x2, float y1, float y2, float minU, float maxU, float minV, float maxV, int color) {
-        RenderType renderType = RenderType.guiTextured(atlasLocation);
         Matrix4f matrix4f = guiGraphics.pose().last().pose();
-        VertexConsumer vertexConsumer = Minecraft.getInstance().renderBuffers().bufferSource().getBuffer(renderType);
-        vertexConsumer.addVertex(matrix4f, x1, y1, 0.0F).setUv(minU, minV).setColor(color);
-        vertexConsumer.addVertex(matrix4f, x1, y2, 0.0F).setUv(minU, maxV).setColor(color);
-        vertexConsumer.addVertex(matrix4f, x2, y2, 0.0F).setUv(maxU, maxV).setColor(color);
-        vertexConsumer.addVertex(matrix4f, x2, y1, 0.0F).setUv(maxU, minV).setColor(color);
+        RenderSystem.setShaderTexture(0, atlasLocation);
+        RenderSystem.setShader(GameRenderer::getPositionTexShader);
+        BufferBuilder bufferBuilder = Tesselator.getInstance().begin(VertexFormat.Mode.QUADS, DefaultVertexFormat.POSITION_TEX);
+        bufferBuilder.addVertex(matrix4f, x1, y1, 0.0F).setUv(minU, minV).setColor(color);
+        bufferBuilder.addVertex(matrix4f, x1, y2, 0.0F).setUv(minU, maxV).setColor(color);
+        bufferBuilder.addVertex(matrix4f, x2, y2, 0.0F).setUv(maxU, maxV).setColor(color);
+        bufferBuilder.addVertex(matrix4f, x2, y1, 0.0F).setUv(maxU, minV).setColor(color);
+        BufferUploader.drawWithShader(bufferBuilder.buildOrThrow());
     }
 
     public static IChangeableSize modified(ModelPart part) {
@@ -48,8 +49,10 @@ public class ClientUtil {
     }
 
     public static void modifyAllParts(Model model, BiConsumer<ModelPart, IChangeableSize> consumer) {
-        model.allParts().forEach((part) ->
-                consumer.accept(part, modified(part)));
+        if (model instanceof IHasModelProperties modelProperties) {
+            modelProperties.allParts().forEach((part) ->
+                    consumer.accept(part, modified(part)));
+        }
     }
 
     public static void renderFilledBox(PoseStack matrixStack, VertexConsumer builder, AABB box, float red, float green, float blue, float alpha, int combinedLightIn) {
@@ -108,7 +111,7 @@ public class ClientUtil {
 
         public static RenderType glow(ResourceLocation texture) {
             return create(Modulus.MODID + ":light", DefaultVertexFormat.NEW_ENTITY, VertexFormat.Mode.QUADS, 256, false, true, CompositeState.builder().setShaderState(RENDERTYPE_ENERGY_SWIRL_SHADER)
-                    .setTextureState(new TextureStateShard(texture, TriState.DEFAULT, false))
+                    .setTextureState(new TextureStateShard(texture, false, false))
                     .setTexturingState(new OffsetTexturingStateShard(0, 0))
                     .setTransparencyState(RenderStateShard.TRANSLUCENT_TRANSPARENCY)
                     .setCullState(NO_CULL).setLightmapState(LIGHTMAP).setOverlayState(OVERLAY)

@@ -21,10 +21,9 @@ import net.minecraft.client.gui.components.ContainerObjectSelectionList;
 import net.minecraft.client.gui.components.MultiLineLabel;
 import net.minecraft.client.gui.components.events.GuiEventListener;
 import net.minecraft.client.gui.narration.NarratableEntry;
-import net.minecraft.client.renderer.RenderType;
 import net.minecraft.network.chat.Component;
 import net.minecraft.resources.ResourceLocation;
-import net.minecraft.util.ARGB;
+import net.minecraft.util.FastColor;
 import net.minecraft.util.Mth;
 import net.minecraft.world.phys.Vec2;
 
@@ -89,7 +88,7 @@ public class ChappModListWidget extends ContainerObjectSelectionList<ChappModLis
 
 
     @Override
-    protected int scrollBarX() {
+    protected int getScrollbarPosition() {
         return this.listWidth;
     }
 
@@ -117,8 +116,8 @@ public class ChappModListWidget extends ContainerObjectSelectionList<ChappModLis
 
     @Override
     protected void renderItem(GuiGraphics guiGraphics, int pMouseX, int pMouseY, float pPartialTick, int pIndex, int pLeft, int pTop, int pWidth, int pHeight) {
-        int colorIn = ARGB.color(150, 0, 0, 0);
-        int colorOut = ARGB.color(50, 255, 255, 255);
+        int colorIn = FastColor.ARGB32.color(150, 0, 0, 0);
+        int colorOut = FastColor.ARGB32.color(50, 255, 255, 255);
         this.renderSelection(guiGraphics, pTop, pWidth, pHeight - 8, colorOut, colorIn);
         super.renderItem(guiGraphics, pMouseX, pMouseY, pPartialTick, pIndex, pLeft, pTop, pWidth, pHeight);
     }
@@ -153,42 +152,49 @@ public class ChappModListWidget extends ContainerObjectSelectionList<ChappModLis
 
         @Override
         public void renderWidget(GuiGraphics guiGraphics, int pMouseX, int pMouseY, float pPartialTick) {
+            //super.renderWidget(guiGraphics, pMouseX, pMouseY, pPartialTick);
             PoseStack pPoseStack = guiGraphics.pose();
 
             RenderSystem.enableBlend();
             RenderSystem.enableDepthTest();
-
+            guiGraphics.setColor(1.0F, 1.0F, 1.0F, 1.0F);
 
             pPoseStack.pushPose();
             float f = 0.75F;
             pPoseStack.scale(f, f, 1.0F);
             f = 1.0F / f;
             pPoseStack.translate(this.getX() * f, this.getY() * f, 0);
-            guiGraphics.blitSprite(
-                    RenderType::guiTextured,
-                    ModulusMainScreen.SPRITES.get(this.active, this.isHoveredOrFocused()),
-                    0, 0,
-                    (int) this.oldSize.x, (int) this.oldSize.y,
-                    ARGB.white(this.alpha)
-            );
-            pPoseStack.popPose();
-
-
-            pPoseStack.pushPose();
-
-            float f1 = 0.5F;
-            pPoseStack.scale(f1, f1, 1.0F);
-            f1 = 1.0F / f1;
-            pPoseStack.translate(this.getX() * f1, this.getY() * f1, 0);
-            guiGraphics.enableScissor(6, 5, (int) (this.oldSize.x * f + 6), (int) (this.oldSize.y + 3));
-            renderScrollingString(guiGraphics, Minecraft.getInstance().font, this.getMessage(), -30, -10, (int) (this.oldSize.x * f1), (int) (this.oldSize.y * f1), 10526880 | Mth.ceil(1 * 255.0F) << 24);
-            guiGraphics.disableScissor();
-
-            pPoseStack.popPose();
-
+            int k = 1;
+            if (!this.active) {
+                k = 0;
+            } else if (this.isHoveredOrFocused()) {
+                k = 2;
+            }
+            guiGraphics.blit(ModulusMainScreen.MENU, 0, 0, (int) this.oldSize.x, (int) this.oldSize.y, 196, k * 20, 60, 20, 256, 256);
 
             this.setWidth((int) ((this.oldSize.x - 5) / f));
-            this.setHeight((int) (this.oldSize.y / f));
+            this.height = (int) (this.oldSize.y / f);
+            pPoseStack.popPose();
+            //guiGraphics.fill(this.getX() + 2, this.getY(), this.getX() + 2 + this.width, this.getY() + this.height, -1);
+
+            pPoseStack.pushPose();
+            f = 0.6F;
+            pPoseStack.scale(f, f, 1.0F);
+            f = 1.0F / f;
+            pPoseStack.translate(this.getX() * f, this.getY() * f, 0);
+            guiGraphics.setColor(1.0F, 1.0F, 1.0F, 1.0F);
+
+            int i = Minecraft.getInstance().font.width(this.getMessage());
+            float j = 0;
+            if (i > this.getWidth() * f) {
+                j = Mth.sin((float) (Util.getMillis() % 10000L) / 10000.0F * ((float) Math.PI * 2F)) / 2F;
+                guiGraphics.enableScissor(this.getX() + 2, this.getY(), this.getX() + this.getWidth() + 2, this.getY() + this.getHeight());
+            }
+            guiGraphics.drawCenteredString(Minecraft.getInstance().font, this.getMessage(), (int) (43 + j * i * 0.7), 6, 10526880 | Mth.ceil(1 * 255.0F) << 24);
+            if (i > this.getWidth() * f) {
+                guiGraphics.disableScissor();
+            }
+            pPoseStack.popPose();
             this.setX(this.getX() - 2);
         }
 
@@ -257,8 +263,8 @@ public class ChappModListWidget extends ContainerObjectSelectionList<ChappModLis
             this.modInfo.textRenderable.render(this, font, x, guiGraphics, entryIdx, y, left, entryWidth, entryHeight, mouseX, mouseY, isHovered, partialTick);
             y += 6;
             {
-                int mainColor = ARGB.color(255, 108, 108, 108);
-                int offColor = ARGB.color(255, 56, 56, 56);
+                int mainColor = FastColor.ARGB32.color(255, 108, 108, 108);
+                int offColor = FastColor.ARGB32.color(255, 56, 56, 56);
                 int minX = x.get() - 4, minY = y - 4;
                 int maxX = x.get() + 128 + 4, maxY = y + 67 + 7;
                 boolean isHoveredMod = mouseX > minX && mouseX < maxX && mouseY > minY && mouseY < maxY;
@@ -276,7 +282,7 @@ public class ChappModListWidget extends ContainerObjectSelectionList<ChappModLis
                     ht = 0.75F + this.highlightTimer.value(partialTick) * 0.25F;
                 }
 
-                ClientUtil.blit(guiGraphics, this.modInfo.texture, x.get() + 6 * f, y + 2 + 3 * f, 0, 0, 128 / (1.0F + f / 10F), 64 / (1.0F + f / 10F), 2048, 1024, 2048, 1024, ARGB.colorFromFloat(1, ht, ht, ht));
+                ClientUtil.blit(guiGraphics, this.modInfo.texture, x.get() + 6 * f, y + 2 + 3 * f, 0, 0, 128 / (1.0F + f / 10F), 64 / (1.0F + f / 10F), 2048, 1024, 2048, 1024, FastColor.ARGB32.colorFromFloat(1, ht, ht, ht));
             }
             for (Map.Entry<AbstractWidget, BiFunction<Integer, Integer, Vec2>> e : this.children.entrySet()) {
                 Vec2 vec2 = e.getValue().apply(x.get(), y);
