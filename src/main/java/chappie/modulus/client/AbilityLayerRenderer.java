@@ -23,7 +23,7 @@ public class AbilityLayerRenderer<T extends LivingEntity, S extends LivingEntity
     @Override
     public void render(PoseStack poseStack, MultiBufferSource bufferSource, int packedLight, S renderState, float yRot, float xRot) {
         if (renderState instanceof IRenderStateEntity s) {
-            CommonUtil.getAbilities(s.modulus$entity()).forEach(ability -> ability.clientProperties(c -> c.render(this.renderer, poseStack, bufferSource, packedLight, ability.entity, ((IHasModelProperties) this.getParentModel()).modelProperties())));
+            CommonUtil.getAbilities(s.modulus$entity()).forEach(ability -> ability.clientProperties(c -> c.render(this.renderer, poseStack, bufferSource, packedLight, ability.entity, ((IHasModelProperties) this.getParentModel()).modulus$modelProperties())));
         }
     }
 }

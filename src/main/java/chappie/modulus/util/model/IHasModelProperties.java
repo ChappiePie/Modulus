@@ -8,9 +8,9 @@ import java.util.List;
 
 public interface IHasModelProperties {
 
-    void setup(LivingEntityRenderState renderstate, float partialTicks, List<RenderLayer<?, ?>> layers);
+    void modulus$setup(LivingEntityRenderState renderstate, float partialTicks, List<RenderLayer<?, ?>> layers);
 
     void setEntity(LivingEntity entity);
 
-    ModelProperties modelProperties();
+    ModelProperties modulus$modelProperties();
 }

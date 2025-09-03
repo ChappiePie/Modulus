@@ -56,7 +56,7 @@ public abstract class LivingEntityRendererMixin<T extends LivingEntity, S extend
     @Inject(method = "render(Lnet/minecraft/client/renderer/entity/state/LivingEntityRenderState;Lcom/mojang/blaze3d/vertex/PoseStack;Lnet/minecraft/client/renderer/MultiBufferSource;I)V", at = @At(value = "INVOKE", target = "Lnet/minecraft/client/model/EntityModel;setupAnim(Lnet/minecraft/client/renderer/entity/state/EntityRenderState;)V"))
     public void setupModelProperties2(S livingEntityRenderState, PoseStack poseStack, MultiBufferSource multiBufferSource, int i, CallbackInfo ci) {
         if (this.model instanceof IHasModelProperties iModel) {
-            iModel.setup(livingEntityRenderState, ClientUtil.getPartialTick(), this.layers);
+            iModel.modulus$setup(livingEntityRenderState, ClientUtil.getPartialTick(), this.layers);
             if (this.layers.stream().noneMatch(p -> p instanceof AbilityLayerRenderer)) {
                 this.addLayer(new AbilityLayerRenderer<>((LivingEntityRenderer<T, S, M>) (Object) this));
             }
@@ -68,9 +68,9 @@ public abstract class LivingEntityRendererMixin<T extends LivingEntity, S extend
         LivingEntityRenderer<T, S, M> renderer = (LivingEntityRenderer<T, S, M>) (Object) this;
         if (this.model instanceof IHasModelProperties iModel && livingEntityRenderState instanceof IRenderStateEntity e) {
             T entity = (T) e.modulus$entity();
-            this.modulus$event = new RendererChangeCallback.RendererChangeEvent<>(entity, renderer, iModel.modelProperties(), poseStack, multiBufferSource, type, i, LivingEntityRenderer.getOverlayCoords(livingEntityRenderState, this.getWhiteOverlayProgress(livingEntityRenderState)));
+            this.modulus$event = new RendererChangeCallback.RendererChangeEvent<>(entity, renderer, iModel.modulus$modelProperties(), poseStack, multiBufferSource, type, i, LivingEntityRenderer.getOverlayCoords(livingEntityRenderState, this.getWhiteOverlayProgress(livingEntityRenderState)));
             if (this.model instanceof HumanoidModel<?>) {
-                SetupAnimCallback.EVENT.invoker().event(new SetupAnimCallback.SetupAnimEvent(entity, livingEntityRenderState, (HumanoidModel<? super S>) this.model, iModel.modelProperties()));
+                SetupAnimCallback.EVENT.invoker().event(new SetupAnimCallback.SetupAnimEvent(entity, livingEntityRenderState, (HumanoidModel<? super S>) this.model, iModel.modulus$modelProperties()));
             }
         }
     }

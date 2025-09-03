@@ -52,7 +52,7 @@ public class ModulusAboutButton extends Button implements IHasTimer {
         float x = this.index == 0 || this.index == 2 ? -f : 0;
         float y = this.index == 0 || this.index == 1 ? -f : 0;
 
-        ClientUtil.blit(guiGraphics, this.resourceLocation, this.getX() + x, this.getY() + y, this.xTexStart, this.yTexStart, this.width + f, this.height + f, 16, 16, this.textureWidth, this.textureHeight);
+        ClientUtil.blit(guiGraphics, this.resourceLocation, this.getX() + x, this.getY() + y, this.xTexStart, this.yTexStart, this.width + f, this.height + f, 16, 16, this.textureWidth, this.textureHeight, -1);
         //this.renderTexture(guiGraphics, this.resourceLocation, this.getX(), this.getY(), this.xTexStart, this.yTexStart, this.yDiffTex, this.width, this.height, this.textureWidth, this.textureHeight);
     }
 

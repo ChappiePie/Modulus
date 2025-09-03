@@ -4,12 +4,12 @@
   "compatibilityLevel": "JAVA_21",
   "client": [
     "client.CubeMixin",
-    "client.EntityModelMixin",
     "client.EntityRenderDispatcherMixin",
     "client.ItemInHandRendererMixin",
     "client.LivingEntityRendererMixin",
     "client.LivingEntityRenderStateMixin",
     "client.MinecraftMixin",
+    "client.ModelMixin",
     "client.ModelPartMixin",
     "client.ScreenMixin",
     "client.WindowMixin"

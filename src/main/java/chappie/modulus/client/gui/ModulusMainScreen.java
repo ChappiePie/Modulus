@@ -221,7 +221,7 @@ public class ModulusMainScreen extends Screen implements IOneScaleScreen {
                 float mouseXAdd = (pMouseX - x1 - width / 2F) / 10F * f;
                 float mouseYAdd = Math.max(-40, pMouseY - y1 - (int) (canvasHeight / 1.5F) / 2F) / 10F * f;
                 f *= 10F;
-                ClientUtil.blit(guiGraphics, CHAPPIE_TEXTURE, x1 + 11.5F - f / 2 + mouseXAdd, y1 - f / 2 + mouseYAdd, 0.0F, 0.0F, canvasHeight / 1.6F + f, canvasHeight / 1.5F + f, 1310, 1440, 1310, 1440);
+                ClientUtil.blit(guiGraphics, CHAPPIE_TEXTURE, x1 + 11.5F - f / 2 + mouseXAdd, y1 - f / 2 + mouseYAdd, 0.0F, 0.0F, canvasHeight / 1.6F + f, canvasHeight / 1.5F + f, 1310, 1440, 1310, 1440, -1);
                 guiGraphics.disableScissor();
 
                 Component pTooltip = Component.literal("ChappiePie");

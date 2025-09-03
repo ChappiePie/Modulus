@@ -8,6 +8,7 @@ import net.minecraft.world.damagesource.DamageType;
 import net.minecraft.world.entity.LivingEntity;
 
 import java.util.ArrayList;
+import java.util.Collection;
 import java.util.List;
 
 public class DamageImmunityAbility extends Ability {
@@ -18,18 +19,11 @@ public class DamageImmunityAbility extends Ability {
         super(entity, builder);
     }
 
-    public static AbilityBuilder of(String id, String... damageSources) {
+    public static AbilityBuilder of(String id, Collection<TagKey<DamageType>> tagSources, String... damageSources) {
         return AbilityBuilder.of(id, AbilityType.DAMAGE_IMMUNITY).hide().additionalData(a -> {
             if (a instanceof DamageImmunityAbility ability) {
                 ability.damageSources.addAll(List.of(damageSources));
-            }
-        });
-    }
-
-    public static AbilityBuilder of(String id, TagKey<DamageType>... damageSources) {
-        return AbilityBuilder.of(id, AbilityType.DAMAGE_IMMUNITY).hide().additionalData(a -> {
-            if (a instanceof DamageImmunityAbility ability) {
-                ability.damageSourceTags.addAll(List.of(damageSources));
+                ability.damageSourceTags.addAll(tagSources);
             }
         });
     }
