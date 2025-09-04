@@ -10,9 +10,7 @@ import net.fabricmc.api.ClientModInitializer;
 import net.fabricmc.fabric.api.client.keybinding.v1.KeyBindingHelper;
 import net.fabricmc.fabric.api.client.rendering.v1.EntityModelLayerRegistry;
 import net.fabricmc.fabric.api.client.screen.v1.ScreenEvents;
-import net.minecraft.client.model.PlayerModel;
 import net.minecraft.client.model.geom.builders.CubeDeformation;
-import net.minecraft.world.entity.LivingEntity;
 
 import java.util.Arrays;
 import java.util.concurrent.atomic.AtomicBoolean;
@@ -39,11 +37,6 @@ public class ModulusClient implements ClientModInitializer {
         }));
 
         SetupAnimCallback.EVENT.register((event -> {
-            if (event.entity().isCrouching() && event.model() instanceof PlayerModel<? extends LivingEntity> model) {
-                model.leftLeg.xRot = (float) Math.toRadians(90F);
-                model.body.xRot = (float) Math.toRadians(-90F);
-            }
-
             CommonUtil.getAbilities(event.entity()).forEach(ability ->
                     ability.clientProperties(c -> c.setupAnim(event)));
         }));
