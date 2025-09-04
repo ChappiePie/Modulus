@@ -2,20 +2,25 @@ package chappie.modulus.util;
 
 import chappie.modulus.Modulus;
 import chappie.modulus.util.model.IChangeableSize;
+import com.mojang.blaze3d.textures.GpuTextureView;
 import com.mojang.blaze3d.vertex.DefaultVertexFormat;
 import com.mojang.blaze3d.vertex.PoseStack;
 import com.mojang.blaze3d.vertex.VertexConsumer;
 import com.mojang.blaze3d.vertex.VertexFormat;
 import net.minecraft.client.Minecraft;
 import net.minecraft.client.gui.GuiGraphics;
+import net.minecraft.client.gui.render.TextureSetup;
+import net.minecraft.client.gui.render.state.BlitRenderState;
 import net.minecraft.client.model.Model;
 import net.minecraft.client.model.geom.ModelPart;
+import net.minecraft.client.renderer.RenderPipelines;
 import net.minecraft.client.renderer.RenderStateShard;
 import net.minecraft.client.renderer.RenderType;
 import net.minecraft.network.chat.Style;
 import net.minecraft.resources.ResourceLocation;
 import net.minecraft.util.TriState;
 import net.minecraft.world.phys.AABB;
+import org.joml.Matrix3x2f;
 import org.joml.Matrix4f;
 
 import java.util.function.BiConsumer;
@@ -29,18 +34,24 @@ public class ClientUtil {
         return Minecraft.getInstance().isPaused() ? 0 : Minecraft.getInstance().getDeltaTracker().getGameTimeDeltaPartialTick(false);
     }
 
-    public static void blit(GuiGraphics guiGraphics, ResourceLocation atlasLocation, float x, float y, float uOffset, float vOffset, float uWidth, float vHeight, float width, float height, float textureWidth, float textureHeight, int color) {
-        ClientUtil.innerBlit(guiGraphics, atlasLocation, x, x + uWidth, y, y + vHeight, (uOffset + 0.0F) / textureWidth, (uOffset + width) / textureWidth, (vOffset + 0.0F) / textureHeight, (vOffset + height) / textureHeight, color);
+    public static void blit(GuiGraphics guiGraphics, ResourceLocation atlas, int x0, int y0, int x1, int y1, float u0, float u1, float v0, float v1, int color) {
+        ClientUtil.innerBlit(guiGraphics, atlas, x0, x1, y0, y1, u0, u1, v0, v1, color);
     }
 
-    private static void innerBlit(GuiGraphics guiGraphics, ResourceLocation atlasLocation, float x1, float x2, float y1, float y2, float minU, float maxU, float minV, float maxV, int color) {
-        RenderType renderType = RenderType.guiTextured(atlasLocation);
-        Matrix4f matrix4f = guiGraphics.pose().last().pose();
-        VertexConsumer vertexConsumer = Minecraft.getInstance().renderBuffers().bufferSource().getBuffer(renderType);
-        vertexConsumer.addVertex(matrix4f, x1, y1, 0.0F).setUv(minU, minV).setColor(color);
-        vertexConsumer.addVertex(matrix4f, x1, y2, 0.0F).setUv(minU, maxV).setColor(color);
-        vertexConsumer.addVertex(matrix4f, x2, y2, 0.0F).setUv(maxU, maxV).setColor(color);
-        vertexConsumer.addVertex(matrix4f, x2, y1, 0.0F).setUv(maxU, minV).setColor(color);
+    private static void innerBlit(GuiGraphics guiGraphics, ResourceLocation atlas, int x0, int x1, int y0, int y1, float u0, float u1, float v0, float v1, int color) {
+        GpuTextureView gpuTextureView = Minecraft.getInstance().getTextureManager().getTexture(atlas).getTextureView();
+        ClientUtil.submitBlit(guiGraphics, gpuTextureView, x0, y0, x1, y1, u0, u1, v0, v1, color);
+    }
+
+    private static void submitBlit(
+            GuiGraphics guiGraphics, GpuTextureView atlasTexture, int x0, int y0, int x1, int y1, float u0, float u1, float v0, float v1, int color
+    ) {
+        guiGraphics.guiRenderState
+                .submitGuiElement(
+                        new BlitRenderState(
+                                RenderPipelines.GUI_TEXTURED, TextureSetup.singleTexture(atlasTexture), new Matrix3x2f(guiGraphics.pose()), x0, y0, x1, y1, u0, u1, v0, v1, color, guiGraphics.scissorStack.peek()
+                        )
+                );
     }
 
     public static IChangeableSize modified(ModelPart part) {

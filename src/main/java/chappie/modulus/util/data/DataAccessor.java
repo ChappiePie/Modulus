@@ -3,12 +3,13 @@ package chappie.modulus.util.data;
 import net.minecraft.nbt.*;
 
 import java.awt.*;
+import java.util.Optional;
 import java.util.function.BiFunction;
 import java.util.function.Function;
 
 public record DataAccessor<T>(String key, DataSerializer<T> serializer) {
 
-    public record DataSerializer<T>(Function<T, Tag> toTag, BiFunction<CompoundTag, String, T> fromTag) {
+    public record DataSerializer<T>(Function<T, Tag> toTag, BiFunction<CompoundTag, String, Optional<T>> fromTag) {
         public static final DataSerializer<Integer> INT = new DataSerializer<>(IntTag::valueOf, CompoundTag::getInt);
         public static final DataSerializer<Float> FLOAT = new DataSerializer<>(FloatTag::valueOf, CompoundTag::getFloat);
         public static final DataSerializer<Double> DOUBLE = new DataSerializer<>(DoubleTag::valueOf, CompoundTag::getDouble);

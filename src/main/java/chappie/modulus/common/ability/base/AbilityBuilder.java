@@ -134,12 +134,17 @@ public class AbilityBuilder {
         }
 
         public void deserializeNBT(CompoundTag nbt) {
-            for (String key : nbt.getAllKeys()) {
-                ListTag conditions = nbt.getList(key, 10);
-                for (int i = 0; i < conditions.size(); i++) {
-                    List<Condition> c = this.conditions.get(key);
-                    if (c != null && c.get(i) != null) {
-                        c.get(i).deserializeNBT(conditions.getCompound(i));
+            for (String key : nbt.keySet()) {
+                ListTag conditions = nbt.getList(key).orElse(null);
+                if (conditions != null) {
+                    for (int i = 0; i < conditions.size(); i++) {
+                        List<Condition> c = this.conditions.get(key);
+                        if (c != null && c.get(i) != null) {
+                            CompoundTag tag = conditions.getCompound(i).orElse(null);
+                            if (tag != null) {
+                                c.get(i).deserializeNBT(tag);
+                            }
+                        }
                     }
                 }
             }

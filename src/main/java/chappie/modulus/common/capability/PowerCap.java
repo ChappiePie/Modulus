@@ -76,7 +76,7 @@ public class PowerCap implements AutoSyncedComponent, CommonTickingComponent, Co
 
     public void syncToAll() {
         this.sync();
-        for (LivingEntity livingEntity : this.livingEntity.getCommandSenderWorld().players()) {
+        for (LivingEntity livingEntity : this.livingEntity.level().players()) {
             if (livingEntity instanceof ServerPlayer player && this.livingEntity != livingEntity) {
                 KEY.sync(player);
             }
@@ -85,7 +85,7 @@ public class PowerCap implements AutoSyncedComponent, CommonTickingComponent, Co
 
     @Override
     public void tick() {
-        if (this.livingEntity.getCommandSenderWorld().isClientSide) {
+        if (this.livingEntity.level().isClientSide) {
             if (this.livingEntity instanceof Player player) {
                 ClientEvents.playerTick(player);
             } else {
@@ -109,15 +109,16 @@ public class PowerCap implements AutoSyncedComponent, CommonTickingComponent, Co
 
     @Override
     public void readFromNbt(CompoundTag tag, HolderLookup.Provider registryLookup) {
-        CompoundTag compoundTag = tag.getCompound("Superpower");
+        CompoundTag compoundTag = tag.getCompound("Superpower").orElse(null);
+        if (compoundTag == null) return;
         this.abilities.clear();
-        if (!compoundTag.getString("Id").isEmpty()) {
-            Superpower superpower = Superpower.REGISTRY.getValue(ResourceLocation.tryParse(compoundTag.getString("Id")));
+        if (compoundTag.getString("Id").isPresent()) {
+            Superpower superpower = Superpower.REGISTRY.getValue(ResourceLocation.tryParse(compoundTag.getString("Id").get()));
             this.superpower = superpower;
             if (superpower != null) {
-                CompoundTag abilities = compoundTag.getCompound("Abilities");
-                for (String key : abilities.getAllKeys()) {
-                    CompoundTag nbt = abilities.getCompound(key);
+                CompoundTag abilities = compoundTag.getCompound("Abilities").orElse(new CompoundTag());
+                for (String key : abilities.keySet()) {
+                    CompoundTag nbt = abilities.getCompound(key).orElse(new CompoundTag());
                     var builder = superpower.getBuilderByName(key);
                     if (builder != null) {
                         Ability ability = builder.build(this.livingEntity);

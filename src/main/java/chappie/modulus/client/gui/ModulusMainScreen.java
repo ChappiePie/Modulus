@@ -4,8 +4,6 @@ import chappie.modulus.Modulus;
 import chappie.modulus.util.*;
 import com.google.common.collect.ImmutableList;
 import com.google.common.collect.Lists;
-import com.mojang.blaze3d.systems.RenderSystem;
-import com.mojang.blaze3d.vertex.PoseStack;
 import net.minecraft.client.gui.GuiGraphics;
 import net.minecraft.client.gui.components.Button;
 import net.minecraft.client.gui.components.Renderable;
@@ -14,7 +12,7 @@ import net.minecraft.client.gui.components.events.GuiEventListener;
 import net.minecraft.client.gui.narration.NarratableEntry;
 import net.minecraft.client.gui.screens.PauseScreen;
 import net.minecraft.client.gui.screens.Screen;
-import net.minecraft.client.renderer.RenderType;
+import net.minecraft.client.renderer.RenderPipelines;
 import net.minecraft.client.resources.sounds.SimpleSoundInstance;
 import net.minecraft.network.chat.CommonComponents;
 import net.minecraft.network.chat.Component;
@@ -23,6 +21,7 @@ import net.minecraft.resources.ResourceLocation;
 import net.minecraft.util.ARGB;
 import net.minecraft.util.Mth;
 import org.jetbrains.annotations.Nullable;
+import org.joml.Matrix3x2fStack;
 
 import java.io.File;
 import java.util.ArrayList;
@@ -130,23 +129,23 @@ public class ModulusMainScreen extends Screen implements IOneScaleScreen {
 
         // Modulus header
         guiGraphics.blitSprite(
-                RenderType::guiTextured,
+                RenderPipelines.GUI_TEXTURED,
                 SPRITES.get(true, false),
                 this.width / 2 - 60, 3,
                 120, 32,
                 ARGB.white(1.0F)
         );
 
-        PoseStack pPoseStack = guiGraphics.pose();
+        Matrix3x2fStack pPoseStack = guiGraphics.pose();
         // Label
         {
-            pPoseStack.pushPose();
-            pPoseStack.translate(this.width / 4F, 4, 0);
-            pPoseStack.scale(0.5F, 0.5F, 1);
+            pPoseStack.pushMatrix();
+            pPoseStack.translate(this.width / 4F, 4);
+            pPoseStack.scale(0.5F, 0.5F);
 
             int labelXPos = this.width / 2, labelYPos = 10;
 
-            guiGraphics.blit(RenderType::guiTextured, MENU, labelXPos - 52, labelYPos, 0, 0, 104, 29, 104, 29, 256, 256);
+            guiGraphics.blit(RenderPipelines.GUI_TEXTURED, MENU, labelXPos - 52, labelYPos, 0, 0, 104, 29, 104, 29, 256, 256);
 
 
             // Line under label
@@ -160,8 +159,8 @@ public class ModulusMainScreen extends Screen implements IOneScaleScreen {
 
             pPoseStack.popPose();
         }
-        //guiGraphics.blit(RenderType::guiTextured, Screen.HEADER_SEPARATOR, 0, 56, 0.0F, 0.0F, this.width, 2, 32, 2);
-        //guiGraphics.blit(RenderType::guiTextured, Screen.FOOTER_SEPARATOR, 0, Mth.roundToward(this.height - 36, 2), 0.0F, 0.0F, this.width, 2, 32, 2);
+        //guiGraphics.blit(RenderPipelines.GUI_TEXTURED, Screen.HEADER_SEPARATOR, 0, 56, 0.0F, 0.0F, this.width, 2, 32, 2);
+        //guiGraphics.blit(RenderPipelines.GUI_TEXTURED, Screen.FOOTER_SEPARATOR, 0, Mth.roundToward(this.height - 36, 2), 0.0F, 0.0F, this.width, 2, 32, 2);
 
         if (this.tabId == 1) {
             int canvasHeight = this.canvasMaxY - this.canvasMinY;
@@ -210,13 +209,11 @@ public class ModulusMainScreen extends Screen implements IOneScaleScreen {
                 final int width = (int) (canvasHeight / 1.27);
                 final int x1 = x - width / 2, y1 = y + 25;
                 guiGraphics.enableScissor(x1, y1, x1 + width, y1 + (int) (canvasHeight / 1.5));
-                guiGraphics.blit(RenderType::guiTextured, Screen.MENU_BACKGROUND, x1, y1, 0, 0, width, (int) (canvasHeight / 1.5F), 32, 32);
+                guiGraphics.blit(RenderPipelines.GUI_TEXTURED, Screen.MENU_BACKGROUND, x1, y1, 0, 0, width, (int) (canvasHeight / 1.5F), 32, 32);
                 //RenderSystem.setShaderColor(1.0F, 1.0F, 1.0F, 1.0F);
 
 
                 this.atChappieTimer.predicate = () -> isMouseOverObj(pMouseX, pMouseY, x1, y1, width, canvasHeight / 1.5F);
-                RenderSystem.enableBlend();
-                RenderSystem.defaultBlendFunc();
                 float f = this.atChappieTimer.value(pPartialTick);
                 float mouseXAdd = (pMouseX - x1 - width / 2F) / 10F * f;
                 float mouseYAdd = Math.max(-40, pMouseY - y1 - (int) (canvasHeight / 1.5F) / 2F) / 10F * f;
@@ -249,12 +246,12 @@ public class ModulusMainScreen extends Screen implements IOneScaleScreen {
     }
 
     private void renderTitle(GuiGraphics guiGraphics, Component component, int x, int y) {
-        PoseStack pPoseStack = guiGraphics.pose();
-        pPoseStack.pushPose();
-        pPoseStack.translate(x + 1, y, 0);
-        pPoseStack.scale(1.5F, 1.5F, 1F);
+        Matrix3x2fStack pPoseStack = guiGraphics.pose();
+        pPoseStack.pushMatrix();
+        pPoseStack.translate(x + 1, y);
+        pPoseStack.scale(1.5F, 1.5F);
         guiGraphics.drawCenteredString(this.minecraft.font, component, 0, 0, -1);
-        pPoseStack.popPose();
+        pPoseStack.popMatrix();
         y += 14;
         for (int k = 0; k < 2; k++) {
             if (k == 0) {

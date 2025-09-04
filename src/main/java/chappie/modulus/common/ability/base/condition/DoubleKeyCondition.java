@@ -61,6 +61,6 @@ public class DoubleKeyCondition extends Condition {
     @Override
     public void deserializeNBT(CompoundTag nbt) {
         super.deserializeNBT(nbt);
-        this.enabled = nbt.getBoolean("enabled");
+        this.enabled = nbt.getBoolean("enabled").orElse(false);
     }
 }

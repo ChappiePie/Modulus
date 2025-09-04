@@ -57,7 +57,7 @@ public class KeyCondition extends Condition {
     public void deserializeNBT(CompoundTag nbt) {
         super.deserializeNBT(nbt);
         if (this.action == Action.TOGGLE) {
-            this.enabled = nbt.getBoolean("enabled");
+            this.enabled = nbt.getBoolean("enabled").orElse(false);
         }
     }
 

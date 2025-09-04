@@ -54,7 +54,7 @@ public class Ability {
     }
 
     public void updateTick(LivingEntity entity) {
-        if (!entity.getCommandSenderWorld().isClientSide) {
+        if (!entity.level().isClientSide) {
             if (entity instanceof Player) {
                 this.dataManager.set(ENABLED, this.conditionManager.test("enabling"));
             } else {
@@ -97,8 +97,8 @@ public class Ability {
     }
 
     public void deserializeNBT(CompoundTag tag) {
-        this.dataManager.deserializeNBT(tag.getCompound("Data"));
-        this.conditionManager.deserializeNBT(tag.getCompound("Conditions"));
+        this.dataManager.deserializeNBT(tag.getCompound("Data").orElse(new CompoundTag()));
+        this.conditionManager.deserializeNBT(tag.getCompound("Conditions").orElse(new CompoundTag()));
     }
 
     public void sync(Entity entity) {
@@ -108,7 +108,7 @@ public class Ability {
     }
 
     public void syncToAll(Entity entity) {
-        if (!entity.getCommandSenderWorld().isClientSide) {
+        if (!entity.level().isClientSide) {
             ModNetworking.sendToTrackingEntityAndSelf(new ClientSyncAbility(entity.getId(), this.builder.id, this.serializeNBT()), entity);
         }
     }
