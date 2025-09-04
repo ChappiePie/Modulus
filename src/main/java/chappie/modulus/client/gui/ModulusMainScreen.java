@@ -3,6 +3,7 @@ package chappie.modulus.client.gui;
 import chappie.modulus.Modulus;
 import chappie.modulus.util.*;
 import com.google.common.collect.ImmutableList;
+import com.google.common.collect.Lists;
 import com.mojang.blaze3d.systems.RenderSystem;
 import com.mojang.blaze3d.vertex.PoseStack;
 import net.minecraft.client.gui.GuiGraphics;
@@ -20,9 +21,9 @@ import net.minecraft.network.chat.MutableComponent;
 import net.minecraft.resources.ResourceLocation;
 import net.minecraft.util.FastColor;
 import net.minecraft.util.Mth;
-import org.apache.commons.compress.utils.Lists;
 import org.jetbrains.annotations.Nullable;
 
+import java.io.File;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.function.Supplier;
@@ -30,9 +31,7 @@ import java.util.function.Supplier;
 public class ModulusMainScreen extends Screen implements IOneScaleScreen {
 
     public static final ResourceLocation MENU = Modulus.id("textures/gui/menu.png");
-    public static final ResourceLocation LOGO = Modulus.id("textures/gui/logo.png");
-    public static final ResourceLocation MODULUS_SCREEN = Modulus.id("modulus_screen");
-    private static final Supplier<ResourceLocation> CHAPPIE_TEXTURE = ClientUtil.getTextureFromLink(MODULUS_SCREEN, "chappie", "https://raw.githubusercontent.com/ChappiePie/ModulusResources/main/chappie.png");
+    private static final ResourceLocation CHAPPIE_TEXTURE = getTexByName("chappie");
     private final Screen lastScreen;
     private final List<TabButton> tabs = Lists.newArrayList();
     private final IHasTimer.Timer atChappieTimer = new IHasTimer.Timer(() -> 10, () -> false);
@@ -45,6 +44,12 @@ public class ModulusMainScreen extends Screen implements IOneScaleScreen {
     public ModulusMainScreen(Screen lastScreen) {
         super(Component.translatable("gui.modulus.mainScreen"));
         this.lastScreen = lastScreen;
+    }
+
+    public static ResourceLocation getTexByName(String name) {
+        ResourceLocation resourcelocation = Modulus.id("modulus_screen" + "/" + name);
+        File file = new File("config/modulus/data", name);
+        return HttpTexture.byUrl(file, "https://raw.githubusercontent.com/ChappiePie/ModulusResources/main/%s.png".formatted(name), resourcelocation, Modulus.id("textures/gui/mods_author/%s.png".formatted(name)));
     }
 
     @Override
@@ -206,7 +211,7 @@ public class ModulusMainScreen extends Screen implements IOneScaleScreen {
                 this.atChappieTimer.predicate = () -> isMouseOverObj(pMouseX, pMouseY, x1, y1, width, canvasHeight / 1.5F);
                 RenderSystem.enableBlend();
                 RenderSystem.defaultBlendFunc();
-                RenderSystem.setShaderTexture(0, CHAPPIE_TEXTURE.get());
+                RenderSystem.setShaderTexture(0, CHAPPIE_TEXTURE);
                 float f = this.atChappieTimer.value(pPartialTick);
                 float mouseXAdd = (pMouseX - x1 - width / 2F) / 10F * f;
                 float mouseYAdd = Math.max(-40, pMouseY - y1 - (int) (canvasHeight / 1.5F) / 2F) / 10F * f;
@@ -269,7 +274,7 @@ public class ModulusMainScreen extends Screen implements IOneScaleScreen {
     @Override
     public void onClose() {
         this.minecraft.setScreen(this.lastScreen instanceof PauseScreen ? null : this.lastScreen);
-        this.minecraft.getSoundManager().play(SimpleSoundInstance.forUI(ModRegistries.NET, 1.0F));
+        this.minecraft.getSoundManager().play(SimpleSoundInstance.forUI(ModRegistries.CLOSE_BUTTON, 1.0F));
     }
 
     @Override

@@ -26,14 +26,14 @@ public class HumanoidModelMixin implements IHasModelProperties {
     }
 
     @Override
-    public void setup(float limbSwing, float limbSwingAmount, float ageInTicks, float netHeadYaw, float headPitch, float partialTicks, List<RenderLayer<?, ?>> layers) {
+    public void modulus$setup(float limbSwing, float limbSwingAmount, float ageInTicks, float netHeadYaw, float headPitch, float partialTicks, List<RenderLayer<?, ?>> layers) {
         this.modulus$modelProperties = new ModelProperties(this.modulus$root, limbSwing, limbSwingAmount, ageInTicks, netHeadYaw, headPitch, partialTicks, layers);
     }
 
     @Override
-    public ModelProperties modelProperties() {
+    public ModelProperties modulus$modelProperties() {
         if (this.modulus$modelProperties == null) {
-            this.setup(0, 0, 0, 0, 0, ClientUtil.getPartialTick(), List.of());
+            this.modulus$setup(0, 0, 0, 0, 0, ClientUtil.getPartialTick(), List.of());
         }
         return this.modulus$modelProperties;
     }

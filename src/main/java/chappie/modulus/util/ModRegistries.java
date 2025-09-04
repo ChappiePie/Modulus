@@ -13,9 +13,8 @@ public class ModRegistries {
 
     public static final Attribute FALL_RESISTANCE = registerAttribute("fall_resistance", new RangedAttribute("%s.fallResistance".formatted(Modulus.MODID), 0D, 0D, Double.MAX_VALUE));
     public static final Attribute JUMP_BOOST = registerAttribute("jump_boost", new RangedAttribute("%s.jumpBoost".formatted(Modulus.MODID), 0D, 0D, Double.MAX_VALUE).setSyncable(true));
-    public static final SoundEvent YA = registerSoundEvent("ya");
-    public static final SoundEvent NET = registerSoundEvent("net");
-    public static final SoundEvent BUTTON = registerSoundEvent("button");
+    public static final SoundEvent OPEN_BUTTON = registerSoundEvent("open_button");
+    public static final SoundEvent CLOSE_BUTTON = registerSoundEvent("close_button");
 
     public static void init() {
         AbilityType.init();

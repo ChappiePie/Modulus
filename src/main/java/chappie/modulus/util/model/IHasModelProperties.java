@@ -8,11 +8,11 @@ import java.util.stream.Stream;
 
 public interface IHasModelProperties {
 
-    void setup(float limbSwing, float limbSwingAmount, float ageInTicks, float netHeadYaw, float headPitch, float partialTicks, List<RenderLayer<?, ?>> layers);
+    void modulus$setup(float limbSwing, float limbSwingAmount, float ageInTicks, float netHeadYaw, float headPitch, float partialTicks, List<RenderLayer<?, ?>> layers);
 
-    ModelProperties modelProperties();
+    ModelProperties modulus$modelProperties();
 
     default Stream<ModelPart> allParts() {
-        return modelProperties().root().getAllParts();
+        return modulus$modelProperties().root().getAllParts();
     }
 }

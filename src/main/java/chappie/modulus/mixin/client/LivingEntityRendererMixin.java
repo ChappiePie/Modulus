@@ -16,7 +16,6 @@ import net.minecraft.client.renderer.RenderType;
 import net.minecraft.client.renderer.entity.LivingEntityRenderer;
 import net.minecraft.client.renderer.entity.layers.RenderLayer;
 import net.minecraft.world.entity.LivingEntity;
-import net.minecraft.world.entity.player.Player;
 import org.spongepowered.asm.mixin.Final;
 import org.spongepowered.asm.mixin.Mixin;
 import org.spongepowered.asm.mixin.Shadow;
@@ -43,7 +42,7 @@ public abstract class LivingEntityRendererMixin<T extends LivingEntity, M extend
     @Inject(method = "render*", at = @At(value = "INVOKE", target = "Lnet/minecraft/client/model/EntityModel;setupAnim(Lnet/minecraft/world/entity/Entity;FFFFF)V"))
     public void setupModelProperties(T entity, float entityYaw, float partialTicks, PoseStack matrixStack, MultiBufferSource buffer, int light, CallbackInfo ci, @Local(ordinal = 8) float f5, @Local(ordinal = 7) float f8, @Local(ordinal = 6) float f7, @Local(ordinal = 2) float f2, @Local(ordinal = 4) float f6) {
         if (this.model instanceof IHasModelProperties iModel) {
-            iModel.setup(f5, f8, f7, f2, f6, partialTicks, this.layers);
+            iModel.modulus$setup(f5, f8, f7, f2, f6, partialTicks, this.layers);
             if (this.layers.stream().noneMatch(p -> p instanceof AbilityLayerRenderer)) {
                 this.addLayer(new AbilityLayerRenderer<>((LivingEntityRenderer<T, M>) (Object) this));
             }
@@ -58,9 +57,9 @@ public abstract class LivingEntityRendererMixin<T extends LivingEntity, M extend
     public void setup(T entity, float entityYaw, float partialTicks, PoseStack matrixStack, MultiBufferSource buffer, int light, CallbackInfo ci, @Local(ordinal = 0) RenderType type) {
         LivingEntityRenderer<T, M> renderer = (LivingEntityRenderer<T, M>) (Object) this;
         if (this.model instanceof IHasModelProperties iModel) {
-            this.modulus$event = new RendererChangeCallback.RendererChangeEvent<>(entity, renderer, iModel.modelProperties(), matrixStack, buffer, type, light, LivingEntityRenderer.getOverlayCoords(entity, this.getWhiteOverlayProgress(entity, partialTicks)));
+            this.modulus$event = new RendererChangeCallback.RendererChangeEvent<>(entity, renderer, iModel.modulus$modelProperties(), matrixStack, buffer, type, light, LivingEntityRenderer.getOverlayCoords(entity, this.getWhiteOverlayProgress(entity, partialTicks)));
             if (this.model instanceof HumanoidModel<?> humanoidModel) {
-                SetupAnimCallback.EVENT.invoker().event(new SetupAnimCallback.SetupAnimEvent(entity, (HumanoidModel<T>) this.model, iModel.modelProperties()));
+                SetupAnimCallback.EVENT.invoker().event(new SetupAnimCallback.SetupAnimEvent(entity, (HumanoidModel<T>) this.model, iModel.modulus$modelProperties()));
                 // Copy angles to wear
                 humanoidModel.hat.copyFrom(humanoidModel.head);
                 if (humanoidModel instanceof PlayerModel playerModel) {

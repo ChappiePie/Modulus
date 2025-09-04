@@ -8,6 +8,9 @@
     "ChappiePie"
   ],
   "accessWidener": "modulus.accesswidener",
+  "contact": {
+    "homepage": "https://discord.gg/DwTaMAr"
+  },
   "license": "ARR",
   "icon": "assets/modulus/icon.png",
   "environment": "*",
@@ -16,10 +19,13 @@
       "chappie.modulus.Modulus"
     ],
     "client": [
-      "chappie.modulus.ModulusClient"
+      "chappie.modulus.client.ModulusClient"
     ],
     "cardinal-components": [
       "chappie.modulus.ModulusComponents"
+    ],
+    "fabric-datagen": [
+      "chappie.modulus.ModulusDataGenerator"
     ]
   },
   "custom": {

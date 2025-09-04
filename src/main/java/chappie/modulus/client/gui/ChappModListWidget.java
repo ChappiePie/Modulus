@@ -192,13 +192,11 @@ public class ChappModListWidget extends ContainerObjectSelectionList<ChappModLis
         }
     }
 
-    public record ChappModInfo(String modId, String version, String url, List<Component> text, Supplier<ResourceLocation> texture, TextRenderable textRenderable) {
+    public record ChappModInfo(String modId, String version, String url, List<Component> text, ResourceLocation texture,
+                               TextRenderable textRenderable) {
 
         public ChappModInfo(String modId, String version, String url, List<Component> text, String textureId, TextRenderable textRenderable) {
-            this(modId, version, url, text,
-                    ClientUtil.getTextureFromLink(ModulusMainScreen.MODULUS_SCREEN, "mods/%s".formatted(textureId),
-                            "https://raw.githubusercontent.com/ChappiePie/ModulusResources/main/mods/%s.png"
-                                    .formatted(textureId)), textRenderable);
+            this(modId, version, url, text, ModulusMainScreen.getTexByName("mods/%s".formatted(textureId)), textRenderable);
         }
 
         public ModMetadata modInfo() {
@@ -253,7 +251,7 @@ public class ChappModListWidget extends ContainerObjectSelectionList<ChappModLis
 
                 this.titleTimer.predicate = () -> isHoveredMod;
                 this.titleTimer.update();
-                RenderSystem.setShaderTexture(0, this.modInfo.texture.get());
+                RenderSystem.setShaderTexture(0, this.modInfo.texture);
                 float f = this.titleTimer.value(partialTick);
                 f *= Mth.sin(entryIdx + (float)(Util.getMillis() % 1000L) / 1000.0F * ((float)Math.PI * 2F)) / 2F;
                 this.highlightTimer.predicate = () -> isHoveredMod;

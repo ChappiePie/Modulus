@@ -20,6 +20,6 @@ public class AbilityLayerRenderer<T extends LivingEntity, M extends EntityModel<
 
     @Override
     public void render(PoseStack matrixStack, MultiBufferSource buffer, int packedLight, T entity, float limbSwing, float limbSwingAmount, float partialTicks, float ageInTicks, float netHeadYaw, float headPitch) {
-        CommonUtil.getAbilities(entity).forEach(ability -> ability.clientProperties(c -> c.render(this.renderer, matrixStack, buffer, packedLight, entity, ((IHasModelProperties) this.getParentModel()).modelProperties())));
+        CommonUtil.getAbilities(entity).forEach(ability -> ability.clientProperties(c -> c.render(this.renderer, matrixStack, buffer, packedLight, entity, ((IHasModelProperties) this.getParentModel()).modulus$modelProperties())));
     }
 }
