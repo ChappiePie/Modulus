@@ -1,9 +1,9 @@
 plugins {
-	id 'fabric-loom' version '1.7-SNAPSHOT'
+	id 'fabric-loom' version '1.11-SNAPSHOT'
 	id 'maven-publish'
 }
 
-version = project.mod_version
+version = "${project.minecraft_version}-${project.mod_version}"
 group = project.maven_group
 
 base {
@@ -12,6 +12,12 @@ base {
 
 loom {
 	accessWidenerPath = file("src/main/resources/${project.archives_base_name}.accesswidener")
+}
+
+fabricApi {
+	configureDataGeneration {
+		client = true
+	}
 }
 
 repositories {

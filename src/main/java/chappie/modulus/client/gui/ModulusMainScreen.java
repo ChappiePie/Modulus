@@ -13,13 +13,14 @@ import net.minecraft.client.gui.components.events.GuiEventListener;
 import net.minecraft.client.gui.narration.NarratableEntry;
 import net.minecraft.client.gui.screens.PauseScreen;
 import net.minecraft.client.gui.screens.Screen;
+import net.minecraft.client.gui.screens.TitleScreen;
 import net.minecraft.client.gui.screens.worldselection.CreateWorldScreen;
+import net.minecraft.client.renderer.PanoramaRenderer;
 import net.minecraft.client.resources.sounds.SimpleSoundInstance;
 import net.minecraft.network.chat.CommonComponents;
 import net.minecraft.network.chat.Component;
 import net.minecraft.network.chat.MutableComponent;
 import net.minecraft.resources.ResourceLocation;
-import net.minecraft.util.FastColor;
 import net.minecraft.util.Mth;
 import org.jetbrains.annotations.Nullable;
 
@@ -40,6 +41,8 @@ public class ModulusMainScreen extends Screen implements IOneScaleScreen {
     private int tabId = 0;
     private int canvasMinY, canvasMaxY;
     private ChappModListWidget modList;
+
+    private final PanoramaRenderer panorama = new PanoramaRenderer(TitleScreen.CUBE_MAP);
 
     public ModulusMainScreen(Screen lastScreen) {
         super(Component.translatable("gui.modulus.mainScreen"));
@@ -76,7 +79,7 @@ public class ModulusMainScreen extends Screen implements IOneScaleScreen {
         int tabWidth = 100;
         int xPos = halfWidth - tabWidth;
         for (int i = 0; i < 2; i++) {
-            MutableComponent component = Component.translatable("modulus.screen.tab.%s".formatted(i == 0 ? "mods" : "about"));
+            MutableComponent component = Component.translatable("screen.modulus.tab.%s".formatted(i == 0 ? "mods" : "about"));
             TabButton tabButton = new TabButton(xPos, 34, tabWidth, 24, component.withStyle(ClientUtil.BOLD_MINECRAFT), i, () -> this.tabId);
             this.tabs.add(tabButton);
 
@@ -122,7 +125,8 @@ public class ModulusMainScreen extends Screen implements IOneScaleScreen {
             }
         }
 
-        this.renderDirtBackground(guiGraphics);
+        this.panorama.render(pPartialTick, 0.5F);
+        guiGraphics.fill(0, 0, this.width, this.height, 2130706432);
         // Modulus header
         guiGraphics.blit(MENU, this.width / 2 - 60, 3, 120, 32, 196, 20, 60, 20, 256, 256);
 
@@ -143,7 +147,7 @@ public class ModulusMainScreen extends Screen implements IOneScaleScreen {
 
 
             // Line under label
-            int lineColor = FastColor.ARGB32.color(255, 46, 51, 53);
+            int lineColor = ClientUtil.ARGB.color(255, 46, 51, 53);
             labelYPos += 30;
 
             guiGraphics.setColor(0.15F, 0.15F, 0.15F, 1F);
@@ -159,12 +163,12 @@ public class ModulusMainScreen extends Screen implements IOneScaleScreen {
         super.render(guiGraphics, pMouseX, pMouseY, pPartialTick);
         if (this.tabId == 1) {
             int canvasHeight = this.canvasMaxY - this.canvasMinY;
-            this.renderTitle(guiGraphics, Component.translatable("modulus.screen.socials")
+            this.renderTitle(guiGraphics, Component.translatable("screen.modulus.socials")
                     .withStyle(ClientUtil.BOLD_MINECRAFT), (int) (this.width / 4F), this.canvasMinY + 10);
 
             // Two sticks like borders
             {
-                int c = FastColor.ARGB32.color(20, 255, 255, 255);
+                int c = ClientUtil.ARGB.color(20, 255, 255, 255);
                 int x = 0;
                 int minY = this.canvasMinY + 10;
                 int maxY = this.canvasMaxY - 8;
@@ -196,15 +200,14 @@ public class ModulusMainScreen extends Screen implements IOneScaleScreen {
 
             // Creator
             {
-                Component s = Component.translatable("modulus.screen.creator").withStyle(ClientUtil.BOLD_MINECRAFT);
+                Component s = Component.translatable("screen.modulus.creator").withStyle(ClientUtil.BOLD_MINECRAFT);
                 int x = (int) (this.width * 0.75F), y = this.canvasMinY + 10;
 
                 this.renderTitle(guiGraphics, s, x, y);
-                guiGraphics.setColor(0.125F, 0.125F, 0.125F, 1.0F);
                 final int width = (int) (canvasHeight / 1.27);
                 final int x1 = x - width / 2, y1 = y + 25;
                 guiGraphics.enableScissor(x1, y1, x1 + width, y1 + (int) (canvasHeight / 1.5));
-                guiGraphics.blit(Screen.BACKGROUND_LOCATION, x1, y1, 0, 0, width, (int) (canvasHeight / 1.5F), 32, 32);
+                guiGraphics.fill(x1, y1, x1 + width, y1 + (int) (canvasHeight / 1.5F), ClientUtil.ARGB.color(100, 0, 0, 0));
                 guiGraphics.setColor(1.0F, 1.0F, 1.0F, 1.0F);
 
 
@@ -216,7 +219,7 @@ public class ModulusMainScreen extends Screen implements IOneScaleScreen {
                 float mouseXAdd = (pMouseX - x1 - width / 2F) / 10F * f;
                 float mouseYAdd = Math.max(-40, pMouseY - y1 - (int) (canvasHeight / 1.5F) / 2F) / 10F * f;
                 f *= 10F;
-                ClientUtil.blit(guiGraphics, x1 + 11.5F - f / 2 + mouseXAdd, y1 - f / 2 + mouseYAdd, canvasHeight / 1.6F + f, canvasHeight / 1.5F + f, 0.0F, 0.0F, 1310, 1440, 1310, 1440);
+                ClientUtil.blit(guiGraphics, x1 + 9.5F - f / 2 + mouseXAdd, y1 - f / 2 + mouseYAdd, canvasHeight / 1.6F + f, canvasHeight / 1.5F + f, 0.0F, 0.0F, 1310, 1440, 1310, 1440);
                 guiGraphics.disableScissor();
 
                 Component pTooltip = Component.literal("ChappiePie");

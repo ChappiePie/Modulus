@@ -1,1 +1,5 @@
 accessWidener v2 named
+
+accessible field net/minecraft/client/gui/GuiGraphics scissorStack Lnet/minecraft/client/gui/GuiGraphics$ScissorStack;
+accessible method net/minecraft/client/gui/GuiGraphics applyScissor (Lnet/minecraft/client/gui/navigation/ScreenRectangle;)V
+accessible method net/minecraft/client/gui/GuiGraphics$ScissorStack push (Lnet/minecraft/client/gui/navigation/ScreenRectangle;)Lnet/minecraft/client/gui/navigation/ScreenRectangle;
