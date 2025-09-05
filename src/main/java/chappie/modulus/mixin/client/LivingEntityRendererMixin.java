@@ -12,11 +12,11 @@ import com.mojang.blaze3d.vertex.PoseStack;
 import com.mojang.blaze3d.vertex.VertexConsumer;
 import net.minecraft.client.model.EntityModel;
 import net.minecraft.client.model.HumanoidModel;
+import net.minecraft.client.model.PlayerModel;
 import net.minecraft.client.renderer.MultiBufferSource;
 import net.minecraft.client.renderer.RenderType;
 import net.minecraft.client.renderer.entity.LivingEntityRenderer;
 import net.minecraft.client.renderer.entity.layers.RenderLayer;
-import net.minecraft.util.FastColor;
 import net.minecraft.world.entity.LivingEntity;
 import org.spongepowered.asm.mixin.Final;
 import org.spongepowered.asm.mixin.Mixin;
@@ -60,8 +60,17 @@ public abstract class LivingEntityRendererMixin<T extends LivingEntity, M extend
         LivingEntityRenderer<T, M> renderer = (LivingEntityRenderer<T, M>) (Object) this;
         if (this.model instanceof IHasModelProperties iModel) {
             this.modulus$event = new RendererChangeCallback.RendererChangeEvent<>(entity, renderer, iModel.modulus$modelProperties(), poseStack, buffer, type, packedLight, LivingEntityRenderer.getOverlayCoords(entity, this.getWhiteOverlayProgress(entity, partialTicks)));
-            if (this.model instanceof HumanoidModel<?>) {
+            if (this.model instanceof HumanoidModel<?> humanoidModel) {
                 SetupAnimCallback.EVENT.invoker().event(new SetupAnimCallback.SetupAnimEvent(entity, (HumanoidModel<T>) this.model, iModel.modulus$modelProperties()));
+
+                humanoidModel.hat.copyFrom(humanoidModel.head);
+                if (humanoidModel instanceof PlayerModel playerModel) {
+                    playerModel.jacket.copyFrom(humanoidModel.body);
+                    playerModel.rightSleeve.copyFrom(humanoidModel.rightArm);
+                    playerModel.leftSleeve.copyFrom(humanoidModel.leftArm);
+                    playerModel.leftPants.copyFrom(humanoidModel.leftLeg);
+                    playerModel.rightPants.copyFrom(humanoidModel.rightLeg);
+                }
             }
         }
     }
@@ -72,7 +81,7 @@ public abstract class LivingEntityRendererMixin<T extends LivingEntity, M extend
     )
     private boolean renderIfAllowed(EntityModel instance, PoseStack poseStack, VertexConsumer vertexConsumer, int pPackedLight, int pPackedOverlay, int pColor) {
         if (this.modulus$event != null) {
-            this.modulus$event.setColor(FastColor.ARGB32.red(pColor), FastColor.ARGB32.green(pColor), FastColor.ARGB32.blue(pColor), FastColor.ARGB32.alpha(pColor));
+            this.modulus$event.setColor(ClientUtil.ARGB.red(pColor), ClientUtil.ARGB.green(pColor), ClientUtil.ARGB.blue(pColor), ClientUtil.ARGB.alpha(pColor));
             boolean b = RendererChangeCallback.EVENT.invoker().event(this.modulus$event);
             this.modulus$event.multiBufferSource().getBuffer(this.modulus$event.renderType()); // rollback texture of entity
             return !b;

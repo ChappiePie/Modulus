@@ -19,7 +19,6 @@ import net.minecraft.network.chat.CommonComponents;
 import net.minecraft.network.chat.Component;
 import net.minecraft.network.chat.MutableComponent;
 import net.minecraft.resources.ResourceLocation;
-import net.minecraft.util.FastColor;
 import net.minecraft.util.Mth;
 import org.jetbrains.annotations.Nullable;
 
@@ -149,7 +148,7 @@ public class ModulusMainScreen extends Screen implements IOneScaleScreen {
 
 
             // Line under label
-            int lineColor = FastColor.ARGB32.color(255, 46, 51, 53);
+            int lineColor = ClientUtil.ARGB.color(255, 46, 51, 53);
             labelYPos += 30;
 
             guiGraphics.setColor(0.15F, 0.15F, 0.15F, 1F);
@@ -169,7 +168,7 @@ public class ModulusMainScreen extends Screen implements IOneScaleScreen {
 
             // Two sticks like borders
             {
-                int c = FastColor.ARGB32.color(20, 255, 255, 255);
+                int c = ClientUtil.ARGB.color(20, 255, 255, 255);
                 int x = 0;
                 int minY = this.canvasMinY + 10;
                 int maxY = this.canvasMaxY - 8;

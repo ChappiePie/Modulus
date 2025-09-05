@@ -14,6 +14,7 @@ import net.minecraft.client.renderer.RenderStateShard;
 import net.minecraft.client.renderer.RenderType;
 import net.minecraft.network.chat.Style;
 import net.minecraft.resources.ResourceLocation;
+import net.minecraft.util.Mth;
 import net.minecraft.world.phys.AABB;
 import org.joml.Matrix4f;
 
@@ -116,6 +117,68 @@ public class ClientUtil {
                     .setTransparencyState(RenderStateShard.TRANSLUCENT_TRANSPARENCY)
                     .setCullState(NO_CULL).setLightmapState(LIGHTMAP).setOverlayState(OVERLAY)
                     .createCompositeState(false));
+        }
+    }
+
+    public static class ARGB {
+        public static int alpha(int color) {
+            return color >>> 24;
+        }
+
+        public static int red(int color) {
+            return color >> 16 & 0xFF;
+        }
+
+        public static int green(int color) {
+            return color >> 8 & 0xFF;
+        }
+
+        public static int blue(int color) {
+            return color & 0xFF;
+        }
+
+        public static int color(int alpha, int red, int green, int blue) {
+            return alpha << 24 | red << 16 | green << 8 | blue;
+        }
+
+        public static int color(int red, int green, int blue) {
+            return color(255, red, green, blue);
+        }
+
+        public static int color(int alpha, int color) {
+            return alpha << 24 | color & 16777215;
+        }
+
+        public static int white(float alpha) {
+            return as8BitChannel(alpha) << 24 | 16777215;
+        }
+
+        public static int colorFromFloat(float alpha, float red, float green, float blue) {
+            return color(as8BitChannel(alpha), as8BitChannel(red), as8BitChannel(green), as8BitChannel(blue));
+        }
+
+        public static int as8BitChannel(float value) {
+            return Mth.floor(value * 255.0F);
+        }
+
+        public static float alphaFloat(int color) {
+            return from8BitChannel(alpha(color));
+        }
+
+        public static float redFloat(int color) {
+            return from8BitChannel(red(color));
+        }
+
+        public static float greenFloat(int color) {
+            return from8BitChannel(green(color));
+        }
+
+        public static float blueFloat(int color) {
+            return from8BitChannel(blue(color));
+        }
+
+        private static float from8BitChannel(int value) {
+            return (float) value / 255.0F;
         }
     }
 }
