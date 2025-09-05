@@ -1,5 +1,5 @@
 plugins {
-	id 'fabric-loom' version '1.9-SNAPSHOT'
+	id 'fabric-loom' version '1.11-SNAPSHOT'
 	id 'maven-publish'
 }
 
@@ -34,7 +34,7 @@ repositories {
 		}
 	}
 	maven {
-		name = "Ladysnake Mods"
+		name = 'Ladysnake Mods'
 		url = 'https://maven.ladysnake.org/releases'
 	}
 	maven {
@@ -62,8 +62,8 @@ dependencies {
 	compileOnly(annotationProcessor("io.github.llamalad7:mixinextras-common:${project.mixin_extras_version}"))
 	modImplementation(include("io.github.llamalad7:mixinextras-fabric:${project.mixin_extras_version}"))
 
-	modImplementation include("dev.onyxstudios.cardinal-components-api:cardinal-components-base:${project.cca_version}")
-	modImplementation include("dev.onyxstudios.cardinal-components-api:cardinal-components-entity:${project.cca_version}")
+	modImplementation include("org.ladysnake.cardinal-components-api:cardinal-components-base:${project.cca_version}")
+	modImplementation include("org.ladysnake.cardinal-components-api:cardinal-components-entity:${project.cca_version}")
 
 	modRuntimeOnly "maven.modrinth:modmenu:${project.mod_menu_version}"
 }
