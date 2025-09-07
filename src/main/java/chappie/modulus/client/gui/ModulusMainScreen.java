@@ -6,6 +6,7 @@ import com.google.common.collect.ImmutableList;
 import com.google.common.collect.Lists;
 import com.mojang.blaze3d.systems.RenderSystem;
 import com.mojang.blaze3d.vertex.PoseStack;
+import net.minecraft.Util;
 import net.minecraft.client.gui.GuiGraphics;
 import net.minecraft.client.gui.components.Button;
 import net.minecraft.client.gui.components.Renderable;
@@ -44,6 +45,7 @@ public class ModulusMainScreen extends Screen implements IOneScaleScreen {
     private int tabId = 0;
     private int canvasMinY, canvasMaxY;
     private ChappModListWidget modList;
+    private long utilMillis;
 
     public ModulusMainScreen(Screen lastScreen) {
         super(Component.translatable("gui.modulus.mainScreen"));
@@ -89,10 +91,6 @@ public class ModulusMainScreen extends Screen implements IOneScaleScreen {
         this.setFocused(this.tabs.get(this.tabId));
     }
 
-    public <T extends GuiEventListener & Renderable & NarratableEntry> ImmutableList<T> createSettingsPage() {
-        return ImmutableList.of();
-    }
-
     @SuppressWarnings("unchecked")
     public <T extends GuiEventListener & Renderable & NarratableEntry> ImmutableList<T> createModsPage() {
         this.modList = new ChappModListWidget(this, this.width - 18, 64, this.height - 42);
@@ -116,11 +114,15 @@ public class ModulusMainScreen extends Screen implements IOneScaleScreen {
 
     @Override
     public void render(GuiGraphics guiGraphics, int pMouseX, int pMouseY, float pPartialTick) {
-        this.atChappieTimer.update();
-        for (GuiEventListener renderable : this.children()) {
-            if (renderable instanceof IHasTimer timer) {
-                for (IHasTimer.Timer t : timer.timers()) {
-                    t.update();
+        long l = Util.getMillis();
+        if (l - this.utilMillis > 10L) {
+            this.utilMillis = l;
+            this.atChappieTimer.update();
+            for (GuiEventListener renderable : this.children()) {
+                if (renderable instanceof IHasTimer timer) {
+                    for (IHasTimer.Timer t : timer.timers()) {
+                        t.update();
+                    }
                 }
             }
         }
@@ -208,7 +210,7 @@ public class ModulusMainScreen extends Screen implements IOneScaleScreen {
                 final int width = (int) (canvasHeight / 1.27);
                 final int x1 = x - width / 2, y1 = y + 25;
                 guiGraphics.enableScissor(x1, y1, x1 + width, y1 + (int) (canvasHeight / 1.5));
-                guiGraphics.blit(Screen.MENU_BACKGROUND, x1, y1, 0, 0, width, (int) (canvasHeight / 1.5F), 32, 32);
+                guiGraphics.fill(x1, y1, x1 + width, y1 + (int) (canvasHeight / 1.5F), ClientUtil.ARGB.color(100, 0, 0, 0));
                 //RenderSystem.setShaderColor(1.0F, 1.0F, 1.0F, 1.0F);
 
 

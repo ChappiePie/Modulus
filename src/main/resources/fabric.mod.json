@@ -29,8 +29,7 @@
   },
   "custom": {
     "cardinal-components": [
-      "modulus:powers",
-      "modulus:player_anim"
+      "modulus:powers"
     ]
   },
   "mixins": [

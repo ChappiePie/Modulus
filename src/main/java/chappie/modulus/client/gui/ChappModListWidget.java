@@ -21,10 +21,13 @@ import net.minecraft.client.gui.components.ContainerObjectSelectionList;
 import net.minecraft.client.gui.components.MultiLineLabel;
 import net.minecraft.client.gui.components.events.GuiEventListener;
 import net.minecraft.client.gui.narration.NarratableEntry;
+import net.minecraft.client.gui.navigation.ScreenRectangle;
 import net.minecraft.network.chat.Component;
 import net.minecraft.resources.ResourceLocation;
 import net.minecraft.util.Mth;
 import net.minecraft.world.phys.Vec2;
+import org.joml.Matrix4f;
+import org.joml.Vector3f;
 
 import java.util.*;
 import java.util.concurrent.atomic.AtomicInteger;
@@ -149,6 +152,45 @@ public class ChappModListWidget extends ContainerObjectSelectionList<ChappModLis
             this.oldSize = new Vec2(this.getWidth(), this.getHeight());
         }
 
+        public static void enableScissor(GuiGraphics guiGraphics, int minX, int minY, int maxX, int maxY) {
+            ScreenRectangle screenRectangle = new ScreenRectangle(minX, minY, maxX - minX, maxY - minY);
+            screenRectangle = MyButton.transformAxisAligned(screenRectangle, guiGraphics.pose().last().pose());
+            guiGraphics.applyScissor(guiGraphics.scissorStack.push(screenRectangle));
+        }
+
+        public static ScreenRectangle transformAxisAligned(ScreenRectangle rectangle, Matrix4f pose) {
+            if ((pose.properties() & 4) != 0) {
+                return rectangle;
+            } else {
+                Vector3f vector3f = pose.transformPosition((float) rectangle.left(), (float) rectangle.top(), 0.0F, new Vector3f());
+                Vector3f vector3f2 = pose.transformPosition((float) rectangle.right(), (float) rectangle.bottom(), 0.0F, new Vector3f());
+                return new ScreenRectangle(Mth.floor(vector3f.x), Mth.floor(vector3f.y), Mth.floor(vector3f2.x - vector3f.x), Mth.floor(vector3f2.y - vector3f.y));
+            }
+        }
+
+        protected static void renderScrollingString(GuiGraphics guiGraphics, Font font, Component text, int minX, int minY, int maxX, int maxY, int color) {
+            renderScrollingString(guiGraphics, font, text, (minX + maxX) / 2, minX, minY, maxX, maxY, color);
+        }
+
+        protected static void renderScrollingString(GuiGraphics guiGraphics, Font font, Component text, int centerX, int minX, int minY, int maxX, int maxY, int color) {
+            int i = font.width(text);
+            int j = (minY + maxY - 9) / 2 + 1;
+            int k = maxX - minX;
+            if (i > k) {
+                int l = i - k;
+                double d = (double) Util.getMillis() / 1000.0;
+                double e = Math.max((double) l * 0.5, 3.0);
+                double f = Math.sin((Math.PI / 2) * Math.cos((Math.PI * 2) * d / e)) / 2.0 + 0.5;
+                double g = Mth.lerp(f, 0.0, l);
+                MyButton.enableScissor(guiGraphics, minX, minY, maxX, maxY + 20);
+                guiGraphics.drawString(font, text, minX - (int) g, j, color);
+                guiGraphics.disableScissor();
+            } else {
+                int l = Mth.clamp(centerX, minX + i / 2, maxX - i / 2);
+                guiGraphics.drawCenteredString(font, text, l, j, color);
+            }
+        }
+
         @Override
         public void renderWidget(GuiGraphics guiGraphics, int pMouseX, int pMouseY, float pPartialTick) {
             //super.renderWidget(guiGraphics, pMouseX, pMouseY, pPartialTick);
@@ -177,26 +219,17 @@ public class ChappModListWidget extends ContainerObjectSelectionList<ChappModLis
             //guiGraphics.fill(this.getX() + 2, this.getY(), this.getX() + 2 + this.width, this.getY() + this.height, -1);
 
             pPoseStack.pushPose();
-            f = 0.6F;
-            pPoseStack.scale(f, f, 1.0F);
-            f = 1.0F / f;
-            pPoseStack.translate(this.getX() * f, this.getY() * f, 0);
-            guiGraphics.setColor(1.0F, 1.0F, 1.0F, 1.0F);
+            float f1 = 0.5F;
+            pPoseStack.scale(f1, f1, 1.0F);
+            f1 = 1.0F / f1;
+            pPoseStack.translate(this.getX() * f1, this.getY() * f1, 0);
+            MyButton.enableScissor(guiGraphics, 6, 5, (int) (this.oldSize.x * f + 8), (int) (this.oldSize.y + 3));
+            renderScrollingString(guiGraphics, Minecraft.getInstance().font, this.getMessage(), 6, -10, (int) ((int) this.oldSize.x * f + 6), (int) (this.oldSize.y * f1 + 2), 10526880 | Mth.ceil(1 * 255.0F) << 24);
+            guiGraphics.disableScissor();
 
-            int i = Minecraft.getInstance().font.width(this.getMessage());
-            float j = 0;
-            if (i > this.getWidth() * f) {
-                j = Mth.sin((float) (Util.getMillis() % 10000L) / 10000.0F * ((float) Math.PI * 2F)) / 2F;
-                guiGraphics.enableScissor(this.getX() + 2, this.getY(), this.getX() + this.getWidth() + 2, this.getY() + this.getHeight());
-            }
-            guiGraphics.drawCenteredString(Minecraft.getInstance().font, this.getMessage(), (int) (43 + j * i * 0.7), 6, 10526880 | Mth.ceil(1 * 255.0F) << 24);
-            if (i > this.getWidth() * f) {
-                guiGraphics.disableScissor();
-            }
             pPoseStack.popPose();
             this.setX(this.getX() - 2);
         }
-
 
         @Override
         public boolean mouseClicked(double pMouseX, double pMouseY, int pButton) {
