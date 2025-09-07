@@ -27,6 +27,7 @@ import net.minecraft.resources.ResourceLocation;
 import net.minecraft.util.ARGB;
 import net.minecraft.util.Mth;
 import net.minecraft.world.phys.Vec2;
+import org.jetbrains.annotations.NotNull;
 
 import java.util.*;
 import java.util.concurrent.atomic.AtomicInteger;
@@ -180,8 +181,8 @@ public class ChappModListWidget extends ContainerObjectSelectionList<ChappModLis
             pPoseStack.scale(f1, f1, 1.0F);
             f1 = 1.0F / f1;
             pPoseStack.translate(this.getX() * f1, this.getY() * f1, 0);
-            guiGraphics.enableScissor(6, 5, (int) (this.oldSize.x * f + 6), (int) (this.oldSize.y + 3));
-            renderScrollingString(guiGraphics, Minecraft.getInstance().font, this.getMessage(), -30, -10, (int) (this.oldSize.x * f1), (int) (this.oldSize.y * f1), 10526880 | Mth.ceil(1 * 255.0F) << 24);
+            guiGraphics.enableScissor(6, 5, (int) (this.oldSize.x * f + 8), (int) (this.oldSize.y + 3));
+            renderScrollingString(guiGraphics, Minecraft.getInstance().font, this.getMessage(), 6, -10, (int) ((int) this.oldSize.x * f + 6), (int) (this.oldSize.y * f1 + 2), 10526880 | Mth.ceil(1 * 255.0F) << 24);
             guiGraphics.disableScissor();
 
             pPoseStack.popPose();
@@ -239,9 +240,8 @@ public class ChappModListWidget extends ContainerObjectSelectionList<ChappModLis
             this.children.put(versionButton, (x, y) -> new Vec2(4 + x, 76 + y));
 
             if (modFile == null) {
-                this.children.put(new MyButton(68, 16, Component.translatable("screen.modulus.modEntry.download"), (b) -> {
-                    Util.getPlatform().openUri(info.url);
-                }), (x, y) -> new Vec2(74 + x, 76 + y));
+                this.children.put(new MyButton(68, 16, Component.translatable("screen.modulus.modEntry.download"), (b) ->
+                        Util.getPlatform().openUri(info.url)), (x, y) -> new Vec2(74 + x, 76 + y));
             }
         }
 
@@ -298,12 +298,12 @@ public class ChappModListWidget extends ContainerObjectSelectionList<ChappModLis
         }
 
         @Override
-        public List<? extends GuiEventListener> children() {
+        public @NotNull List<? extends GuiEventListener> children() {
             return new ArrayList<>(this.children.keySet());
         }
 
         @Override
-        public List<? extends NarratableEntry> narratables() {
+        public @NotNull List<? extends NarratableEntry> narratables() {
             return new ArrayList<>(this.children.keySet());
         }
 

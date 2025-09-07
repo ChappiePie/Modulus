@@ -36,7 +36,7 @@ public class ModulusDataGenerator implements DataGeneratorEntrypoint {
             translationBuilder.add("screen.modulus.tab.mods", "Mods");
             translationBuilder.add("screen.modulus.tab.about", "About");
 
-            translationBuilder.add("screen.modulus.modEntry.version", "Version, %s");
+            translationBuilder.add("screen.modulus.modEntry.version", "Version: %s");
 
             translationBuilder.add("screen.modulus.creator", "Creator");
             translationBuilder.add("screen.modulus.socials", "Socials");

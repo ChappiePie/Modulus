@@ -6,6 +6,7 @@ import com.google.common.collect.ImmutableList;
 import com.google.common.collect.Lists;
 import com.mojang.blaze3d.systems.RenderSystem;
 import com.mojang.blaze3d.vertex.PoseStack;
+import net.minecraft.Util;
 import net.minecraft.client.gui.GuiGraphics;
 import net.minecraft.client.gui.components.Button;
 import net.minecraft.client.gui.components.Renderable;
@@ -46,6 +47,7 @@ public class ModulusMainScreen extends Screen implements IOneScaleScreen {
     private int tabId = 0;
     private int canvasMinY, canvasMaxY;
     private ChappModListWidget modList;
+    private long utilMillis;
 
     public ModulusMainScreen(Screen lastScreen) {
         super(Component.translatable("gui.modulus.mainScreen"));
@@ -73,9 +75,8 @@ public class ModulusMainScreen extends Screen implements IOneScaleScreen {
         this.canvasMaxY = this.height - 36;
 
         int halfWidth = this.width / 2;
-        this.addRenderableWidget(Button.builder(CommonComponents.GUI_DONE, (b) -> {
-            this.minecraft.setScreen(this.lastScreen);
-        }).pos(halfWidth - 75, this.height - 30).build());
+        this.addRenderableWidget(Button.builder(CommonComponents.GUI_DONE, (b) ->
+                this.minecraft.setScreen(this.lastScreen)).pos(halfWidth - 75, this.height - 30).build());
 
         this.tabs.clear();
         int tabWidth = 100;
@@ -89,10 +90,6 @@ public class ModulusMainScreen extends Screen implements IOneScaleScreen {
             xPos += tabWidth;
         }
         this.setFocused(this.tabs.get(this.tabId));
-    }
-
-    public <T extends GuiEventListener & Renderable & NarratableEntry> ImmutableList<T> createSettingsPage() {
-        return ImmutableList.of();
     }
 
     @SuppressWarnings("unchecked")
@@ -118,11 +115,16 @@ public class ModulusMainScreen extends Screen implements IOneScaleScreen {
 
     @Override
     public void render(GuiGraphics guiGraphics, int pMouseX, int pMouseY, float pPartialTick) {
-        this.atChappieTimer.update();
-        for (GuiEventListener renderable : this.children()) {
-            if (renderable instanceof IHasTimer timer) {
-                for (IHasTimer.Timer t : timer.timers()) {
-                    t.update();
+
+        long l = Util.getMillis();
+        if (l - this.utilMillis > 10L) {
+            this.utilMillis = l;
+            this.atChappieTimer.update();
+            for (GuiEventListener renderable : this.children()) {
+                if (renderable instanceof IHasTimer timer) {
+                    for (IHasTimer.Timer t : timer.timers()) {
+                        t.update();
+                    }
                 }
             }
         }
@@ -217,7 +219,7 @@ public class ModulusMainScreen extends Screen implements IOneScaleScreen {
                 this.atChappieTimer.predicate = () -> isMouseOverObj(pMouseX, pMouseY, x1, y1, width, canvasHeight / 1.5F);
                 RenderSystem.enableBlend();
                 RenderSystem.defaultBlendFunc();
-                float f = this.atChappieTimer.value(pPartialTick);
+                float f = this.atChappieTimer.value(ClientUtil.getPartialTick());
                 float mouseXAdd = (pMouseX - x1 - width / 2F) / 10F * f;
                 float mouseYAdd = Math.max(-40, pMouseY - y1 - (int) (canvasHeight / 1.5F) / 2F) / 10F * f;
                 f *= 10F;
@@ -256,22 +258,24 @@ public class ModulusMainScreen extends Screen implements IOneScaleScreen {
         guiGraphics.drawCenteredString(this.minecraft.font, component, 0, 0, -1);
         pPoseStack.popPose();
         y += 14;
+        int color = -1;
         for (int k = 0; k < 2; k++) {
             if (k == 0) {
-                //RenderSystem.setShaderColor(0.25F, 0.25F, 0.25F, 1F);
+                color = ARGB.colorFromFloat(1F, 0.25F, 0.25F, 0.25F);
                 x += 2;
                 y += 2;
             }
             int length = this.minecraft.font.width(component) + 5;
-            guiGraphics.fill(x - length, y, x + length, y + 2, -1);
+            guiGraphics.fill(x - length, y, x + length, y + 2, color);
 
-            guiGraphics.fill(x - length + 2, y - 2, x - length + 4, y + 4, -1);
-            guiGraphics.fill(x + length - 2, y - 2, x + length - 4, y + 4, -1);
+            guiGraphics.fill(x - length + 2, y - 2, x - length + 4, y + 4, color);
+            guiGraphics.fill(x + length - 2, y - 2, x + length - 4, y + 4, color);
 
             //RenderSystem.setShaderColor(1F, 1F, 1F, 1F);
             if (k == 0) {
                 x -= 2;
                 y -= 2;
+                color = -1;
             }
         }
     }
