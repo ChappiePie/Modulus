@@ -34,7 +34,15 @@ repositories {
 		}
 	}
 	maven {
-		name = 'Ladysnake Mods'
+		name = 'GeckoLib'
+		url 'https://dl.cloudsmith.io/public/geckolib3/geckolib/maven/'
+		content {
+			includeGroupByRegex("software\\.bernie.*")
+			includeGroup("com.eliotlash.mclib")
+		}
+	}
+	maven {
+		name = "Ladysnake Mods"
 		url = 'https://maven.ladysnake.org/releases'
 	}
 	maven {
@@ -45,6 +53,11 @@ repositories {
 		name = 'BlameJared Maven (CrT / Bookshelf)'
 		url = 'https://maven.blamejared.com'
 	}
+	maven {
+		name = "Fuzs Mod Resources"
+		url = "https://raw.githubusercontent.com/Fuzss/modresources/main/maven/"
+	}
+	mavenLocal()
 }
 
 dependencies {
@@ -64,6 +77,12 @@ dependencies {
 
 	modImplementation include("org.ladysnake.cardinal-components-api:cardinal-components-base:${project.cca_version}")
 	modImplementation include("org.ladysnake.cardinal-components-api:cardinal-components-entity:${project.cca_version}")
+
+	modApi "fuzs.forgeconfigapiport:forgeconfigapiport-common:${project.fcap_version}"
+	modImplementation include("fuzs.forgeconfigapiport:forgeconfigapiport-fabric:${project.fcap_version}")
+
+	modImplementation include("software.bernie.geckolib:geckolib-fabric-${minecraft_version}:${geckolib_version}")
+	implementation("com.eliotlash.mclib:mclib:20")
 
 	modRuntimeOnly "maven.modrinth:modmenu:${project.mod_menu_version}"
 }
