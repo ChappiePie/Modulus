@@ -32,12 +32,14 @@ public record ServerSetData(String id, String abilityName, CompoundTag tag) impl
         PowerCap cap = PowerCap.getCap(player);
         if (cap != null) {
             Ability ability = cap.getAbility(this.abilityName);
-            var accessor = ability.dataManager.getAccessorById(this.id);
-            if (accessor != null) {
-                var value = ability.dataManager.getDataValue(accessor);
-                value.deserialize(this.tag, true);
-                ability.onDataUpdated(accessor);
-                ModNetworking.sendToTrackingEntityAndSelf(new ClientSyncData(player.getId(), this.id, this.abilityName, this.tag), player);
+            if (ability != null) {
+                var accessor = ability.dataManager.getAccessorById(this.id);
+                if (accessor != null) {
+                    var value = ability.dataManager.getDataValue(accessor);
+                    value.deserialize(this.tag, true);
+                    ability.onDataUpdated(accessor);
+                    ModNetworking.sendToTrackingEntityAndSelf(new ClientSyncData(player.getId(), this.id, this.abilityName, this.tag), player);
+                }
             }
         }
     }

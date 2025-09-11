@@ -23,12 +23,15 @@ public class DataManager {
     }
 
     public <T> DataManager define(DataAccessor<T> accessor, T initialValue) {
-        return this.define(accessor, initialValue, true);
+        return this.define(accessor, initialValue, true, true);
+    }
+    public <T> DataManager define(DataAccessor<T> accessor, T initialValue, boolean saveAfterRejoin) {
+        return this.define(accessor, initialValue, saveAfterRejoin, true);
     }
 
-    public <T> DataManager define(DataAccessor<T> accessor, T initialValue, boolean saveAfterRejoin) {
+    public <T> DataManager define(DataAccessor<T> accessor, T initialValue, boolean saveAfterRejoin, boolean synchronizeWithOthers) {
         if (!this.dataMap.containsKey(accessor)) {
-            this.dataMap.put(accessor, new DataValue<>(accessor, initialValue, saveAfterRejoin));
+            this.dataMap.put(accessor, new DataValue<>(accessor, initialValue, saveAfterRejoin, synchronizeWithOthers));
         } else {
             LOGGER.error("Cannot define the data with id: %s".formatted(accessor.key()));
         }
@@ -41,7 +44,7 @@ public class DataManager {
         if (dataValue.get() != value) {
             dataValue.set(value);
             this.ability.onDataUpdated(accessor);
-            if (!entity.getCommandSenderWorld().isClientSide) {
+            if (!entity.getCommandSenderWorld().isClientSide && dataValue.synchronizeWithOthers()) {
                 ModNetworking.sendToTrackingEntityAndSelf(new ClientSyncData(entity.getId(), accessor.key(), this.ability.builder.id, dataValue.serialize(new CompoundTag(), true)), entity);
             }
         }
@@ -87,14 +90,16 @@ public class DataManager {
     public static class DataValue<T> {
         private final DataAccessor<T> accessor;
         private final boolean save;
+        private final boolean synchronize;
         private final T initialValue;
         private T value;
 
-        DataValue(DataAccessor<T> accessor, T value, boolean save) {
+        DataValue(DataAccessor<T> accessor, T value, boolean save, boolean synchronize) {
             this.accessor = accessor;
             this.initialValue = value;
             this.value = value;
             this.save = save;
+            this.synchronize = synchronize;
         }
 
         public void set(T value) {
@@ -103,6 +108,10 @@ public class DataManager {
 
         public void reset() {
             this.value = this.initialValue;
+        }
+
+        public boolean synchronizeWithOthers() {
+            return synchronize;
         }
 
         public T get() {
