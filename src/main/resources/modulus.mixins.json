@@ -11,6 +11,7 @@
     "client.MinecraftMixin",
     "client.ModelMixin",
     "client.ModelPartMixin",
+    "client.MouseHandlerMixin",
     "client.ScreenMixin",
     "client.WindowMixin"
   ],

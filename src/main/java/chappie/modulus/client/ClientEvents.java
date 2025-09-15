@@ -82,7 +82,8 @@ public class ClientEvents {
                 }
             } else {
                 if (ClientEvents.KEYS.isDown(keyType)) {
-                    if (keyType.equals(KeyMap.KeyType.MOUSE_LEFT) && !Minecraft.getInstance().options.keyAttack.isDown()
+                    if (keyType.equals(KeyMap.KeyType.MOUSE_SCROLL_UP) || keyType.equals(KeyMap.KeyType.MOUSE_SCROLL_DOWN)
+                            || keyType.equals(KeyMap.KeyType.MOUSE_LEFT) && !Minecraft.getInstance().options.keyAttack.isDown()
                             || keyType.equals(KeyMap.KeyType.MOUSE_RIGHT) && !Minecraft.getInstance().options.keyUse.isDown()) {
                         ClientEvents.KEYS.setDown(keyType, false);
                     }
