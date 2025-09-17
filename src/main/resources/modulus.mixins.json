@@ -5,6 +5,7 @@
   "client": [
     "client.CubeMixin",
     "client.EntityRenderDispatcherMixin",
+    "client.GuiGraphicsAccessor",
     "client.HierarchicalModelMixin",
     "client.HumanoidModelMixin",
     "client.ItemInHandRendererMixin",

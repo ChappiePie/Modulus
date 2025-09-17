@@ -1,5 +1,6 @@
 package chappie.modulus.client.gui;
 
+import chappie.modulus.mixin.client.GuiGraphicsAccessor;
 import chappie.modulus.util.ClientUtil;
 import chappie.modulus.util.CommonUtil;
 import chappie.modulus.util.IHasTimer;
@@ -155,7 +156,7 @@ public class ChappModListWidget extends ContainerObjectSelectionList<ChappModLis
         public static void enableScissor(GuiGraphics guiGraphics, int minX, int minY, int maxX, int maxY) {
             ScreenRectangle screenRectangle = new ScreenRectangle(minX, minY, maxX - minX, maxY - minY);
             screenRectangle = MyButton.transformAxisAligned(screenRectangle, guiGraphics.pose().last().pose());
-            guiGraphics.applyScissor(guiGraphics.scissorStack.push(screenRectangle));
+            ((GuiGraphicsAccessor) guiGraphics).applyScissor(((GuiGraphicsAccessor) guiGraphics).getScissorStack().push(screenRectangle));
         }
 
         public static ScreenRectangle transformAxisAligned(ScreenRectangle rectangle, Matrix4f pose) {

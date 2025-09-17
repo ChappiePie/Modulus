@@ -10,7 +10,6 @@ import net.minecraft.Util;
 import net.minecraft.client.gui.GuiGraphics;
 import net.minecraft.client.gui.components.Button;
 import net.minecraft.client.gui.components.Renderable;
-import net.minecraft.client.gui.components.WidgetSprites;
 import net.minecraft.client.gui.components.events.GuiEventListener;
 import net.minecraft.client.gui.narration.NarratableEntry;
 import net.minecraft.client.gui.screens.PauseScreen;
@@ -31,11 +30,7 @@ import java.util.function.Supplier;
 public class ModulusMainScreen extends Screen implements IOneScaleScreen {
 
     public static final ResourceLocation MENU = Modulus.id("textures/gui/sprites/menu.png");
-    public static final WidgetSprites SPRITES = new WidgetSprites(
-            Modulus.id("widget/button"),
-            Modulus.id("widget/button_disabled"),
-            Modulus.id("widget/button_highlighted")
-    );
+
     private static final ResourceLocation CHAPPIE_TEXTURE = getTexByName("chappie");
     private final Screen lastScreen;
     private final List<TabButton> tabs = Lists.newArrayList();

@@ -11,7 +11,7 @@ base {
 }
 
 loom {
-	accessWidenerPath = file("src/main/resources/${project.archives_base_name}.accesswidener")
+    accessWidenerPath = file("src/main/resources/modulus.accesswidener")
 }
 
 fabricApi {
@@ -59,11 +59,12 @@ dependencies {
 	// Fabric API. This is technically optional, but you probably want it anyway.
 	modImplementation "net.fabricmc.fabric-api:fabric-api:${project.fabric_version}+${project.minecraft_version}"
 
-	compileOnly(annotationProcessor("io.github.llamalad7:mixinextras-common:${project.mixin_extras_version}"))
+    modImplementation(include("org.ladysnake.cardinal-components-api:cardinal-components-base:${project.cca_version}"))
+    modImplementation(include("org.ladysnake.cardinal-components-api:cardinal-components-entity:${project.cca_version}"))
+
+    compileOnly(annotationProcessor("io.github.llamalad7:mixinextras-common:${project.mixin_extras_version}"))
 	modImplementation(include("io.github.llamalad7:mixinextras-fabric:${project.mixin_extras_version}"))
 
-	modImplementation include("dev.onyxstudios.cardinal-components-api:cardinal-components-base:${project.cca_version}")
-	modImplementation include("dev.onyxstudios.cardinal-components-api:cardinal-components-entity:${project.cca_version}")
 
 	modRuntimeOnly "maven.modrinth:modmenu:${project.mod_menu_version}"
 }

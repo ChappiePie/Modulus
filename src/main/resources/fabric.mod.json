@@ -4,6 +4,7 @@
   "version": "${version}",
   "name": "Modulus",
   "description": "The core for the mods created by Chappie is under constant development. \nBasically adding a lot of cool things for convenient writing of mods.",
+  "accessWidener": "modulus.accesswidener",
   "authors": [
     "ChappiePie"
   ],
