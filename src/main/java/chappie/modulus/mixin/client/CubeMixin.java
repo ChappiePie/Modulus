@@ -1,14 +1,18 @@
 package chappie.modulus.mixin.client;
 
 import chappie.modulus.util.model.IChangeableSize;
+import com.mojang.blaze3d.vertex.PoseStack;
+import com.mojang.blaze3d.vertex.VertexConsumer;
 import net.minecraft.client.model.geom.ModelPart;
 import net.minecraft.core.Direction;
+import org.joml.Matrix4f;
 import org.joml.Vector3f;
 import org.spongepowered.asm.mixin.*;
 import org.spongepowered.asm.mixin.injection.At;
 import org.spongepowered.asm.mixin.injection.Inject;
 import org.spongepowered.asm.mixin.injection.callback.CallbackInfo;
 
+import java.util.Objects;
 import java.util.Set;
 
 @Mixin(ModelPart.Cube.class)
@@ -27,109 +31,171 @@ public class CubeMixin implements IChangeableSize {
     @Final
     public float minZ;
     @Unique
-    public int p_273701_, p_273034_;
+    public int u, v;
     @Unique
-    public float p_273591_, p_273313_;
+    public float texWidth, texHeight;
     @Unique
-    public float p_273722_, p_273763_, p_272823_;
+    public float dimensionX, dimensionY, dimensionZ;
     @Unique
-    public float modulus$growX, modulus$growY, modulus$growZ;
+    public float growX, growY, growZ;
     @Unique
-    public boolean p_273589_;
+    public boolean mirror;
     @Unique
-    public Set<Direction> p_273291_;
+    public Set<Direction> directions;
     @Mutable
     @Shadow
     @Final
-    private ModelPart.Polygon[] polygons;
+    public ModelPart.Polygon[] polygons;
+
+    @Unique
+    public ModelPart.Polygon[] original$polygons;
+
+    @Unique
+    private Vector3f size;
+
+    @Unique
+    private Vector3f pos;
 
     @Inject(at = @At("TAIL"), method = "<init>")
     public void mixinInit(int u, int v, float minX, float minY, float minZ, float dimensionX, float dimensionY, float dimensionZ, float growX, float growY, float growZ, boolean mirror, float texWidth, float texHeight, Set<Direction> directions, CallbackInfo ci) {
-        this.p_273701_ = u;
-        this.p_273034_ = v;
-        this.p_273722_ = dimensionX;
-        this.p_273763_ = dimensionY;
-        this.p_272823_ = dimensionZ;
-        this.modulus$growX = growX; // p_272945_
-        this.modulus$growY = growY; // p_272790_
-        this.modulus$growZ = growZ; // p_272870_
-        this.p_273589_ = mirror;
-        this.p_273591_ = texWidth;
-        this.p_273313_ = texHeight;
-        this.p_273291_ = directions;
+        this.u = u;
+        this.v = v;
+        this.dimensionX = dimensionX;
+        this.dimensionY = dimensionY;
+        this.dimensionZ = dimensionZ;
+        this.growX = growX; // p_272945_
+        this.growY = growY; // p_272790_
+        this.growZ = growZ; // p_272870_
+        this.mirror = mirror;
+        this.texWidth = texWidth;
+        this.texHeight = texHeight;
+        this.directions = directions;
+        this.original$polygons = polygons;
+    }
+
+    @Inject(method = "compile", at = @At("HEAD"), cancellable = true)
+    private void onCompile(PoseStack.Pose pose, VertexConsumer buffer, int packedLight,
+                           int packedOverlay, int color, CallbackInfo ci) {
+        if (Objects.equals(this.size, new Vector3f())) return;
+        Matrix4f matrix = pose.pose();
+        Vector3f tempVector = new Vector3f();
+        Vector3f tempNormal = new Vector3f();
+
+        for (ModelPart.Polygon polygon : this.polygons) {
+            Vector3f normal = pose.transformNormal(polygon.normal(), tempNormal);
+            ModelPart.Vertex[] vertices = polygon.vertices();
+
+            for (int i = 0; i < vertices.length; i += 4) {
+                int batchEnd = Math.min(i + 4, vertices.length);
+                for (int j = i; j < batchEnd; j++) {
+                    ModelPart.Vertex vertex = vertices[j];
+                    Vector3f pos = vertex.pos();
+
+                    Vector3f tempVector2 = matrix.transformPosition(pos.x() / 16.0F, pos.y() / 16.0F, pos.z() / 16.0F, tempVector);
+
+                    buffer.addVertex(tempVector2.x(), tempVector2.y(), tempVector2.z(), color,
+                            vertex.u(), vertex.v(), packedOverlay, packedLight,
+                            normal.x(), normal.y(), normal.z());
+                }
+            }
+        }
+        ci.cancel();
     }
 
     @Override
-    public void setSize(Vector3f size) {
-        float x = modulus$growX + size.x;
-        float y = modulus$growY + size.y;
-        float z = modulus$growZ + size.z;
+    public void modulus$setSizeAndPos(Vector3f size, Vector3f pos) {
+        this.size = size;
+        this.pos = pos;
+        if (this.size.x() == 0 && this.size.y() == 0 && this.size.z() == 0 && this.pos.x() == 0 && this.pos.y() == 0 && this.pos.z() == 0) {
+            if (this.polygons != this.original$polygons) {
+                this.polygons = this.original$polygons;
+            }
+            return;
+        }
 
-        float p_272824_ = this.minX;
-        float p_273777_ = this.minY;
-        float p_273748_ = this.minZ;
-        this.polygons = new ModelPart.Polygon[p_273291_.size()];
-        float f = p_272824_ + p_273722_;
-        float f1 = p_273777_ + p_273763_;
-        float f2 = p_273748_ + p_272823_;
-        p_272824_ -= x;
-        p_273777_ -= y;
-        p_273748_ -= z;
+        float x = growX + size.x;
+        float y = growY + size.y;
+        float z = growZ + size.z;
+
+        float originX = this.minX;
+        float originY = this.minY;
+        float originZ = this.minZ;
+        this.polygons = new ModelPart.Polygon[directions.size()];
+        float f = originX + dimensionX;
+        float f1 = originY + dimensionY;
+        float f2 = originZ + dimensionZ;
+        originX -= x;
+        originY -= y;
+        originZ -= z;
         f += x;
         f1 += y;
         f2 += z;
-        if (p_273589_) {
+
+        originX += pos.x;
+        originY += pos.y;
+        originZ += pos.z;
+
+        f += pos.x;
+        f1 += pos.y;
+        f2 += pos.z;
+
+        if (mirror) {
             float f3 = f;
-            f = p_272824_;
-            p_272824_ = f3;
+            f = originX;
+            originX = f3;
         }
 
-        ModelPart.Vertex modelpart$vertex7 = new ModelPart.Vertex(p_272824_, p_273777_, p_273748_, 0.0F, 0.0F);
-        ModelPart.Vertex modelpart$vertex = new ModelPart.Vertex(f, p_273777_, p_273748_, 0.0F, 8.0F);
-        ModelPart.Vertex modelpart$vertex1 = new ModelPart.Vertex(f, f1, p_273748_, 8.0F, 8.0F);
-        ModelPart.Vertex modelpart$vertex2 = new ModelPart.Vertex(p_272824_, f1, p_273748_, 8.0F, 0.0F);
-        ModelPart.Vertex modelpart$vertex3 = new ModelPart.Vertex(p_272824_, p_273777_, f2, 0.0F, 0.0F);
-        ModelPart.Vertex modelpart$vertex4 = new ModelPart.Vertex(f, p_273777_, f2, 0.0F, 8.0F);
+        ModelPart.Vertex modelpart$vertex7 = new ModelPart.Vertex(originX, originY, originZ, 0.0F, 0.0F);
+        ModelPart.Vertex modelpart$vertex = new ModelPart.Vertex(f, originY, originZ, 0.0F, 8.0F);
+        ModelPart.Vertex modelpart$vertex1 = new ModelPart.Vertex(f, f1, originZ, 8.0F, 8.0F);
+        ModelPart.Vertex modelpart$vertex2 = new ModelPart.Vertex(originX, f1, originZ, 8.0F, 0.0F);
+        ModelPart.Vertex modelpart$vertex3 = new ModelPart.Vertex(originX, originY, f2, 0.0F, 0.0F);
+        ModelPart.Vertex modelpart$vertex4 = new ModelPart.Vertex(f, originY, f2, 0.0F, 8.0F);
         ModelPart.Vertex modelpart$vertex5 = new ModelPart.Vertex(f, f1, f2, 8.0F, 8.0F);
-        ModelPart.Vertex modelpart$vertex6 = new ModelPart.Vertex(p_272824_, f1, f2, 8.0F, 0.0F);
-        float f4 = (float) p_273701_;
-        float f5 = (float) p_273701_ + p_272823_;
-        float f6 = (float) p_273701_ + p_272823_ + p_273722_;
-        float f7 = (float) p_273701_ + p_272823_ + p_273722_ + p_273722_;
-        float f8 = (float) p_273701_ + p_272823_ + p_273722_ + p_272823_;
-        float f9 = (float) p_273701_ + p_272823_ + p_273722_ + p_272823_ + p_273722_;
-        float f10 = (float) p_273034_;
-        float f11 = (float) p_273034_ + p_272823_;
-        float f12 = (float) p_273034_ + p_272823_ + p_273763_;
+        ModelPart.Vertex modelpart$vertex6 = new ModelPart.Vertex(originX, f1, f2, 8.0F, 0.0F);
+        float f4 = (float) u;
+        float f5 = (float) u + dimensionZ;
+        float f6 = (float) u + dimensionZ + dimensionX;
+        float f7 = (float) u + dimensionZ + dimensionX + dimensionX;
+        float f8 = (float) u + dimensionZ + dimensionX + dimensionZ;
+        float f9 = (float) u + dimensionZ + dimensionX + dimensionZ + dimensionX;
+        float f10 = (float) v;
+        float f11 = (float) v + dimensionZ;
+        float f12 = (float) v + dimensionZ + dimensionY;
         int i = 0;
-        if (p_273291_.contains(Direction.DOWN)) {
-            this.polygons[i++] = new ModelPart.Polygon(new ModelPart.Vertex[]{modelpart$vertex4, modelpart$vertex3, modelpart$vertex7, modelpart$vertex}, f5, f10, f6, f11, p_273591_, p_273313_, p_273589_, Direction.DOWN);
+        if (directions.contains(Direction.DOWN)) {
+            this.polygons[i++] = new ModelPart.Polygon(new ModelPart.Vertex[]{modelpart$vertex4, modelpart$vertex3, modelpart$vertex7, modelpart$vertex}, f5, f10, f6, f11, texWidth, texHeight, mirror, Direction.DOWN);
         }
 
-        if (p_273291_.contains(Direction.UP)) {
-            this.polygons[i++] = new ModelPart.Polygon(new ModelPart.Vertex[]{modelpart$vertex1, modelpart$vertex2, modelpart$vertex6, modelpart$vertex5}, f6, f11, f7, f10, p_273591_, p_273313_, p_273589_, Direction.UP);
+        if (directions.contains(Direction.UP)) {
+            this.polygons[i++] = new ModelPart.Polygon(new ModelPart.Vertex[]{modelpart$vertex1, modelpart$vertex2, modelpart$vertex6, modelpart$vertex5}, f6, f11, f7, f10, texWidth, texHeight, mirror, Direction.UP);
         }
 
-        if (p_273291_.contains(Direction.WEST)) {
-            this.polygons[i++] = new ModelPart.Polygon(new ModelPart.Vertex[]{modelpart$vertex7, modelpart$vertex3, modelpart$vertex6, modelpart$vertex2}, f4, f11, f5, f12, p_273591_, p_273313_, p_273589_, Direction.WEST);
+        if (directions.contains(Direction.WEST)) {
+            this.polygons[i++] = new ModelPart.Polygon(new ModelPart.Vertex[]{modelpart$vertex7, modelpart$vertex3, modelpart$vertex6, modelpart$vertex2}, f4, f11, f5, f12, texWidth, texHeight, mirror, Direction.WEST);
         }
 
-        if (p_273291_.contains(Direction.NORTH)) {
-            this.polygons[i++] = new ModelPart.Polygon(new ModelPart.Vertex[]{modelpart$vertex, modelpart$vertex7, modelpart$vertex2, modelpart$vertex1}, f5, f11, f6, f12, p_273591_, p_273313_, p_273589_, Direction.NORTH);
+        if (directions.contains(Direction.NORTH)) {
+            this.polygons[i++] = new ModelPart.Polygon(new ModelPart.Vertex[]{modelpart$vertex, modelpart$vertex7, modelpart$vertex2, modelpart$vertex1}, f5, f11, f6, f12, texWidth, texHeight, mirror, Direction.NORTH);
         }
 
-        if (p_273291_.contains(Direction.EAST)) {
-            this.polygons[i++] = new ModelPart.Polygon(new ModelPart.Vertex[]{modelpart$vertex4, modelpart$vertex, modelpart$vertex1, modelpart$vertex5}, f6, f11, f8, f12, p_273591_, p_273313_, p_273589_, Direction.EAST);
+        if (directions.contains(Direction.EAST)) {
+            this.polygons[i++] = new ModelPart.Polygon(new ModelPart.Vertex[]{modelpart$vertex4, modelpart$vertex, modelpart$vertex1, modelpart$vertex5}, f6, f11, f8, f12, texWidth, texHeight, mirror, Direction.EAST);
         }
 
-        if (p_273291_.contains(Direction.SOUTH)) {
-            this.polygons[i] = new ModelPart.Polygon(new ModelPart.Vertex[]{modelpart$vertex3, modelpart$vertex4, modelpart$vertex5, modelpart$vertex6}, f8, f11, f9, f12, p_273591_, p_273313_, p_273589_, Direction.SOUTH);
+        if (directions.contains(Direction.SOUTH)) {
+            this.polygons[i] = new ModelPart.Polygon(new ModelPart.Vertex[]{modelpart$vertex3, modelpart$vertex4, modelpart$vertex5, modelpart$vertex6}, f8, f11, f9, f12, texWidth, texHeight, mirror, Direction.SOUTH);
         }
 
     }
 
     @Override
-    public Vector3f size() {
-        return null;
+    public Vector3f modulus$size() {
+        return this.size;
+    }
+
+    @Override
+    public Vector3f modulus$pos() {
+        return this.pos;
     }
 }

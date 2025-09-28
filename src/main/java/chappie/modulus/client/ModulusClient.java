@@ -29,9 +29,8 @@ public class ModulusClient implements ClientModInitializer {
             return b.get();
         }));
 
-        SetupAnimCallback.EVENT.register((event -> {
-            CommonUtil.getAbilities(event.entity()).forEach(ability ->
-                    ability.clientProperties(c -> c.setupAnim(event)));
-        }));
+        SetupAnimCallback.EVENT.register((event ->
+                CommonUtil.getAbilities(event.entity()).forEach(ability ->
+                        ability.clientProperties(c -> c.setupAnim(event)))));
     }
 }

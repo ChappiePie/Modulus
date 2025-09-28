@@ -8,6 +8,7 @@ import com.google.gson.JsonObject;
 import com.google.gson.JsonParser;
 import net.minecraft.Util;
 import net.minecraft.client.player.AbstractClientPlayer;
+import net.minecraft.client.resources.PlayerSkin;
 import net.minecraft.core.Holder;
 import net.minecraft.core.RegistryAccess;
 import net.minecraft.core.particles.ParticleOptions;
@@ -61,7 +62,7 @@ public class CommonUtil {
 
     public static boolean smallArms(Entity entity) {
         if (entity instanceof AbstractClientPlayer) {
-            return ((AbstractClientPlayer) entity).getSkin().model().id().equalsIgnoreCase("slim");
+            return ((AbstractClientPlayer) entity).getSkin().model().equals(PlayerSkin.Model.SLIM);
         }
         return false;
     }
