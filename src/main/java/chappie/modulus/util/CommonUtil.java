@@ -73,9 +73,8 @@ public class CommonUtil {
         }
     }
 
-    public static void setAttribute(LivingEntity entity, ResourceLocation name, Attribute attribute, double amount, AttributeModifier.Operation operation) {
-        Holder<Attribute> attributeHolder = Holder.direct(attribute);
-        AttributeInstance instance = entity.getAttribute(attributeHolder);
+    public static void setAttribute(LivingEntity entity, ResourceLocation name, Holder<Attribute> attribute, double amount, AttributeModifier.Operation operation) {
+        AttributeInstance instance = entity.getAttribute(attribute);
         if (instance == null || entity.getCommandSenderWorld().isClientSide) {
             return;
         }

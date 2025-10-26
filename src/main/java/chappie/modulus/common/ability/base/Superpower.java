@@ -18,7 +18,9 @@ public class Superpower {
 //            AbilityBuilder.of("bruh", AbilityType.HELLO_WORLD)
 //                    .condition(a -> new ScrollCondition(a).scrollUp(), "enabling"),
 //            AbilityBuilder.of("bruh2", AbilityType.HELLO_WORLD)
-//                    .condition(a -> new ScrollCondition(a).scrollDown(), "enabling")
+//                    .condition(a -> new ScrollCondition(a).scrollDown(), "enabling"),
+//
+//            AttributeModifierAbility.of("bruh2", (a) -> a.attribute(ModRegistries.JUMP_BOOST).amount(1.0D).operation(AttributeModifier.Operation.ADD_VALUE))
 //    ));
 
     private final LinkedList<AbilityBuilder> list;
