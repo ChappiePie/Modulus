@@ -19,8 +19,8 @@ public class HelloWorldAbility extends Ability {
     public void update(LivingEntity entity, boolean enabled) {
         super.update(entity, enabled);
         if (enabled) {
-            if (entity instanceof ServerPlayer player && player.getServer() != null) {
-                PlayerList playerlist = player.getServer().getPlayerList();
+            if (entity instanceof ServerPlayer player) {
+                PlayerList playerlist = player.level().getServer().getPlayerList();
                 playerlist.broadcastChatMessage(PlayerChatMessage.unsigned(player.getUUID(), "Hello World,  %s!".formatted(this.builder.id)), player, ChatType.bind(ChatType.SAY_COMMAND, player));
             } else if (entity instanceof Player player) {
                 player.displayClientMessage(Component.literal("Hello Client World,  %s!".formatted(this.builder.id)), false);

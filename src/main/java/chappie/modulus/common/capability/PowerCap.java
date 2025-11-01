@@ -14,6 +14,8 @@ import net.minecraft.resources.ResourceLocation;
 import net.minecraft.server.level.ServerPlayer;
 import net.minecraft.world.entity.LivingEntity;
 import net.minecraft.world.entity.player.Player;
+import net.minecraft.world.level.storage.ValueInput;
+import net.minecraft.world.level.storage.ValueOutput;
 import org.jetbrains.annotations.Nullable;
 import org.ladysnake.cca.api.v3.component.ComponentKey;
 import org.ladysnake.cca.api.v3.component.ComponentRegistryV3;
@@ -76,7 +78,7 @@ public class PowerCap implements AutoSyncedComponent, CommonTickingComponent, Co
 
     public void syncToAll() {
         this.sync();
-        for (LivingEntity livingEntity : this.livingEntity.getCommandSenderWorld().players()) {
+        for (LivingEntity livingEntity : this.livingEntity.level().players()) {
             if (livingEntity instanceof ServerPlayer player && this.livingEntity != livingEntity) {
                 KEY.sync(player);
             }
@@ -85,7 +87,7 @@ public class PowerCap implements AutoSyncedComponent, CommonTickingComponent, Co
 
     @Override
     public void tick() {
-        if (this.livingEntity.getCommandSenderWorld().isClientSide) {
+        if (this.livingEntity.level().isClientSide()) {
             if (this.livingEntity instanceof Player player) {
                 ClientEvents.playerTick(player);
             } else {
@@ -133,6 +135,16 @@ public class PowerCap implements AutoSyncedComponent, CommonTickingComponent, Co
 
     @Override
     public void writeToNbt(CompoundTag tag, HolderLookup.Provider registryLookup) {
+
+    }
+
+    @Override
+    public void readData(ValueInput valueInput) {
+
+    }
+
+    @Override
+    public void writeData(ValueOutput valueOutput) {
         CompoundTag superpower = new CompoundTag();
         if (this.superpower != null) {
             superpower.putString("Id", Objects.requireNonNull(Superpower.REGISTRY.getKey(this.superpower)).toString());
@@ -141,6 +153,6 @@ public class PowerCap implements AutoSyncedComponent, CommonTickingComponent, Co
             this.abilities.forEach((s, a) -> abilities.put(s.id, a.serializeNBT()));
             superpower.put("Abilities", abilities);
         }
-        tag.put("Superpower", superpower);
+        valueOutput.store("Superpower", CompoundTag.CODEC, superpower);
     }
 }

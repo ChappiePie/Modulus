@@ -8,7 +8,6 @@ import com.google.gson.JsonObject;
 import com.google.gson.JsonParser;
 import net.minecraft.Util;
 import net.minecraft.client.player.AbstractClientPlayer;
-import net.minecraft.client.resources.PlayerSkin;
 import net.minecraft.core.Holder;
 import net.minecraft.core.RegistryAccess;
 import net.minecraft.core.particles.ParticleOptions;
@@ -21,6 +20,7 @@ import net.minecraft.world.entity.LivingEntity;
 import net.minecraft.world.entity.ai.attributes.Attribute;
 import net.minecraft.world.entity.ai.attributes.AttributeInstance;
 import net.minecraft.world.entity.ai.attributes.AttributeModifier;
+import net.minecraft.world.entity.player.PlayerModelType;
 import net.minecraft.world.entity.projectile.ProjectileUtil;
 import net.minecraft.world.level.Level;
 import net.minecraft.world.phys.AABB;
@@ -62,7 +62,7 @@ public class CommonUtil {
 
     public static boolean smallArms(Entity entity) {
         if (entity instanceof AbstractClientPlayer) {
-            return ((AbstractClientPlayer) entity).getSkin().model().equals(PlayerSkin.Model.SLIM);
+            return ((AbstractClientPlayer) entity).getSkin().model().equals(PlayerModelType.SLIM);
         }
         return false;
     }
@@ -75,7 +75,7 @@ public class CommonUtil {
 
     public static void setAttribute(LivingEntity entity, ResourceLocation name, Holder<Attribute> attribute, double amount, AttributeModifier.Operation operation) {
         AttributeInstance instance = entity.getAttribute(attribute);
-        if (instance == null || entity.getCommandSenderWorld().isClientSide) {
+        if (instance == null || entity.level().isClientSide()) {
             return;
         }
 

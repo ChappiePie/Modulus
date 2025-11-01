@@ -5,6 +5,7 @@ import chappie.modulus.util.IHasTimer;
 import net.minecraft.Util;
 import net.minecraft.client.gui.GuiGraphics;
 import net.minecraft.client.gui.components.Button;
+import net.minecraft.client.input.MouseButtonEvent;
 import net.minecraft.network.chat.CommonComponents;
 import net.minecraft.network.chat.Component;
 import net.minecraft.resources.ResourceLocation;
@@ -57,10 +58,10 @@ public class ModulusAboutButton extends Button implements IHasTimer {
     }
 
     @Override
-    public boolean mouseClicked(double pMouseX, double pMouseY, int pButton) {
-        super.mouseClicked(pMouseX, pMouseY, pButton);
-        if (pButton == 0) {
-            boolean flag = pMouseX >= (double) this.getX() && pMouseX < (double) (this.getX() + this.width) && pMouseY >= (double) this.getY() && pMouseY < (double) (this.getY() + this.height);
+    public boolean mouseClicked(MouseButtonEvent event, boolean isDoubleClick) {
+        super.mouseClicked(event, isDoubleClick);
+        if (event.button() == 0) {
+            boolean flag = event.x() >= (double) this.getX() && event.x() < (double) (this.getX() + this.width) && event.y() >= (double) this.getY() && event.y() < (double) (this.getY() + this.height);
             if (flag) {
                 this.setFocused(false);
                 return false;

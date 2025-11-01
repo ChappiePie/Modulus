@@ -5,7 +5,7 @@ import chappie.modulus.util.model.IHasModelProperties;
 import chappie.modulus.util.render.IRenderStateEntity;
 import com.mojang.blaze3d.vertex.PoseStack;
 import net.minecraft.client.model.EntityModel;
-import net.minecraft.client.renderer.MultiBufferSource;
+import net.minecraft.client.renderer.SubmitNodeCollector;
 import net.minecraft.client.renderer.entity.LivingEntityRenderer;
 import net.minecraft.client.renderer.entity.layers.RenderLayer;
 import net.minecraft.client.renderer.entity.state.LivingEntityRenderState;
@@ -21,9 +21,9 @@ public class AbilityLayerRenderer<T extends LivingEntity, S extends LivingEntity
     }
 
     @Override
-    public void render(PoseStack poseStack, MultiBufferSource bufferSource, int packedLight, S renderState, float yRot, float xRot) {
+    public void submit(PoseStack poseStack, SubmitNodeCollector nodeCollector, int packedLight, S renderState, float yRot, float xRot) {
         if (renderState instanceof IRenderStateEntity s) {
-            CommonUtil.getAbilities(s.modulus$entity()).forEach(ability -> ability.clientProperties(c -> c.render(this.renderer, poseStack, bufferSource, packedLight, ability.entity, ((IHasModelProperties) this.getParentModel()).modulus$modelProperties())));
+            CommonUtil.getAbilities(s.modulus$entity()).forEach(ability -> ability.clientProperties(c -> c.render(this.renderer, poseStack, nodeCollector, packedLight, ability.entity, ((IHasModelProperties) this.getParentModel()).modulus$modelProperties())));
         }
     }
 }

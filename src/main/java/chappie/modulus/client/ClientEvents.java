@@ -118,7 +118,7 @@ public class ClientEvents {
     public static class AbilityKeyMapping extends KeyMapping {
 
         public AbilityKeyMapping(int id, int keyCode) {
-            super("key.categories.%s.ability.%s".formatted(Modulus.MODID, id), InputConstants.Type.KEYSYM, keyCode, "key.categories.%s".formatted(Modulus.MODID));
+            super("key.categories.%s.ability.%s".formatted(Modulus.MODID, id), InputConstants.Type.KEYSYM, keyCode, ModulusClient.MODULUS_CATEGORY);
         }
     }
 }

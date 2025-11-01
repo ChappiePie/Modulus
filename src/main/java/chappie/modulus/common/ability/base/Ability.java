@@ -54,7 +54,7 @@ public class Ability {
     }
 
     public void updateTick(LivingEntity entity) {
-        if (!entity.getCommandSenderWorld().isClientSide) {
+        if (!entity.level().isClientSide()) {
             if (entity instanceof Player) {
                 this.dataManager.set(ENABLED, this.conditionManager.test("enabling"));
             } else {
@@ -108,7 +108,7 @@ public class Ability {
     }
 
     public void syncToAll(Entity entity) {
-        if (!entity.getCommandSenderWorld().isClientSide) {
+        if (!entity.level().isClientSide()) {
             ModNetworking.sendToTrackingEntityAndSelf(new ClientSyncAbility(entity.getId(), this.builder.id, this.serializeNBT()), entity);
         }
     }

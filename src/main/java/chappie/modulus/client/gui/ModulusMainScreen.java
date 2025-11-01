@@ -15,7 +15,7 @@ import net.minecraft.client.gui.components.events.GuiEventListener;
 import net.minecraft.client.gui.narration.NarratableEntry;
 import net.minecraft.client.gui.screens.PauseScreen;
 import net.minecraft.client.gui.screens.Screen;
-import net.minecraft.client.renderer.RenderType;
+import net.minecraft.client.renderer.RenderPipelines;
 import net.minecraft.client.resources.sounds.SimpleSoundInstance;
 import net.minecraft.network.chat.CommonComponents;
 import net.minecraft.network.chat.Component;
@@ -24,6 +24,7 @@ import net.minecraft.resources.ResourceLocation;
 import net.minecraft.util.ARGB;
 import net.minecraft.util.Mth;
 import org.jetbrains.annotations.Nullable;
+import org.joml.Matrix3x2fStack;
 
 import java.io.File;
 import java.util.ArrayList;
@@ -132,23 +133,23 @@ public class ModulusMainScreen extends Screen implements IOneScaleScreen {
 
         // Modulus header
         guiGraphics.blitSprite(
-                RenderType::guiTextured,
+                RenderPipelines.GUI_TEXTURED,
                 SPRITES.get(true, false),
                 this.width / 2 - 60, 3,
                 120, 32,
                 ARGB.white(1.0F)
         );
 
-        PoseStack pPoseStack = guiGraphics.pose();
+        Matrix3x2fStack pPoseStack = guiGraphics.pose();
         // Label
         {
-            pPoseStack.pushPose();
-            pPoseStack.translate(this.width / 4F, 4, 0);
-            pPoseStack.scale(0.5F, 0.5F, 1);
+            pPoseStack.pushMatrix();
+            pPoseStack.translate(this.width / 4F, 4);
+            pPoseStack.scale(0.5F, 0.5F);
 
             int labelXPos = this.width / 2, labelYPos = 10;
 
-            guiGraphics.blit(RenderType::guiTextured, MENU, labelXPos - 52, labelYPos, 0, 0, 104, 29, 104, 29, 256, 256);
+            guiGraphics.blit(RenderPipelines.GUI_TEXTURED, MENU, labelXPos - 52, labelYPos, 0, 0, 104, 29, 104, 29, 256, 256);
 
 
             // Line under label
@@ -160,10 +161,10 @@ public class ModulusMainScreen extends Screen implements IOneScaleScreen {
             //RenderSystem.setShaderColor(1F, 1F, 1F, 1F);
             guiGraphics.fill(labelXPos - 52 - 16, labelYPos + 2, labelXPos - 52 + 104 + 16, labelYPos + 4, lineColor);
 
-            pPoseStack.popPose();
+            pPoseStack.popMatrix();
         }
-        //guiGraphics.blit(RenderType::guiTextured, Screen.HEADER_SEPARATOR, 0, 56, 0.0F, 0.0F, this.width, 2, 32, 2);
-        //guiGraphics.blit(RenderType::guiTextured, Screen.FOOTER_SEPARATOR, 0, Mth.roundToward(this.height - 36, 2), 0.0F, 0.0F, this.width, 2, 32, 2);
+        //guiGraphics.blit(RenderPipelines.GUI_TEXTURED, Screen.HEADER_SEPARATOR, 0, 56, 0.0F, 0.0F, this.width, 2, 32, 2);
+        //guiGraphics.blit(RenderPipelines.GUI_TEXTURED, Screen.FOOTER_SEPARATOR, 0, Mth.roundToward(this.height - 36, 2), 0.0F, 0.0F, this.width, 2, 32, 2);
 
         if (this.tabId == 1) {
             int canvasHeight = this.canvasMaxY - this.canvasMinY;
@@ -212,7 +213,7 @@ public class ModulusMainScreen extends Screen implements IOneScaleScreen {
                 final int width = (int) (canvasHeight / 1.27);
                 final int x1 = x - width / 2, y1 = y + 25;
                 guiGraphics.enableScissor(x1, y1, x1 + width, y1 + (int) (canvasHeight / 1.5));
-                guiGraphics.blit(RenderType::guiTextured, Screen.MENU_BACKGROUND, x1, y1, 0, 0, width, (int) (canvasHeight / 1.5F), 32, 32);
+                guiGraphics.blit(RenderPipelines.GUI_TEXTURED, Screen.MENU_BACKGROUND, x1, y1, 0, 0, width, (int) (canvasHeight / 1.5F), 32, 32);
                 //RenderSystem.setShaderColor(1.0F, 1.0F, 1.0F, 1.0F);
 
 
@@ -228,14 +229,14 @@ public class ModulusMainScreen extends Screen implements IOneScaleScreen {
 
                 Component pTooltip = Component.literal("ChappiePie");
                 if (isMouseOverObj(pMouseX, pMouseY, x - 1 - this.minecraft.font.width(s) * 0.75F, y - 1, (this.minecraft.font.width(s) * 0.75F) * 2, this.minecraft.font.lineHeight * 1.5F - 1)) {
-                    pPoseStack.pushPose();
+                    pPoseStack.pushMatrix();
                     pPoseStack.translate(0, 0, 50);
                     int i = pMouseX + 2;
                     int j = pMouseY - 10;
                     int k = this.font.width(pTooltip);
                     guiGraphics.fillGradient(i - 3, j - 3, i + k + 3, j + 8 + 3, -1073741824, -1073741824);
                     guiGraphics.drawString(this.font, pTooltip, i, j, 16777215, true);
-                    pPoseStack.popPose();
+                    pPoseStack.popMatrix();
                 }
             }
         }

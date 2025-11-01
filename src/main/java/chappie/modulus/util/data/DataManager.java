@@ -44,7 +44,7 @@ public class DataManager {
         if (dataValue.get() != value) {
             dataValue.set(value);
             this.ability.onDataUpdated(accessor);
-            if (!entity.getCommandSenderWorld().isClientSide && dataValue.synchronizeWithOthers()) {
+            if (!entity.level().isClientSide() && dataValue.synchronizeWithOthers()) {
                 ModNetworking.sendToTrackingEntityAndSelf(new ClientSyncData(entity.getId(), accessor.key(), this.ability.builder.id, dataValue.serialize(new CompoundTag(), true)), entity);
             }
         }
@@ -53,7 +53,7 @@ public class DataManager {
 
     public <T> DataManager setFromClient(DataAccessor<T> accessor, T value) {
         DataValue<T> dataValue = this.getDataValue(accessor);
-        if (this.ability.entity.getCommandSenderWorld().isClientSide && dataValue.get() != value) {
+        if (this.ability.entity.level().isClientSide() && dataValue.get() != value) {
             ModNetworking.sendToServer(new ServerSetData(accessor.key(), this.ability.builder.id, dataValue.serialize(new CompoundTag(), value, true)));
         }
         return this;

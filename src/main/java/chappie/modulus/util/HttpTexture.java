@@ -47,7 +47,7 @@ public class HttpTexture implements AutoCloseable {
             try {
                 this.checkOpen();
                 if (this.texture == null) {
-                    this.texture = new DynamicTexture(image);
+                    this.texture = new DynamicTexture(textureLocation::toString, image);
                 } else {
                     this.texture.setPixels(image);
                     this.texture.upload();

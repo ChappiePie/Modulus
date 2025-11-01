@@ -21,13 +21,13 @@ import net.minecraft.client.gui.components.ContainerObjectSelectionList;
 import net.minecraft.client.gui.components.MultiLineLabel;
 import net.minecraft.client.gui.components.events.GuiEventListener;
 import net.minecraft.client.gui.narration.NarratableEntry;
-import net.minecraft.client.renderer.RenderType;
 import net.minecraft.network.chat.Component;
 import net.minecraft.resources.ResourceLocation;
 import net.minecraft.util.ARGB;
 import net.minecraft.util.Mth;
 import net.minecraft.world.phys.Vec2;
 import org.jetbrains.annotations.NotNull;
+import org.joml.Matrix3x2fStack;
 
 import java.util.*;
 import java.util.concurrent.atomic.AtomicInteger;
@@ -48,28 +48,28 @@ public class ChappModListWidget extends ContainerObjectSelectionList<ChappModLis
         int initX = x.get();
         x.set(initX + (b ? left + 128 : left - 12) + 6);
 
-        PoseStack poseStack = guiGraphics.pose();
+        Matrix3x2fStack poseStack = guiGraphics.pose();
 
-        poseStack.pushPose();
+        poseStack.pushMatrix();
         Component modName = Component.literal(entry.modInfo.modInfo() == null ? entry.modInfo.modId : entry.modInfo.modInfo().getName()).withStyle(ClientUtil.BOLD_MINECRAFT);
         float f = 2.5F;
-        poseStack.scale(f, f, f);
-        poseStack.translate(b ? (x.get() + 5) / f : (entryWidth - 128) / f - font.width(modName), (top + 5) / f, 0);
+        poseStack.scale(f, f);
+        poseStack.translate(b ? (x.get() + 5) / f : (entryWidth - 128) / f - font.width(modName), (top + 5) / f);
         guiGraphics.drawString(font, modName, 0, 0, -1, true);
-        poseStack.popPose();
+        poseStack.popMatrix();
 
         List<Component> list = entry.modInfo.modInfo() == null ? entry.modInfo.text : Component.literal(entry.modInfo.modInfo().getDescription()).toFlatList();
         MultiLineLabel label = MultiLineLabel.create(font, entryWidth - 160, 7, list.toArray(new Component[0]));
 
-        poseStack.pushPose();
+        poseStack.pushMatrix();
         int y = top + 27;
         guiGraphics.fill(x.get() + 4, y, x.get() + 10 + label.getWidth(), y + 2, -1);
         y += 4;
-        label.renderLeftAligned(guiGraphics, x.get() + 8, y, font.lineHeight, 0xFFFFFF);
+        label.render(guiGraphics, MultiLineLabel.Align.LEFT, x.get() + 8, y, font.lineHeight, false, 0xFFFFFF);
         int newX = b ? x.get() + 4 : x.get() + 10 + label.getWidth();
         int yMax = y + font.lineHeight * label.getLineCount() + 3;
         guiGraphics.fill(newX, y - 4, newX + 2, yMax, -1);
-        poseStack.popPose();
+        poseStack.popMatrix();
         x.set(initX + (b ? left : entryWidth - 128));
     };
 
@@ -118,12 +118,16 @@ public class ChappModListWidget extends ContainerObjectSelectionList<ChappModLis
 
     @Override
     protected void renderItem(GuiGraphics guiGraphics, int pMouseX, int pMouseY, float pPartialTick, int pIndex, int pLeft, int pTop, int pWidth, int pHeight) {
+
+    }
+
+    @Override
+    protected void renderItem(GuiGraphics guiGraphics, int mouseX, int mouseY, float partialTick, ChappEntry item) {
         int colorIn = ARGB.color(150, 0, 0, 0);
         int colorOut = ARGB.color(50, 255, 255, 255);
         this.renderSelection(guiGraphics, pTop, pWidth, pHeight - 8, colorOut, colorIn);
-        super.renderItem(guiGraphics, pMouseX, pMouseY, pPartialTick, pIndex, pLeft, pTop, pWidth, pHeight);
+        super.renderItem(guiGraphics, mouseX, mouseY, partialTick, item);
     }
-
 
     public void tick() {
         if (!JSON_LIST.get().isEmpty() && this.children().isEmpty()) {
@@ -166,7 +170,7 @@ public class ChappModListWidget extends ContainerObjectSelectionList<ChappModLis
             f = 1.0F / f;
             pPoseStack.translate(this.getX() * f, this.getY() * f, 0);
             guiGraphics.blitSprite(
-                    RenderType::guiTextured,
+                    RenderPipelines.GUI_TEXTURED,
                     ModulusMainScreen.SPRITES.get(this.active, this.isHoveredOrFocused()),
                     0, 0,
                     (int) this.oldSize.x, (int) this.oldSize.y,

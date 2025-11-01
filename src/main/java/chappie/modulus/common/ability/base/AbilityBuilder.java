@@ -13,6 +13,7 @@ import net.minecraft.world.entity.LivingEntity;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
+import java.util.Optional;
 import java.util.function.Consumer;
 import java.util.function.Function;
 import java.util.stream.Collectors;
@@ -134,12 +135,17 @@ public class AbilityBuilder {
         }
 
         public void deserializeNBT(CompoundTag nbt) {
-            for (String key : nbt.getAllKeys()) {
-                ListTag conditions = nbt.getList(key, 10);
-                for (int i = 0; i < conditions.size(); i++) {
-                    List<Condition> c = this.conditions.get(key);
-                    if (c != null && c.get(i) != null) {
-                        c.get(i).deserializeNBT(conditions.getCompound(i));
+            for (String key : nbt.keySet()) {
+                Optional<ListTag> conditions = nbt.getList(key);
+                if (conditions.isPresent()) {
+                    for (int i = 0; i < conditions.get().size(); i++) {
+                        List<Condition> c = this.conditions.get(key);
+                        if (c != null && c.get(i) != null) {
+                            Optional<CompoundTag> tag = conditions.get().getCompound(i);
+                            if (tag.isPresent()) {
+                                c.get(i).deserializeNBT(tag.get());
+                            }
+                        }
                     }
                 }
             }

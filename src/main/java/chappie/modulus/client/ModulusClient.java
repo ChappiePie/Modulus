@@ -1,5 +1,6 @@
 package chappie.modulus.client;
 
+import chappie.modulus.Modulus;
 import chappie.modulus.networking.ModNetworking;
 import chappie.modulus.util.CommonUtil;
 import chappie.modulus.util.events.RendererChangeCallback;
@@ -7,11 +8,14 @@ import chappie.modulus.util.events.SetupAnimCallback;
 import net.fabricmc.api.ClientModInitializer;
 import net.fabricmc.fabric.api.client.keybinding.v1.KeyBindingHelper;
 import net.fabricmc.fabric.api.client.screen.v1.ScreenEvents;
+import net.minecraft.client.KeyMapping;
 
 import java.util.Arrays;
 import java.util.concurrent.atomic.AtomicBoolean;
 
 public class ModulusClient implements ClientModInitializer {
+
+    public static final KeyMapping.Category MODULUS_CATEGORY = KeyMapping.Category.register(Modulus.id("modulus"));
 
     @SuppressWarnings("unchecked")
     @Override
