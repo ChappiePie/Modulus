@@ -37,8 +37,8 @@ public abstract class LivingEntityMixin extends Entity {
         }
     }
 
-    @Inject(method = "calculateFallDamage(FF)I", at = @At("RETURN"), cancellable = true)
-    public void cancelFallDamage(float fallDistance, float damageMultiplier, CallbackInfoReturnable<Integer> cir) {
+    @Inject(method = "calculateFallDamage", at = @At("RETURN"), cancellable = true)
+    public void cancelFallDamage(double fallDistance, float damageMultiplier, CallbackInfoReturnable<Integer> cir) {
         LivingEntity entity = (LivingEntity) (Object) this;
 
         AttributeInstance fallResistance = entity.getAttribute(ModRegistries.FALL_RESISTANCE);

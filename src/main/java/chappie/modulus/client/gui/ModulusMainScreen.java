@@ -4,8 +4,6 @@ import chappie.modulus.Modulus;
 import chappie.modulus.util.*;
 import com.google.common.collect.ImmutableList;
 import com.google.common.collect.Lists;
-import com.mojang.blaze3d.systems.RenderSystem;
-import com.mojang.blaze3d.vertex.PoseStack;
 import net.minecraft.Util;
 import net.minecraft.client.gui.GuiGraphics;
 import net.minecraft.client.gui.components.Button;
@@ -15,6 +13,7 @@ import net.minecraft.client.gui.components.events.GuiEventListener;
 import net.minecraft.client.gui.narration.NarratableEntry;
 import net.minecraft.client.gui.screens.PauseScreen;
 import net.minecraft.client.gui.screens.Screen;
+import net.minecraft.client.input.KeyEvent;
 import net.minecraft.client.renderer.RenderPipelines;
 import net.minecraft.client.resources.sounds.SimpleSoundInstance;
 import net.minecraft.network.chat.CommonComponents;
@@ -218,9 +217,7 @@ public class ModulusMainScreen extends Screen implements IOneScaleScreen {
 
 
                 this.atChappieTimer.predicate = () -> isMouseOverObj(pMouseX, pMouseY, x1, y1, width, canvasHeight / 1.5F);
-                RenderSystem.enableBlend();
-                RenderSystem.defaultBlendFunc();
-                float f = this.atChappieTimer.value(ClientUtil.getPartialTick());
+                float f = this.atChappieTimer.value(pPartialTick);
                 float mouseXAdd = (pMouseX - x1 - width / 2F) / 10F * f;
                 float mouseYAdd = Math.max(-40, pMouseY - y1 - (int) (canvasHeight / 1.5F) / 2F) / 10F * f;
                 f *= 10F;
@@ -229,22 +226,14 @@ public class ModulusMainScreen extends Screen implements IOneScaleScreen {
 
                 Component pTooltip = Component.literal("ChappiePie");
                 if (isMouseOverObj(pMouseX, pMouseY, x - 1 - this.minecraft.font.width(s) * 0.75F, y - 1, (this.minecraft.font.width(s) * 0.75F) * 2, this.minecraft.font.lineHeight * 1.5F - 1)) {
-                    pPoseStack.pushMatrix();
-                    pPoseStack.translate(0, 0, 50);
                     int i = pMouseX + 2;
                     int j = pMouseY - 10;
                     int k = this.font.width(pTooltip);
                     guiGraphics.fillGradient(i - 3, j - 3, i + k + 3, j + 8 + 3, -1073741824, -1073741824);
-                    guiGraphics.drawString(this.font, pTooltip, i, j, 16777215, true);
-                    pPoseStack.popMatrix();
+                    guiGraphics.drawString(this.font, pTooltip, i, j, -1, true);
                 }
             }
         }
-    }
-
-    @Override
-    public void renderBackground(GuiGraphics pGuiGraphics, int pMouseX, int pMouseY, float pPartialTick) {
-        super.renderBackground(pGuiGraphics, pMouseX, pMouseY, pPartialTick);
     }
 
     private boolean isMouseOverObj(float pMouseX, float pMouseY, float x, float y, float width, float height) {
@@ -252,12 +241,12 @@ public class ModulusMainScreen extends Screen implements IOneScaleScreen {
     }
 
     private void renderTitle(GuiGraphics guiGraphics, Component component, int x, int y) {
-        PoseStack pPoseStack = guiGraphics.pose();
-        pPoseStack.pushPose();
-        pPoseStack.translate(x + 1, y, 0);
-        pPoseStack.scale(1.5F, 1.5F, 1F);
+        Matrix3x2fStack pose = guiGraphics.pose();
+        pose.pushMatrix();
+        pose.translate(x + 1, y);
+        pose.scale(1.5F, 1.5F);
         guiGraphics.drawCenteredString(this.minecraft.font, component, 0, 0, -1);
-        pPoseStack.popPose();
+        pose.popMatrix();
         y += 14;
         int color = -1;
         for (int k = 0; k < 2; k++) {
@@ -315,32 +304,31 @@ public class ModulusMainScreen extends Screen implements IOneScaleScreen {
     }
 
     @Override
-    public boolean keyPressed(int pKeyCode, int pScanCode, int pModifiers) {
-        if (Screen.hasControlDown()) {
-            int i = this.getNextTabIndex(pKeyCode);
+    public boolean keyPressed(KeyEvent event) {
+        if (event.hasControlDown()) {
+            int i = this.getNextTabIndex(event);
             if (i != -1) {
                 this.setFocused(this.tabs.get(Mth.clamp(i, 0, this.tabs.size() - 1)));
                 return true;
             }
         } else {
-            return super.keyPressed(pKeyCode, pScanCode, pModifiers);
+            return super.keyPressed(event);
         }
         return false;
     }
 
-    private int getNextTabIndex(int pKeyCode) {
-        if (pKeyCode >= 49 && pKeyCode <= 57) {
-            return pKeyCode - 49;
-        } else {
-            if (pKeyCode == 258) {
-                int i = this.tabId;
-                if (i != -1) {
-                    int j = Screen.hasShiftDown() ? i - 1 : i + 1;
-                    return Math.floorMod(j, this.tabs.size());
-                }
+    private int getNextTabIndex(KeyEvent event) {
+        int keyCode = event.key();
+        if (keyCode >= 49 && keyCode <= 57) {
+            return keyCode - 49;
+        } else if (keyCode == 258) {
+            int i = this.tabId;
+            if (i != -1) {
+                int j = event.hasShiftDown() ? i - 1 : i + 1;
+                return Math.floorMod(j, this.tabs.size());
             }
-
-            return -1;
         }
+
+        return -1;
     }
 }

@@ -28,8 +28,8 @@ public class MouseHandlerMixin {
     @Final
     private Minecraft minecraft;
 
-    @WrapWithCondition(method = "onScroll(JDD)V", at = @At(value = "INVOKE", target = "Lnet/minecraft/world/entity/player/Inventory;setSelectedHotbarSlot(I)V"))
-    public boolean scroll(Inventory instance, int selectedHotbarSlot, @Local(ordinal = 1, argsOnly = true) double yOffset) {
+    @WrapWithCondition(method = "onScroll(JDD)V", at = @At(value = "INVOKE", target = "Lnet/minecraft/world/entity/player/Inventory;setSelectedSlot(I)V"))
+    private boolean scroll(Inventory instance, int selectedHotbarSlot, @Local(ordinal = 1, argsOnly = true) double yOffset) {
         if (this.minecraft.player == null) return false;
         for (Ability ability : CommonUtil.getAbilities(this.minecraft.player)) {
             for (Map.Entry<String, List<Condition>> e : ability.conditionManager.methodConditions().entrySet()) {

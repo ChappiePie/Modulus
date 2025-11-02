@@ -6,8 +6,6 @@ import chappie.modulus.util.IHasTimer;
 import com.google.common.collect.Maps;
 import com.google.gson.JsonElement;
 import com.google.gson.JsonObject;
-import com.mojang.blaze3d.systems.RenderSystem;
-import com.mojang.blaze3d.vertex.PoseStack;
 import net.fabricmc.loader.api.FabricLoader;
 import net.fabricmc.loader.api.ModContainer;
 import net.fabricmc.loader.api.metadata.ModMetadata;
@@ -21,6 +19,8 @@ import net.minecraft.client.gui.components.ContainerObjectSelectionList;
 import net.minecraft.client.gui.components.MultiLineLabel;
 import net.minecraft.client.gui.components.events.GuiEventListener;
 import net.minecraft.client.gui.narration.NarratableEntry;
+import net.minecraft.client.input.MouseButtonEvent;
+import net.minecraft.client.renderer.RenderPipelines;
 import net.minecraft.network.chat.Component;
 import net.minecraft.resources.ResourceLocation;
 import net.minecraft.util.ARGB;
@@ -43,34 +43,33 @@ public class ChappModListWidget extends ContainerObjectSelectionList<ChappModLis
 
     private final int listWidth;
 
-    private final TextRenderable DEFAULT_TEXT = (entry, font, x, guiGraphics, entryIdx, top, left, entryWidth, entryHeight, mouseX, mouseY, isHovered, partialTick) -> {
+    private final TextRenderable DEFAULT_TEXT = (entry, font, x, guiGraphics, entryIdx, rowLeft, contentTop, rowRight, entryHeight, mouseX, mouseY, isHovered, partialTick) -> {
         boolean b = entryIdx % 2 == 0;
         int initX = x.get();
-        x.set(initX + (b ? left + 128 : left - 12) + 6);
+        x.set(initX + (b ? rowLeft + 128 : rowLeft - 12) + 6);
 
         Matrix3x2fStack poseStack = guiGraphics.pose();
+        List<Component> list = entry.modInfo.modInfo() == null ? entry.modInfo.text : Component.literal(entry.modInfo.modInfo().getDescription()).toFlatList();
+        MultiLineLabel label = MultiLineLabel.create(font, rowRight - rowLeft - 160, 7, list.toArray(new Component[0]));
 
         poseStack.pushMatrix();
         Component modName = Component.literal(entry.modInfo.modInfo() == null ? entry.modInfo.modId : entry.modInfo.modInfo().getName()).withStyle(ClientUtil.BOLD_MINECRAFT);
         float f = 2.5F;
         poseStack.scale(f, f);
-        poseStack.translate(b ? (x.get() + 5) / f : (entryWidth - 128) / f - font.width(modName), (top + 5) / f);
+        poseStack.translate(b ? (x.get() + 5) / f : (x.get() + 10 + label.getWidth() - font.width(modName) * f) / f, (contentTop + 5) / f);
         guiGraphics.drawString(font, modName, 0, 0, -1, true);
         poseStack.popMatrix();
 
-        List<Component> list = entry.modInfo.modInfo() == null ? entry.modInfo.text : Component.literal(entry.modInfo.modInfo().getDescription()).toFlatList();
-        MultiLineLabel label = MultiLineLabel.create(font, entryWidth - 160, 7, list.toArray(new Component[0]));
-
         poseStack.pushMatrix();
-        int y = top + 27;
+        int y = contentTop + 27;
         guiGraphics.fill(x.get() + 4, y, x.get() + 10 + label.getWidth(), y + 2, -1);
         y += 4;
-        label.render(guiGraphics, MultiLineLabel.Align.LEFT, x.get() + 8, y, font.lineHeight, false, 0xFFFFFF);
+        label.render(guiGraphics, MultiLineLabel.Align.LEFT, x.get() + 8, y, font.lineHeight, false, -1);
         int newX = b ? x.get() + 4 : x.get() + 10 + label.getWidth();
         int yMax = y + font.lineHeight * label.getLineCount() + 3;
         guiGraphics.fill(newX, y - 4, newX + 2, yMax, -1);
         poseStack.popMatrix();
-        x.set(initX + (b ? left : entryWidth - 128));
+        x.set(initX + (b ? rowLeft : rowRight - 128));
     };
 
     private final ModulusMainScreen screen;
@@ -105,7 +104,7 @@ public class ChappModListWidget extends ContainerObjectSelectionList<ChappModLis
         this.clearEntries();
         for (Map.Entry<String, JsonElement> e : JSON_LIST.get().entrySet()) {
             if (e.getValue() instanceof JsonObject json) {
-                this.addEntry(new ChappEntry(this.screen, new ChappModInfo(e.getKey(),
+                this.addEntry(new ChappEntry(this, this.screen, new ChappModInfo(e.getKey(),
                         json.get("version").getAsString(),
                         json.get("url").getAsString(),
                         CommonUtil.parseDescriptionLines(json.get("description")),
@@ -115,17 +114,16 @@ public class ChappModListWidget extends ContainerObjectSelectionList<ChappModLis
         }
     }
 
-
-    @Override
-    protected void renderItem(GuiGraphics guiGraphics, int pMouseX, int pMouseY, float pPartialTick, int pIndex, int pLeft, int pTop, int pWidth, int pHeight) {
-
-    }
-
     @Override
     protected void renderItem(GuiGraphics guiGraphics, int mouseX, int mouseY, float partialTick, ChappEntry item) {
         int colorIn = ARGB.color(150, 0, 0, 0);
         int colorOut = ARGB.color(50, 255, 255, 255);
-        this.renderSelection(guiGraphics, pTop, pWidth, pHeight - 8, colorOut, colorIn);
+        int i = item.getX();
+        int j = item.getY();
+        int k = i + item.getWidth();
+        int l = j + item.getHeight();
+        guiGraphics.fill(i, j, k, l - 5, colorOut);
+        guiGraphics.fill(i + 1, j + 1, k - 1, l - 6, colorIn);
         super.renderItem(guiGraphics, mouseX, mouseY, partialTick, item);
     }
 
@@ -139,7 +137,7 @@ public class ChappModListWidget extends ContainerObjectSelectionList<ChappModLis
     @FunctionalInterface
     public interface TextRenderable {
 
-        void render(ChappEntry entry, Font font, AtomicInteger x, GuiGraphics guiGraphics, int entryIdx, int top, int left, int entryWidth, int entryHeight, int mouseX, int mouseY, boolean isHovered, float partialTick);
+        void render(ChappEntry entry, Font font, AtomicInteger x, GuiGraphics guiGraphics, int entryIdx, int rowLeft, int contentTop, int rowRight, int entryHeight, int mouseX, int mouseY, boolean isHovered, float partialTick);
     }
 
 
@@ -158,17 +156,13 @@ public class ChappModListWidget extends ContainerObjectSelectionList<ChappModLis
 
         @Override
         public void renderWidget(GuiGraphics guiGraphics, int pMouseX, int pMouseY, float pPartialTick) {
-            PoseStack pPoseStack = guiGraphics.pose();
+            Matrix3x2fStack poseStack = guiGraphics.pose();
 
-            RenderSystem.enableBlend();
-            RenderSystem.enableDepthTest();
-
-
-            pPoseStack.pushPose();
-            float f = 0.75F;
-            pPoseStack.scale(f, f, 1.0F);
-            f = 1.0F / f;
-            pPoseStack.translate(this.getX() * f, this.getY() * f, 0);
+            poseStack.pushMatrix();
+            float scale = 0.75F;
+            float invScale = 1.0F / scale;
+            poseStack.scale(scale, scale);
+            poseStack.translate(this.getX() * invScale, this.getY() * invScale);
             guiGraphics.blitSprite(
                     RenderPipelines.GUI_TEXTURED,
                     ModulusMainScreen.SPRITES.get(this.active, this.isHoveredOrFocused()),
@@ -176,31 +170,30 @@ public class ChappModListWidget extends ContainerObjectSelectionList<ChappModLis
                     (int) this.oldSize.x, (int) this.oldSize.y,
                     ARGB.white(this.alpha)
             );
-            pPoseStack.popPose();
+            poseStack.popMatrix();
 
 
-            pPoseStack.pushPose();
+            poseStack.pushMatrix();
 
-            float f1 = 0.5F;
-            pPoseStack.scale(f1, f1, 1.0F);
-            f1 = 1.0F / f1;
-            pPoseStack.translate(this.getX() * f1, this.getY() * f1, 0);
-            guiGraphics.enableScissor(6, 5, (int) (this.oldSize.x * f + 8), (int) (this.oldSize.y + 3));
-            renderScrollingString(guiGraphics, Minecraft.getInstance().font, this.getMessage(), 6, -10, (int) ((int) this.oldSize.x * f + 6), (int) (this.oldSize.y * f1 + 2), 10526880 | Mth.ceil(1 * 255.0F) << 24);
+            float textScale = 0.5F;
+            float invTextScale = 1.0F / textScale;
+            poseStack.scale(textScale, textScale);
+            poseStack.translate(this.getX() * invTextScale, this.getY() * invTextScale);
+            guiGraphics.enableScissor(6, 5, (int) (this.oldSize.x * invScale + 8), (int) (this.oldSize.y + 3));
+            renderScrollingString(guiGraphics, Minecraft.getInstance().font, this.getMessage(), 6, -10, (int) (this.oldSize.x * invScale + 6), (int) (this.oldSize.y * invTextScale + 2), 10526880 | Mth.ceil(1 * 255.0F) << 24);
             guiGraphics.disableScissor();
 
-            pPoseStack.popPose();
+            poseStack.popMatrix();
 
 
-            this.setWidth((int) ((this.oldSize.x - 5) / f));
-            this.setHeight((int) (this.oldSize.y / f));
+            this.setWidth((int) ((this.oldSize.x - 5) / invScale));
+            this.setHeight((int) (this.oldSize.y / invScale));
             this.setX(this.getX() - 2);
         }
 
-
         @Override
-        public boolean mouseClicked(double pMouseX, double pMouseY, int pButton) {
-            super.mouseClicked(pMouseX, pMouseY, pButton);
+        public boolean mouseClicked(MouseButtonEvent event, boolean isDoubleClick) {
+            super.mouseClicked(event, isDoubleClick);
             return false;
         }
     }
@@ -225,10 +218,12 @@ public class ChappModListWidget extends ContainerObjectSelectionList<ChappModLis
         public final Map<AbstractWidget, BiFunction<Integer, Integer, Vec2>> children;
         public final ChappModInfo modInfo;
         public final ModulusMainScreen parent;
+        private final ChappModListWidget list;
         private final Timer titleTimer = new Timer(() -> 10, () -> false);
         private final Timer highlightTimer = new Timer(() -> 10, () -> false);
 
-        ChappEntry(ModulusMainScreen parent, ChappModInfo info) {
+        ChappEntry(ChappModListWidget list, ModulusMainScreen parent, ChappModInfo info) {
+            this.list = list;
             this.parent = parent;
             this.modInfo = info;
             this.children = new HashMap<>();
@@ -251,15 +246,31 @@ public class ChappModListWidget extends ContainerObjectSelectionList<ChappModLis
 
 
         @Override
-        public void render(GuiGraphics guiGraphics, int entryIdx, int top, int left, int entryWidth, int entryHeight, int mouseX, int mouseY, boolean isHovered, float partialTick) {
-
-
+        public void renderContent(GuiGraphics guiGraphics, int mouseX, int mouseY, boolean isHovered, float partialTick) {
             Font font = Minecraft.getInstance().font;
-            AtomicInteger x = new AtomicInteger(6);
-            int y = top;
+            AtomicInteger x = new AtomicInteger(10);
+            int contentTop = this.getContentY();
+            int rowLeft = this.getX();
+            int rowRight = this.getWidth() - 2;
+            int entryHeight = this.getHeight();
+            int entryIdx = this.list.children().indexOf(this);
 
-            this.modInfo.textRenderable.render(this, font, x, guiGraphics, entryIdx, y, left, entryWidth, entryHeight, mouseX, mouseY, isHovered, partialTick);
-            y += 6;
+            this.modInfo.textRenderable.render(
+                    this,
+                    font,
+                    x,
+                    guiGraphics,
+                    entryIdx,
+                    rowLeft,
+                    contentTop,
+                    rowRight,
+                    entryHeight,
+                    mouseX,
+                    mouseY,
+                    isHovered,
+                    partialTick
+            );
+            int y = contentTop + 6;
             {
                 int mainColor = ARGB.color(255, 108, 108, 108);
                 int offColor = ARGB.color(255, 56, 56, 56);
@@ -273,6 +284,7 @@ public class ChappModListWidget extends ContainerObjectSelectionList<ChappModLis
                 this.titleTimer.update();
                 float f = this.titleTimer.value(partialTick);
                 f *= Mth.sin(entryIdx + (float) (Util.getMillis() % 1000L) / 1000.0F * ((float) Math.PI * 2F)) / 2F;
+
                 this.highlightTimer.predicate = () -> isHoveredMod;
                 this.highlightTimer.update();
                 float ht = 0.75F - this.highlightTimer.value(partialTick) * 0.5F;
@@ -292,13 +304,13 @@ public class ChappModListWidget extends ContainerObjectSelectionList<ChappModLis
 
 
         @Override
-        public boolean mouseClicked(double pMouseX, double pMouseY, int pButton) {
-            if (this.titleTimer.predicate.get() && pButton == 0) {
+        public boolean mouseClicked(MouseButtonEvent event, boolean isDoubleClick) {
+            if (this.titleTimer.predicate.get() && event.button() == 0) {
                 if (MOD_CLICKED.containsKey(this.modInfo.modId)) {
                     MOD_CLICKED.get(this.modInfo.modId).accept(this);
                 }
             }
-            return super.mouseClicked(pMouseX, pMouseY, pButton);
+            return super.mouseClicked(event, isDoubleClick);
         }
 
         @Override

@@ -97,8 +97,8 @@ public class Ability {
     }
 
     public void deserializeNBT(CompoundTag tag) {
-        this.dataManager.deserializeNBT(tag.getCompound("Data"));
-        this.conditionManager.deserializeNBT(tag.getCompound("Conditions"));
+        this.dataManager.deserializeNBT(tag.getCompound("Data").get());
+        this.conditionManager.deserializeNBT(tag.getCompound("Conditions").get());
     }
 
     public void sync(Entity entity) {

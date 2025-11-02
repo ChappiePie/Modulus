@@ -5,8 +5,8 @@ import com.mojang.blaze3d.vertex.PoseStack;
 import net.fabricmc.fabric.api.event.Event;
 import net.fabricmc.fabric.api.event.EventFactory;
 import net.minecraft.client.model.EntityModel;
-import net.minecraft.client.renderer.MultiBufferSource;
 import net.minecraft.client.renderer.RenderType;
+import net.minecraft.client.renderer.SubmitNodeCollector;
 import net.minecraft.client.renderer.entity.LivingEntityRenderer;
 import net.minecraft.client.renderer.entity.state.LivingEntityRenderState;
 import net.minecraft.world.entity.LivingEntity;
@@ -37,18 +37,18 @@ public interface RendererChangeCallback {
         private final LivingEntityRenderer<T, S, M> renderer;
         private final ModelProperties modelProperties;
         private final PoseStack poseStack;
-        private final MultiBufferSource multiBufferSource;
+        private final SubmitNodeCollector submitNodeCollector;
         private final RenderType renderType;
         private final int packedLight, packedOverlay;
         private final T entity;
         private int red, green, blue, alpha;
 
-        public RendererChangeEvent(T entity, LivingEntityRenderer<T, S, M> renderer, ModelProperties modelProperties, PoseStack poseStack, MultiBufferSource multiBufferSource, RenderType renderType, int packedLight, int packedOverlay) {
+        public RendererChangeEvent(T entity, LivingEntityRenderer<T, S, M> renderer, ModelProperties modelProperties, PoseStack poseStack, SubmitNodeCollector submitNodeCollector, RenderType renderType, int packedLight, int packedOverlay) {
             this.entity = entity;
             this.renderer = renderer;
             this.modelProperties = modelProperties;
             this.poseStack = poseStack;
-            this.multiBufferSource = multiBufferSource;
+            this.submitNodeCollector = submitNodeCollector;
             this.renderType = renderType;
             this.packedLight = packedLight;
             this.packedOverlay = packedOverlay;
@@ -74,8 +74,8 @@ public interface RendererChangeCallback {
             return poseStack;
         }
 
-        public MultiBufferSource multiBufferSource() {
-            return multiBufferSource;
+        public SubmitNodeCollector submitNodeCollector() {
+            return submitNodeCollector;
         }
 
         public RenderType renderType() {

@@ -5,7 +5,7 @@ import net.fabricmc.fabric.api.event.Event;
 import net.fabricmc.fabric.api.event.EventFactory;
 import net.minecraft.client.player.AbstractClientPlayer;
 import net.minecraft.client.renderer.ItemInHandRenderer;
-import net.minecraft.client.renderer.MultiBufferSource;
+import net.minecraft.client.renderer.SubmitNodeCollector;
 import net.minecraft.world.InteractionHand;
 import net.minecraft.world.entity.HumanoidArm;
 import net.minecraft.world.item.ItemStack;
@@ -35,6 +35,7 @@ public interface FirstPersonAdditionalHandCallback {
                                           AbstractClientPlayer pPlayer, float pPartialTicks, float pPitch,
                                           InteractionHand pHand, HumanoidArm pArm, AtomicReference<Float> swingProgress,
                                           ItemStack pStack, AtomicReference<Float> equippedProgress,
-                                          PoseStack pMatrixStack, MultiBufferSource pBuffer, int pCombinedLight) {
+                                          PoseStack pMatrixStack, SubmitNodeCollector submitNodeCollector,
+                                          int pCombinedLight) {
     }
 }

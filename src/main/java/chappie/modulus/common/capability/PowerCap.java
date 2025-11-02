@@ -8,7 +8,6 @@ import chappie.modulus.common.ability.base.Superpower;
 import chappie.modulus.util.CommonUtil;
 import chappie.modulus.util.IHasTimer;
 import com.google.common.collect.Maps;
-import net.minecraft.core.HolderLookup;
 import net.minecraft.nbt.CompoundTag;
 import net.minecraft.resources.ResourceLocation;
 import net.minecraft.server.level.ServerPlayer;
@@ -110,16 +109,16 @@ public class PowerCap implements AutoSyncedComponent, CommonTickingComponent, Co
     }
 
     @Override
-    public void readFromNbt(CompoundTag tag, HolderLookup.Provider registryLookup) {
-        CompoundTag compoundTag = tag.getCompound("Superpower");
+    public void readData(ValueInput valueInput) {
+        CompoundTag compoundTag = valueInput.read("Superpower", CompoundTag.CODEC).get();
         this.abilities.clear();
         if (!compoundTag.getString("Id").isEmpty()) {
-            Superpower superpower = Superpower.REGISTRY.getValue(ResourceLocation.tryParse(compoundTag.getString("Id")));
+            Superpower superpower = Superpower.REGISTRY.getValue(ResourceLocation.tryParse(compoundTag.getString("Id").get()));
             this.superpower = superpower;
             if (superpower != null) {
-                CompoundTag abilities = compoundTag.getCompound("Abilities");
-                for (String key : abilities.getAllKeys()) {
-                    CompoundTag nbt = abilities.getCompound(key);
+                CompoundTag abilities = compoundTag.getCompound("Abilities").get();
+                for (String key : abilities.keySet()) {
+                    CompoundTag nbt = abilities.getCompound(key).get();
                     var builder = superpower.getBuilderByName(key);
                     if (builder != null) {
                         Ability ability = builder.build(this.livingEntity);
@@ -131,16 +130,6 @@ public class PowerCap implements AutoSyncedComponent, CommonTickingComponent, Co
         } else {
             this.superpower = null;
         }
-    }
-
-    @Override
-    public void writeToNbt(CompoundTag tag, HolderLookup.Provider registryLookup) {
-
-    }
-
-    @Override
-    public void readData(ValueInput valueInput) {
-
     }
 
     @Override
