@@ -89,11 +89,9 @@ public class CubeMixin implements IChangeableSize {
                 int batchEnd = Math.min(i + 4, vertices.length);
                 for (int j = i; j < batchEnd; j++) {
                     ModelPart.Vertex vertex = vertices[j];
-                    Vector3f pos = new Vector3f(vertex.worldX(), vertex.worldY(), vertex.worldZ());
+                    Vector3f transformed = matrix.transformPosition(vertex.worldX(), vertex.worldY(), vertex.worldZ(), tempVector);
 
-                    Vector3f tempVector2 = matrix.transformPosition(pos.x() / 16.0F, pos.y() / 16.0F, pos.z() / 16.0F, tempVector);
-
-                    buffer.addVertex(tempVector2.x(), tempVector2.y(), tempVector2.z(), color,
+                    buffer.addVertex(transformed.x(), transformed.y(), transformed.z(), color,
                             vertex.u(), vertex.v(), packedOverlay, packedLight,
                             normal.x(), normal.y(), normal.z());
                 }
