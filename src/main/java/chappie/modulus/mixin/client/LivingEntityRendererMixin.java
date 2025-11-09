@@ -7,7 +7,6 @@ import chappie.modulus.util.events.SetupAnimCallback;
 import chappie.modulus.util.model.IHasModelProperties;
 import chappie.modulus.util.render.IRenderStateEntity;
 import com.llamalad7.mixinextras.injector.v2.WrapWithCondition;
-import com.llamalad7.mixinextras.sugar.Local;
 import com.mojang.blaze3d.vertex.PoseStack;
 import net.minecraft.client.model.EntityModel;
 import net.minecraft.client.model.HumanoidModel;
@@ -20,13 +19,11 @@ import net.minecraft.client.renderer.entity.state.LivingEntityRenderState;
 import net.minecraft.client.renderer.feature.ModelFeatureRenderer;
 import net.minecraft.client.renderer.state.CameraRenderState;
 import net.minecraft.client.renderer.texture.TextureAtlasSprite;
-import net.minecraft.util.ARGB;
 import net.minecraft.world.entity.LivingEntity;
 import org.jetbrains.annotations.Nullable;
 import org.spongepowered.asm.mixin.Final;
 import org.spongepowered.asm.mixin.Mixin;
 import org.spongepowered.asm.mixin.Shadow;
-import org.spongepowered.asm.mixin.Unique;
 import org.spongepowered.asm.mixin.injection.At;
 import org.spongepowered.asm.mixin.injection.Inject;
 import org.spongepowered.asm.mixin.injection.callback.CallbackInfo;
@@ -41,27 +38,23 @@ public abstract class LivingEntityRendererMixin<T extends LivingEntity, S extend
     @Shadow
     @Final
     protected List<RenderLayer<?, ?>> layers;
-    @Unique
-    private RendererChangeCallback.RendererChangeEvent<T, S, M> modulus$event;
 
     @Shadow
     protected abstract boolean addLayer(RenderLayer<S, M> p_115327_);
 
     @Shadow
-    protected abstract float getWhiteOverlayProgress(S renderState);
-
-    @Shadow
     protected abstract boolean shouldRenderLayers(S renderState);
 
+    @SuppressWarnings("rawtypes")
     @Inject(method = "extractRenderState(Lnet/minecraft/world/entity/LivingEntity;Lnet/minecraft/client/renderer/entity/state/LivingEntityRenderState;F)V", at = @At("TAIL"))
-    public void setupModelProperties(T livingEntity, S livingEntityRenderState, float f, CallbackInfo ci) {
+    public void setupRenderStateEntity(T livingEntity, S livingEntityRenderState, float f, CallbackInfo ci) {
         if (livingEntityRenderState instanceof IRenderStateEntity s) {
             s.modulus$setEntity(livingEntity);
         }
     }
 
     @Inject(method = "submit(Lnet/minecraft/client/renderer/entity/state/LivingEntityRenderState;Lcom/mojang/blaze3d/vertex/PoseStack;Lnet/minecraft/client/renderer/SubmitNodeCollector;Lnet/minecraft/client/renderer/state/CameraRenderState;)V", at = @At("HEAD"))
-    public void setupModelProperties2(S livingEntityRenderState, PoseStack poseStack, SubmitNodeCollector submitNodeCollector, CameraRenderState cameraRenderState, CallbackInfo ci) {
+    public void setupModelProperties(S livingEntityRenderState, PoseStack poseStack, SubmitNodeCollector submitNodeCollector, CameraRenderState cameraRenderState, CallbackInfo ci) {
         if (this.shouldRenderLayers(livingEntityRenderState) && !this.layers.isEmpty()) {
             if (this.model instanceof IHasModelProperties iModel) {
                 iModel.modulus$setup(livingEntityRenderState, ClientUtil.getPartialTick(), this.layers);
@@ -72,17 +65,18 @@ public abstract class LivingEntityRendererMixin<T extends LivingEntity, S extend
         }
     }
 
-    @Inject(method = "submit(Lnet/minecraft/client/renderer/entity/state/LivingEntityRenderState;Lcom/mojang/blaze3d/vertex/PoseStack;Lnet/minecraft/client/renderer/SubmitNodeCollector;Lnet/minecraft/client/renderer/state/CameraRenderState;)V", at = @At(value = "INVOKE", target = "Lnet/minecraft/client/renderer/entity/LivingEntityRenderer;getWhiteOverlayProgress(Lnet/minecraft/client/renderer/entity/state/LivingEntityRenderState;)F"))
-    public void setup(S livingEntityRenderState, PoseStack poseStack, SubmitNodeCollector submitNodeCollector, CameraRenderState cameraRenderState, CallbackInfo ci, @Local(ordinal = 0) RenderType type) {
-        LivingEntityRenderer<T, S, M> renderer = (LivingEntityRenderer<T, S, M>) (Object) this;
-        if (this.model instanceof IHasModelProperties iModel && livingEntityRenderState instanceof IRenderStateEntity e) {
-            T entity = (T) e.modulus$entity();
-            int packedOverlay = LivingEntityRenderer.getOverlayCoords(livingEntityRenderState, this.getWhiteOverlayProgress(livingEntityRenderState));
-            this.modulus$event = new RendererChangeCallback.RendererChangeEvent<>(entity, renderer, iModel.modulus$modelProperties(), poseStack, submitNodeCollector, type, livingEntityRenderState.lightCoords, packedOverlay);
-            if (this.model instanceof HumanoidModel<?>) {
-                SetupAnimCallback.EVENT.invoker().event(new SetupAnimCallback.SetupAnimEvent(entity, livingEntityRenderState, (HumanoidModel<? super S>) this.model, iModel.modulus$modelProperties()));
-            }
+    @Inject(
+            method = "submit(Lnet/minecraft/client/renderer/entity/state/LivingEntityRenderState;Lcom/mojang/blaze3d/vertex/PoseStack;Lnet/minecraft/client/renderer/SubmitNodeCollector;Lnet/minecraft/client/renderer/state/CameraRenderState;)V",
+            at = @At(value = "INVOKE", target = "Lnet/minecraft/client/model/EntityModel;setupAnim(Ljava/lang/Object;)V", shift = At.Shift.AFTER)
+    )
+    private void modulus$afterSetupAnim(S livingEntityRenderState, PoseStack poseStack, SubmitNodeCollector submitNodeCollector, CameraRenderState cameraRenderState, CallbackInfo ci) {
+        if (!(this.model instanceof HumanoidModel<?>)
+                || !(this.model instanceof IHasModelProperties iModel)
+                || !(livingEntityRenderState instanceof IRenderStateEntity<?> e && e.modulus$entity() != null)) {
+            return;
         }
+
+        SetupAnimCallback.EVENT.invoker().event(new SetupAnimCallback.SetupAnimEvent(e.modulus$entity(), livingEntityRenderState, (HumanoidModel<? super S>) this.model, iModel.modulus$modelProperties()));
     }
 
     @WrapWithCondition(
@@ -99,16 +93,32 @@ public abstract class LivingEntityRendererMixin<T extends LivingEntity, S extend
                                     @Nullable TextureAtlasSprite sprite,
                                     int outlineColor,
                                     @Nullable ModelFeatureRenderer.CrumblingOverlay crumblingOverlay) {
-        if (this.modulus$event != null) {
-            int color = tintColor;
-            if (color == -1) {
-                color = 0xFFFFFFFF;
-            }
-            this.modulus$event.setColor(ARGB.red(color), ARGB.green(color), ARGB.blue(color), ARGB.alpha(color));
-            boolean b = RendererChangeCallback.EVENT.invoker().event(this.modulus$event);
-            this.modulus$event = null;
-            return !b;
+        if (!(renderState instanceof LivingEntityRenderState livingState) || !(livingState instanceof IRenderStateEntity<?> entityState)) {
+            return true;
         }
-        return true;
+
+        LivingEntity entity = entityState.modulus$entity();
+        if (entity == null || !(model instanceof IHasModelProperties iModel)) {
+            return true;
+        }
+
+        LivingEntityRenderer<T, S, M> renderer = (LivingEntityRenderer<T, S, M>) (Object) this;
+        RendererChangeCallback.RendererChangeEvent<T, S, M> event = new RendererChangeCallback.RendererChangeEvent<>(
+                (T) entity,
+                (S) livingState,
+                renderer,
+                iModel.modulus$modelProperties(),
+                poseStack,
+                instance,
+                model,
+                renderType,
+                packedLight,
+                packedOverlay,
+                tintColor,
+                sprite,
+                outlineColor,
+                crumblingOverlay
+        );
+        return !RendererChangeCallback.EVENT.invoker().event(event);
     }
 }

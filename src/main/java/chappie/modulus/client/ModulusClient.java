@@ -25,14 +25,13 @@ public class ModulusClient implements ClientModInitializer {
         ScreenEvents.AFTER_INIT.register(ClientEvents::onGuiInit);
         RendererChangeCallback.EVENT.register((event -> {
             AtomicBoolean b = new AtomicBoolean(false);
-            CommonUtil.getAbilities(event.getEntity()).forEach(ability -> ability.clientProperties(c -> {
+            CommonUtil.getAbilities(event.entity()).forEach(ability -> ability.clientProperties(c -> {
                 if (c.rendererChange(event)) {
                     b.set(true);
                 }
             }));
             return b.get();
         }));
-
         SetupAnimCallback.EVENT.register((event ->
                 CommonUtil.getAbilities(event.entity()).forEach(ability ->
                         ability.clientProperties(c -> c.setupAnim(event)))));

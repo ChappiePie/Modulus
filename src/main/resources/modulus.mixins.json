@@ -9,6 +9,7 @@
     "client.LivingEntityRendererMixin",
     "client.LivingEntityRenderStateMixin",
     "client.MinecraftMixin",
+    "client.ModelFeatureRendererMixin",
     "client.ModelMixin",
     "client.ModelPartMixin",
     "client.MouseHandlerMixin",

@@ -5,11 +5,15 @@ import com.mojang.blaze3d.vertex.PoseStack;
 import net.fabricmc.fabric.api.event.Event;
 import net.fabricmc.fabric.api.event.EventFactory;
 import net.minecraft.client.model.EntityModel;
+import net.minecraft.client.model.Model;
 import net.minecraft.client.renderer.RenderType;
 import net.minecraft.client.renderer.SubmitNodeCollector;
 import net.minecraft.client.renderer.entity.LivingEntityRenderer;
 import net.minecraft.client.renderer.entity.state.LivingEntityRenderState;
+import net.minecraft.client.renderer.feature.ModelFeatureRenderer;
+import net.minecraft.client.renderer.texture.TextureAtlasSprite;
 import net.minecraft.world.entity.LivingEntity;
+import org.jetbrains.annotations.Nullable;
 
 public interface RendererChangeCallback {
     Event<RendererChangeCallback> EVENT = EventFactory.createArrayBacked(RendererChangeCallback.class,
@@ -32,82 +36,34 @@ public interface RendererChangeCallback {
      * This event is suitable for any additional renders you want to apply to the entity,
      * or to render a model other than the entity.
      */
-    class RendererChangeEvent<T extends LivingEntity, S extends LivingEntityRenderState, M extends EntityModel<? super S>> {
+    record RendererChangeEvent<T extends LivingEntity, S extends LivingEntityRenderState, M extends EntityModel<? super S>>(
+            T entity, S renderState, LivingEntityRenderer<T, S, M> renderer, ModelProperties modelProperties,
+            PoseStack poseStack, SubmitNodeCollector submitNodeCollector, Model<? super S> model, RenderType renderType,
+            int packedLight, int packedOverlay, int tintColor, @Nullable TextureAtlasSprite sprite, int outlineColor,
+            @Nullable ModelFeatureRenderer.CrumblingOverlay crumblingOverlay) {
 
-        private final LivingEntityRenderer<T, S, M> renderer;
-        private final ModelProperties modelProperties;
-        private final PoseStack poseStack;
-        private final SubmitNodeCollector submitNodeCollector;
-        private final RenderType renderType;
-        private final int packedLight, packedOverlay;
-        private final T entity;
-        private int red, green, blue, alpha;
-
-        public RendererChangeEvent(T entity, LivingEntityRenderer<T, S, M> renderer, ModelProperties modelProperties, PoseStack poseStack, SubmitNodeCollector submitNodeCollector, RenderType renderType, int packedLight, int packedOverlay) {
-            this.entity = entity;
-            this.renderer = renderer;
-            this.modelProperties = modelProperties;
-            this.poseStack = poseStack;
-            this.submitNodeCollector = submitNodeCollector;
-            this.renderType = renderType;
-            this.packedLight = packedLight;
-            this.packedOverlay = packedOverlay;
+        public void submitDefaultModel() {
+            this.submitModel(this.model, this.renderType, this.packedLight, this.packedOverlay, this.tintColor, this.sprite, this.outlineColor, this.crumblingOverlay);
         }
 
-        public void setColor(int red, int green, int blue, int alpha) {
-            this.red = red;
-            this.green = green;
-            this.blue = blue;
-            this.alpha = alpha;
+        public void submitTranslucent(int alpha) {
+            int packedTint = (Math.max(0, Math.min(255, alpha)) & 0xFF) << 24 | 0x00FFFFFF;
+            RenderType translucent = RenderType.itemEntityTranslucentCull(this.renderer.getTextureLocation(this.renderState));
+            this.submitModel(this.model, translucent, this.packedLight, this.packedOverlay, packedTint, this.sprite, this.outlineColor, this.crumblingOverlay);
         }
 
-        @SuppressWarnings("unchecked")
-        public T getEntity() {
-            return this.entity;
+        public void submitModel(
+                Model<? super S> model,
+                RenderType renderType,
+                int packedLight,
+                int packedOverlay,
+                int tintColor,
+                @Nullable TextureAtlasSprite sprite,
+                int outlineColor,
+                @Nullable ModelFeatureRenderer.CrumblingOverlay crumblingOverlay
+        ) {
+            this.submitNodeCollector.submitModel(model, this.renderState, this.poseStack, renderType, packedLight, packedOverlay, tintColor, sprite, outlineColor, crumblingOverlay);
         }
 
-        public LivingEntityRenderer<T, S, M> renderer() {
-            return renderer;
-        }
-
-        public PoseStack poseStack() {
-            return poseStack;
-        }
-
-        public SubmitNodeCollector submitNodeCollector() {
-            return submitNodeCollector;
-        }
-
-        public RenderType renderType() {
-            return renderType;
-        }
-
-        public int packedLight() {
-            return packedLight;
-        }
-
-        public int packedOverlay() {
-            return packedOverlay;
-        }
-
-        public ModelProperties modelProperties() {
-            return modelProperties;
-        }
-
-        public int red() {
-            return red;
-        }
-
-        public int green() {
-            return green;
-        }
-
-        public int blue() {
-            return blue;
-        }
-
-        public int alpha() {
-            return alpha;
-        }
     }
 }

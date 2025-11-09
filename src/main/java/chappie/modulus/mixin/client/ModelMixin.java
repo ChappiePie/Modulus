@@ -15,7 +15,7 @@ import org.spongepowered.asm.mixin.Unique;
 import java.util.List;
 
 @Mixin(Model.class)
-public abstract class ModelMixin implements IHasModelProperties {
+public abstract class ModelMixin<S> implements IHasModelProperties {
 
     @Shadow
     @Final
@@ -25,8 +25,8 @@ public abstract class ModelMixin implements IHasModelProperties {
     private ModelProperties modulus$modelProperties;
 
     @Override
-    public void modulus$setup(LivingEntityRenderState renderstate, float partialTicks, List<RenderLayer<?, ?>> layers) {
-        this.modulus$modelProperties = new ModelProperties(this.root, renderstate, partialTicks, layers);
+    public void modulus$setup(LivingEntityRenderState state, float partialTicks, List<RenderLayer<?, ?>> layers) {
+        this.modulus$modelProperties = new ModelProperties(this.root, state, partialTicks, layers);
     }
 
     @Override
