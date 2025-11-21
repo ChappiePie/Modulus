@@ -6,4 +6,6 @@ public interface IRenderStateEntity<T extends LivingEntity> {
     T modulus$entity();
 
     void modulus$setEntity(T entity);
+
+    ModelPoseCache modulus$poseCache();
 }

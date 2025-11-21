@@ -1,6 +1,7 @@
 package chappie.modulus.mixin.client;
 
 import chappie.modulus.util.render.IRenderStateEntity;
+import chappie.modulus.util.render.ModelPoseCache;
 import net.minecraft.client.renderer.entity.state.LivingEntityRenderState;
 import net.minecraft.world.entity.LivingEntity;
 import org.spongepowered.asm.mixin.Mixin;
@@ -11,6 +12,8 @@ public class LivingEntityRenderStateMixin<T extends LivingEntity> implements IRe
 
     @Unique
     private T entity;
+    @Unique
+    private final ModelPoseCache modulus$poseCache = new ModelPoseCache();
 
     @Override
     public T modulus$entity() {
@@ -20,5 +23,10 @@ public class LivingEntityRenderStateMixin<T extends LivingEntity> implements IRe
     @Override
     public void modulus$setEntity(T entity) {
         this.entity = entity;
+    }
+
+    @Override
+    public ModelPoseCache modulus$poseCache() {
+        return modulus$poseCache;
     }
 }

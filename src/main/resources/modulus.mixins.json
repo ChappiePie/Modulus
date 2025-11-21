@@ -11,6 +11,7 @@
     "client.MinecraftMixin",
     "client.ModelFeatureRendererMixin",
     "client.ModelMixin",
+    "client.ModelPartAccessor",
     "client.ModelPartMixin",
     "client.MouseHandlerMixin",
     "client.ScreenMixin",

@@ -30,7 +30,7 @@ import org.spongepowered.asm.mixin.injection.callback.CallbackInfo;
 
 import java.util.List;
 
-@SuppressWarnings("unchecked")
+@SuppressWarnings({"unchecked", "rawtypes"})
 @Mixin(LivingEntityRenderer.class)
 public abstract class LivingEntityRendererMixin<T extends LivingEntity, S extends LivingEntityRenderState, M extends EntityModel<? super S>> {
     @Shadow
@@ -45,7 +45,6 @@ public abstract class LivingEntityRendererMixin<T extends LivingEntity, S extend
     @Shadow
     protected abstract boolean shouldRenderLayers(S renderState);
 
-    @SuppressWarnings("rawtypes")
     @Inject(method = "extractRenderState(Lnet/minecraft/world/entity/LivingEntity;Lnet/minecraft/client/renderer/entity/state/LivingEntityRenderState;F)V", at = @At("TAIL"))
     public void setupRenderStateEntity(T livingEntity, S livingEntityRenderState, float f, CallbackInfo ci) {
         if (livingEntityRenderState instanceof IRenderStateEntity s) {
@@ -55,6 +54,9 @@ public abstract class LivingEntityRendererMixin<T extends LivingEntity, S extend
 
     @Inject(method = "submit(Lnet/minecraft/client/renderer/entity/state/LivingEntityRenderState;Lcom/mojang/blaze3d/vertex/PoseStack;Lnet/minecraft/client/renderer/SubmitNodeCollector;Lnet/minecraft/client/renderer/state/CameraRenderState;)V", at = @At("HEAD"))
     public void setupModelProperties(S livingEntityRenderState, PoseStack poseStack, SubmitNodeCollector submitNodeCollector, CameraRenderState cameraRenderState, CallbackInfo ci) {
+        if (livingEntityRenderState instanceof IRenderStateEntity poseState) {
+            poseState.modulus$poseCache().clear();
+        }
         if (this.shouldRenderLayers(livingEntityRenderState) && !this.layers.isEmpty()) {
             if (this.model instanceof IHasModelProperties iModel) {
                 iModel.modulus$setup(livingEntityRenderState, ClientUtil.getPartialTick(), this.layers);
@@ -76,7 +78,15 @@ public abstract class LivingEntityRendererMixin<T extends LivingEntity, S extend
             return;
         }
 
-        SetupAnimCallback.EVENT.invoker().event(new SetupAnimCallback.SetupAnimEvent(e.modulus$entity(), livingEntityRenderState, (HumanoidModel<? super S>) this.model, iModel.modulus$modelProperties()));
+        HumanoidModel<? super S> humanoidModel = (HumanoidModel<? super S>) this.model;
+        SetupAnimCallback.SetupAnimEvent event = new SetupAnimCallback.SetupAnimEvent(
+                e.modulus$entity(),
+                livingEntityRenderState,
+                humanoidModel,
+                iModel.modulus$modelProperties()
+        );
+        SetupAnimCallback.EVENT.invoker().event(event);
+        e.modulus$poseCache().storePose(humanoidModel);
     }
 
     @WrapWithCondition(

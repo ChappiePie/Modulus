@@ -110,25 +110,33 @@ public class PowerCap implements AutoSyncedComponent, CommonTickingComponent, Co
 
     @Override
     public void readData(ValueInput valueInput) {
-        CompoundTag compoundTag = valueInput.read("Superpower", CompoundTag.CODEC).get();
         this.abilities.clear();
-        if (!compoundTag.getString("Id").isEmpty()) {
-            Superpower superpower = Superpower.REGISTRY.getValue(ResourceLocation.tryParse(compoundTag.getString("Id").get()));
-            this.superpower = superpower;
-            if (superpower != null) {
-                CompoundTag abilities = compoundTag.getCompound("Abilities").get();
-                for (String key : abilities.keySet()) {
-                    CompoundTag nbt = abilities.getCompound(key).get();
-                    var builder = superpower.getBuilderByName(key);
-                    if (builder != null) {
-                        Ability ability = builder.build(this.livingEntity);
-                        ability.deserializeNBT(nbt);
-                        this.abilities.put(builder, ability);
-                    }
-                }
-            }
-        } else {
+        CompoundTag superpowerTag = valueInput.read("Superpower", CompoundTag.CODEC).orElse(null);
+        if (superpowerTag == null || !superpowerTag.contains("Id") || superpowerTag.getString("Id").orElse("").isEmpty()) {
             this.superpower = null;
+            return;
+        }
+
+        ResourceLocation resourceLocation = ResourceLocation.tryParse(superpowerTag.getString("Id").orElse(""));
+        Superpower superpower = resourceLocation != null ? Superpower.REGISTRY.getValue(resourceLocation) : null;
+        if (superpower == null) {
+            this.superpower = null;
+            return;
+        }
+
+        this.superpower = superpower;
+        CompoundTag abilityData = superpowerTag.getCompound("Abilities").orElseGet(CompoundTag::new);
+        for (String key : abilityData.keySet()) {
+            abilityData.getCompound(key).ifPresent(nbt -> {
+                AbilityBuilder builder = superpower.getBuilderByName(key);
+                if (builder == null) {
+                    return;
+                }
+
+                Ability ability = builder.build(this.livingEntity);
+                ability.deserializeNBT(nbt);
+                this.abilities.put(builder, ability);
+            });
         }
     }
 
