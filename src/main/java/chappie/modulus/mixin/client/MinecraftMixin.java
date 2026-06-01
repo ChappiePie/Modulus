@@ -8,11 +8,13 @@ import chappie.modulus.networking.ModNetworking;
 import chappie.modulus.networking.server.ServerKeyInput;
 import chappie.modulus.util.CommonUtil;
 import chappie.modulus.util.KeyMap;
+import com.llamalad7.mixinextras.injector.v2.WrapWithCondition;
 import net.minecraft.client.Minecraft;
 import net.minecraft.client.player.LocalPlayer;
 import org.jetbrains.annotations.Nullable;
 import org.spongepowered.asm.mixin.Mixin;
 import org.spongepowered.asm.mixin.Shadow;
+import org.spongepowered.asm.mixin.Unique;
 import org.spongepowered.asm.mixin.injection.At;
 import org.spongepowered.asm.mixin.injection.Inject;
 import org.spongepowered.asm.mixin.injection.callback.CallbackInfo;
@@ -28,9 +30,16 @@ public class MinecraftMixin {
     @Nullable
     public LocalPlayer player;
 
+    @Unique
+    private boolean modulus$canceledAttack = false;
+
+    @Unique
+    private boolean modulus$canceledRightClick = false;
+
     @Inject(method = "startAttack()Z", at = @At("HEAD"), cancellable = true)
     public void cancelAttack(CallbackInfoReturnable<Boolean> cir) {
         if (this.player == null) return;
+        this.modulus$canceledAttack = false;
         for (Ability ability : CommonUtil.getAbilities(this.player)) {
             for (Map.Entry<String, List<Condition>> e : ability.conditionManager.methodConditions().entrySet()) {
                 for (Condition condition : e.getValue()) {
@@ -43,6 +52,7 @@ public class MinecraftMixin {
                         }
                         if (ability.conditionManager.test(e.getKey())) {
                             cir.setReturnValue(false);
+                            this.modulus$canceledAttack = true;
                         }
                     }
                 }
@@ -50,9 +60,17 @@ public class MinecraftMixin {
         }
     }
 
-    @Inject(method = "startUseItem()V", at = @At("HEAD"), cancellable = true)
-    public void cancelUseItem(CallbackInfo ci) {
-        if (this.player == null) return;
+    @Inject(method = "continueAttack(Z)V", at = @At("HEAD"), cancellable = true)
+    public void cancelAttack2(boolean leftClick, CallbackInfo ci) {
+        if (this.modulus$canceledAttack) {
+            ci.cancel();
+        }
+    }
+
+    @WrapWithCondition(method = "handleKeybinds()V", at = @At(value = "INVOKE", target = "Lnet/minecraft/client/Minecraft;startUseItem()V", ordinal = 0))
+    public boolean cancelUseItem(Minecraft instance) {
+        if (this.player == null) return false;
+        this.modulus$canceledRightClick = false;
         for (Ability ability : CommonUtil.getAbilities(this.player)) {
             for (Map.Entry<String, List<Condition>> e : ability.conditionManager.methodConditions().entrySet()) {
                 for (Condition condition : e.getValue()) {
@@ -64,11 +82,18 @@ public class MinecraftMixin {
                             ModNetworking.sendToServer(new ServerKeyInput(ability.builder.id, ClientEvents.KEYS));
                         }
                         if (ability.conditionManager.test(e.getKey())) {
-                            ci.cancel();
+                            this.modulus$canceledRightClick = true;
+                            return false;
                         }
                     }
                 }
             }
         }
+        return true;
+    }
+
+    @WrapWithCondition(method = "handleKeybinds()V", at = @At(value = "INVOKE", target = "Lnet/minecraft/client/Minecraft;startUseItem()V", ordinal = 1))
+    public boolean cancelUseItem2(Minecraft instance) {
+        return !this.modulus$canceledRightClick;
     }
 }

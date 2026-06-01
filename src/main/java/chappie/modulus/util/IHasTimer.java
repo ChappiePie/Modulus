@@ -57,5 +57,9 @@ public interface IHasTimer {
             return Mth.lerp(partialTicks, this.prevTimer, this.timer) / this.maxTimer.get();
         }
 
+        public boolean ended() {
+            return this.value(1) == 1F;
+        }
+
     }
 }

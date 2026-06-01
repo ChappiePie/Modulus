@@ -140,7 +140,7 @@ public class AbilityBuilder {
                 if (conditions.isPresent()) {
                     for (int i = 0; i < conditions.get().size(); i++) {
                         List<Condition> c = this.conditions.get(key);
-                        if (c != null && c.get(i) != null) {
+                        if (c != null && i < c.size() && c.get(i) != null) {
                             Optional<CompoundTag> tag = conditions.get().getCompound(i);
                             if (tag.isPresent()) {
                                 c.get(i).deserializeNBT(tag.get());

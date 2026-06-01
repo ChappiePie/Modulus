@@ -25,15 +25,15 @@ public class ModNetworking {
         PayloadTypeRegistry.playC2S().register(ServerKeyInput.PACKET, ServerKeyInput.CODEC);
         ServerPlayNetworking.registerGlobalReceiver(ServerKeyInput.PACKET, (packet, context) -> packet.handle(context.player(), context.responseSender()));
 
+        PayloadTypeRegistry.playS2C().register(ClientSyncAbility.PACKET, ClientSyncAbility.CODEC);
+        PayloadTypeRegistry.playS2C().register(ClientSyncData.PACKET, ClientSyncData.CODEC);
+        PayloadTypeRegistry.playS2C().register(ClientKeyInput.PACKET, ClientKeyInput.CODEC);
         Modulus.LOGGER.debug("Registered server network");
     }
 
     public static void registerClientMessages() {
-        PayloadTypeRegistry.playS2C().register(ClientSyncAbility.PACKET, ClientSyncAbility.CODEC);
         ClientPlayNetworking.registerGlobalReceiver(ClientSyncAbility.PACKET, (packet, context) -> packet.handle(context.player(), context.responseSender()));
-        PayloadTypeRegistry.playS2C().register(ClientSyncData.PACKET, ClientSyncData.CODEC);
         ClientPlayNetworking.registerGlobalReceiver(ClientSyncData.PACKET, (packet, context) -> packet.handle(context.player(), context.responseSender()));
-        PayloadTypeRegistry.playS2C().register(ClientKeyInput.PACKET, ClientKeyInput.CODEC);
         ClientPlayNetworking.registerGlobalReceiver(ClientKeyInput.PACKET, (packet, context) -> packet.handle(context.player(), context.responseSender()));
 
         Modulus.LOGGER.debug("Registered client network");
