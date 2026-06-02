@@ -32,28 +32,28 @@ import java.util.List;
 
 @SuppressWarnings({"unchecked", "rawtypes"})
 @Mixin(LivingEntityRenderer.class)
-public abstract class LivingEntityRendererMixin<T extends LivingEntity, S extends LivingEntityRenderState, M extends EntityModel<? super S>> {
+public abstract class LivingEntityRendererMixin {
     @Shadow
-    protected M model;
+    protected EntityModel model;
     @Shadow
     @Final
     protected List<RenderLayer<?, ?>> layers;
 
     @Shadow
-    protected abstract boolean addLayer(RenderLayer<S, M> p_115327_);
+    protected abstract boolean addLayer(RenderLayer layer);
 
     @Shadow
-    protected abstract boolean shouldRenderLayers(S renderState);
+    protected abstract boolean shouldRenderLayers(LivingEntityRenderState renderState);
 
     @Inject(method = "extractRenderState(Lnet/minecraft/world/entity/LivingEntity;Lnet/minecraft/client/renderer/entity/state/LivingEntityRenderState;F)V", at = @At("TAIL"))
-    public void setupRenderStateEntity(T livingEntity, S livingEntityRenderState, float f, CallbackInfo ci) {
+    public void setupRenderStateEntity(LivingEntity livingEntity, LivingEntityRenderState livingEntityRenderState, float f, CallbackInfo ci) {
         if (livingEntityRenderState instanceof IRenderStateEntity s) {
             s.modulus$setEntity(livingEntity);
         }
     }
 
     @Inject(method = "submit(Lnet/minecraft/client/renderer/entity/state/LivingEntityRenderState;Lcom/mojang/blaze3d/vertex/PoseStack;Lnet/minecraft/client/renderer/SubmitNodeCollector;Lnet/minecraft/client/renderer/state/CameraRenderState;)V", at = @At("HEAD"))
-    public void setupModelProperties(S livingEntityRenderState, PoseStack poseStack, SubmitNodeCollector submitNodeCollector, CameraRenderState cameraRenderState, CallbackInfo ci) {
+    public void setupModelProperties(LivingEntityRenderState livingEntityRenderState, PoseStack poseStack, SubmitNodeCollector submitNodeCollector, CameraRenderState cameraRenderState, CallbackInfo ci) {
         if (livingEntityRenderState instanceof IRenderStateEntity poseState) {
             poseState.modulus$poseCache().clear();
         }
@@ -61,7 +61,7 @@ public abstract class LivingEntityRendererMixin<T extends LivingEntity, S extend
             if (this.model instanceof IHasModelProperties iModel) {
                 iModel.modulus$setup(livingEntityRenderState, ClientUtil.getPartialTick(), this.layers);
                 if (this.layers.stream().noneMatch(p -> p instanceof AbilityLayerRenderer)) {
-                    this.addLayer(new AbilityLayerRenderer<>((LivingEntityRenderer<T, S, M>) (Object) this));
+                    this.addLayer(new AbilityLayerRenderer((LivingEntityRenderer) (Object) this));
                 }
             }
         }
@@ -71,14 +71,13 @@ public abstract class LivingEntityRendererMixin<T extends LivingEntity, S extend
             method = "submit(Lnet/minecraft/client/renderer/entity/state/LivingEntityRenderState;Lcom/mojang/blaze3d/vertex/PoseStack;Lnet/minecraft/client/renderer/SubmitNodeCollector;Lnet/minecraft/client/renderer/state/CameraRenderState;)V",
             at = @At(value = "INVOKE", target = "Lnet/minecraft/client/model/EntityModel;setupAnim(Ljava/lang/Object;)V", shift = At.Shift.AFTER)
     )
-    private void modulus$afterSetupAnim(S livingEntityRenderState, PoseStack poseStack, SubmitNodeCollector submitNodeCollector, CameraRenderState cameraRenderState, CallbackInfo ci) {
-        if (!(this.model instanceof HumanoidModel<?>)
+    private void modulus$afterSetupAnim(LivingEntityRenderState livingEntityRenderState, PoseStack poseStack, SubmitNodeCollector submitNodeCollector, CameraRenderState cameraRenderState, CallbackInfo ci) {
+        if (!(this.model instanceof HumanoidModel humanoidModel)
                 || !(this.model instanceof IHasModelProperties iModel)
-                || !(livingEntityRenderState instanceof IRenderStateEntity<?> e && e.modulus$entity() != null)) {
+                || !(livingEntityRenderState instanceof IRenderStateEntity e && e.modulus$entity() != null)) {
             return;
         }
 
-        HumanoidModel<? super S> humanoidModel = (HumanoidModel<? super S>) this.model;
         SetupAnimCallback.SetupAnimEvent event = new SetupAnimCallback.SetupAnimEvent(
                 e.modulus$entity(),
                 livingEntityRenderState,
@@ -93,7 +92,7 @@ public abstract class LivingEntityRendererMixin<T extends LivingEntity, S extend
             method = "submit(Lnet/minecraft/client/renderer/entity/state/LivingEntityRenderState;Lcom/mojang/blaze3d/vertex/PoseStack;Lnet/minecraft/client/renderer/SubmitNodeCollector;Lnet/minecraft/client/renderer/state/CameraRenderState;)V",
             at = @At(value = "INVOKE", target = "Lnet/minecraft/client/renderer/SubmitNodeCollector;submitModel(Lnet/minecraft/client/model/Model;Ljava/lang/Object;Lcom/mojang/blaze3d/vertex/PoseStack;Lnet/minecraft/client/renderer/RenderType;IIILnet/minecraft/client/renderer/texture/TextureAtlasSprite;ILnet/minecraft/client/renderer/feature/ModelFeatureRenderer$CrumblingOverlay;)V")
     )
-    private boolean renderIfAllowed(SubmitNodeCollector instance, Model<? super S> model,
+    private boolean renderIfAllowed(SubmitNodeCollector instance, Model model,
                                     Object renderState,
                                     PoseStack poseStack,
                                     RenderType renderType,
@@ -103,7 +102,7 @@ public abstract class LivingEntityRendererMixin<T extends LivingEntity, S extend
                                     @Nullable TextureAtlasSprite sprite,
                                     int outlineColor,
                                     @Nullable ModelFeatureRenderer.CrumblingOverlay crumblingOverlay) {
-        if (!(renderState instanceof LivingEntityRenderState livingState) || !(livingState instanceof IRenderStateEntity<?> entityState)) {
+        if (!(renderState instanceof LivingEntityRenderState livingState) || !(livingState instanceof IRenderStateEntity entityState)) {
             return true;
         }
 
@@ -112,10 +111,10 @@ public abstract class LivingEntityRendererMixin<T extends LivingEntity, S extend
             return true;
         }
 
-        LivingEntityRenderer<T, S, M> renderer = (LivingEntityRenderer<T, S, M>) (Object) this;
-        RendererChangeCallback.RendererChangeEvent<T, S, M> event = new RendererChangeCallback.RendererChangeEvent<>(
-                (T) entity,
-                (S) livingState,
+        LivingEntityRenderer renderer = (LivingEntityRenderer) (Object) this;
+        RendererChangeCallback.RendererChangeEvent event = new RendererChangeCallback.RendererChangeEvent(
+                entity,
+                livingState,
                 renderer,
                 iModel.modulus$modelProperties(),
                 poseStack,

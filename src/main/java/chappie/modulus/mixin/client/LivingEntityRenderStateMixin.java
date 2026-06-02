@@ -8,20 +8,20 @@ import org.spongepowered.asm.mixin.Mixin;
 import org.spongepowered.asm.mixin.Unique;
 
 @Mixin(LivingEntityRenderState.class)
-public class LivingEntityRenderStateMixin<T extends LivingEntity> implements IRenderStateEntity<T> {
+public class LivingEntityRenderStateMixin implements IRenderStateEntity {
 
     @Unique
-    private T entity;
+    private LivingEntity entity;
     @Unique
     private final ModelPoseCache modulus$poseCache = new ModelPoseCache();
 
     @Override
-    public T modulus$entity() {
+    public LivingEntity modulus$entity() {
         return this.entity;
     }
 
     @Override
-    public void modulus$setEntity(T entity) {
+    public void modulus$setEntity(LivingEntity entity) {
         this.entity = entity;
     }
 

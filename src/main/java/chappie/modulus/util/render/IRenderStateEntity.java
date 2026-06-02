@@ -2,10 +2,10 @@ package chappie.modulus.util.render;
 
 import net.minecraft.world.entity.LivingEntity;
 
-public interface IRenderStateEntity<T extends LivingEntity> {
-    T modulus$entity();
+public interface IRenderStateEntity {
+    LivingEntity modulus$entity();
 
-    void modulus$setEntity(T entity);
+    void modulus$setEntity(LivingEntity entity);
 
     ModelPoseCache modulus$poseCache();
 }

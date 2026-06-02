@@ -37,7 +37,7 @@ public abstract class ModelFeatureRendererMixin {
         if (!(submit.state() instanceof LivingEntityRenderState livingState)) {
             return;
         }
-        if (!(livingState instanceof IRenderStateEntity<?> poseState)) {
+        if (!(livingState instanceof IRenderStateEntity poseState)) {
             return;
         }
 
