@@ -61,7 +61,7 @@ public abstract class LivingEntityRendererMixin<T extends LivingEntity, M extend
         if (this.model instanceof IHasModelProperties iModel) {
             this.modulus$event = new RendererChangeCallback.RendererChangeEvent<>(entity, renderer, iModel.modulus$modelProperties(), poseStack, buffer, type, packedLight, LivingEntityRenderer.getOverlayCoords(entity, this.getWhiteOverlayProgress(entity, partialTicks)));
             if (this.model instanceof HumanoidModel<?> humanoidModel) {
-                SetupAnimCallback.EVENT.invoker().event(new SetupAnimCallback.SetupAnimEvent(entity, (HumanoidModel<T>) this.model, iModel.modulus$modelProperties()));
+                SetupAnimCallback.EVENT.invoke(new SetupAnimCallback.SetupAnimEvent(entity, (HumanoidModel<T>) this.model, iModel.modulus$modelProperties()));
 
                 humanoidModel.hat.copyFrom(humanoidModel.head);
                 if (humanoidModel instanceof PlayerModel playerModel) {
@@ -82,7 +82,7 @@ public abstract class LivingEntityRendererMixin<T extends LivingEntity, M extend
     private boolean renderIfAllowed(EntityModel instance, PoseStack poseStack, VertexConsumer vertexConsumer, int pPackedLight, int pPackedOverlay, int pColor) {
         if (this.modulus$event != null) {
             this.modulus$event.setColor(ClientUtil.ARGB.red(pColor), ClientUtil.ARGB.green(pColor), ClientUtil.ARGB.blue(pColor), ClientUtil.ARGB.alpha(pColor));
-            boolean b = RendererChangeCallback.EVENT.invoker().event(this.modulus$event);
+            boolean b = RendererChangeCallback.EVENT.invoke(this.modulus$event);
             this.modulus$event.multiBufferSource().getBuffer(this.modulus$event.renderType()); // rollback texture of entity
             return !b;
         }

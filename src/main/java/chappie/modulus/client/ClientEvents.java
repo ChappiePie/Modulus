@@ -9,7 +9,6 @@ import chappie.modulus.util.CommonUtil;
 import chappie.modulus.util.IHasTimer;
 import chappie.modulus.util.KeyMap;
 import com.mojang.blaze3d.platform.InputConstants;
-import net.fabricmc.fabric.api.client.screen.v1.Screens;
 import net.minecraft.client.KeyMapping;
 import net.minecraft.client.Minecraft;
 import net.minecraft.client.gui.components.Button;
@@ -20,6 +19,7 @@ import net.minecraft.client.gui.screens.Screen;
 import net.minecraft.client.gui.screens.TitleScreen;
 import net.minecraft.network.chat.Component;
 import net.minecraft.world.entity.player.Player;
+import net.neoforged.neoforge.client.event.ScreenEvent;
 import org.lwjgl.glfw.GLFW;
 
 public class ClientEvents {
@@ -33,7 +33,8 @@ public class ClientEvents {
             new AbilityKeyMapping(4, GLFW.GLFW_KEY_COMMA)
     };
 
-    public static void onGuiInit(Minecraft client, Screen screen, int scaledWidth, int scaledHeight) {
+    public static void onGuiInit(Minecraft client, ScreenEvent.Init.Post event) {
+        Screen screen = event.getScreen();
         if (screen instanceof TitleScreen || screen instanceof PauseScreen) {
             int x = screen.width;
             int y = screen.height / 4 + 96;
@@ -57,8 +58,13 @@ public class ClientEvents {
             }
 
             if (b) {
-                Screens.getButtons(screen).add(ClientEvents.modulusButton(x - (screen instanceof PauseScreen ? 24 : 0), y, (button) ->
-                        client.setScreen(new ModulusMainScreen(screen))));
+                try {
+                    event.addListener(ClientEvents.modulusButton(x - (screen instanceof PauseScreen ? 24 : 0), y, (button) ->
+                            client.setScreen(new ModulusMainScreen(screen))));
+                } catch (UnsupportedOperationException | ClassCastException e) {
+                    // Children list might be immutable or wrong type
+                    Modulus.LOGGER.warn("Could not add Modulus button to screen");
+                }
             }
         }
     }

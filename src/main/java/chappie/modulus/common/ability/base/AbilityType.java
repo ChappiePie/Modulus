@@ -5,17 +5,19 @@ import chappie.modulus.common.ability.AttributeModifierAbility;
 import chappie.modulus.common.ability.DamageImmunityAbility;
 import chappie.modulus.common.ability.DamageResistanceAbility;
 import chappie.modulus.common.ability.HelloWorldAbility;
-import net.fabricmc.fabric.api.event.registry.FabricRegistryBuilder;
 import net.minecraft.core.Registry;
 import net.minecraft.network.chat.Component;
 import net.minecraft.resources.ResourceKey;
 import net.minecraft.world.entity.LivingEntity;
+import net.neoforged.neoforge.registries.RegistryBuilder;
 
 import java.util.Objects;
 
 public record AbilityType(AbilitySupplier supplier) {
     public static final ResourceKey<Registry<AbilityType>> ABILITY_TYPES = ResourceKey.createRegistryKey(Modulus.id("ability_types"));
-    public static final Registry<AbilityType> REGISTRY = FabricRegistryBuilder.createSimple(ABILITY_TYPES).buildAndRegister();
+    public static final Registry<AbilityType> REGISTRY = new RegistryBuilder<>(ABILITY_TYPES)
+            .sync(true)
+            .create();
 
     public static final AbilityType HELLO_WORLD = AbilityType.register("hello_world", HelloWorldAbility::new);
     public static final AbilityType ATTRIBUTE_MODIFIER = AbilityType.register("attribute_modifier", AttributeModifierAbility::new);

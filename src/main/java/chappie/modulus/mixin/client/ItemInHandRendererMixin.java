@@ -33,7 +33,7 @@ public abstract class ItemInHandRendererMixin {
         AtomicReference<Float> swingProgress = new AtomicReference<>(pSwingProgress);
         AtomicReference<Float> equippedProgress = new AtomicReference<>(pEquippedProgress);
 
-        if (!FirstPersonAdditionalHandCallback.EVENT.invoker().event(new FirstPersonAdditionalHandCallback.FirstPersonAdditionalHandEvent((ItemInHandRenderer) (Object) this, renderArm, pPlayer, pPartialTicks, pPitch, pHand, pHand == InteractionHand.MAIN_HAND ? pPlayer.getMainArm() : pPlayer.getMainArm().getOpposite(), swingProgress, pStack, equippedProgress, pMatrixStack, pBuffer, pCombinedLight))) {
+        if (!FirstPersonAdditionalHandCallback.EVENT.invoke(new FirstPersonAdditionalHandCallback.FirstPersonAdditionalHandEvent((ItemInHandRenderer) (Object) this, renderArm, pPlayer, pPartialTicks, pPitch, pHand, pHand == InteractionHand.MAIN_HAND ? pPlayer.getMainArm() : pPlayer.getMainArm().getOpposite(), swingProgress, pStack, equippedProgress, pMatrixStack, pBuffer, pCombinedLight))) {
             pSwingProgress = swingProgress.get();
             pEquippedProgress = equippedProgress.get();
 

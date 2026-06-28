@@ -2,12 +2,10 @@ package chappie.modulus.util.data;
 
 import chappie.modulus.common.ability.base.Ability;
 import chappie.modulus.networking.ModNetworking;
-import chappie.modulus.networking.client.ClientSyncData;
 import chappie.modulus.networking.server.ServerSetData;
 import com.google.common.collect.Maps;
 import com.mojang.logging.LogUtils;
 import net.minecraft.nbt.CompoundTag;
-import net.minecraft.world.entity.Entity;
 import org.slf4j.Logger;
 
 import java.util.Map;
@@ -37,13 +35,9 @@ public class DataManager {
 
     public <T> DataManager set(DataAccessor<T> accessor, T value) {
         DataValue<T> dataValue = this.getDataValue(accessor);
-        Entity entity = this.ability.entity;
         if (dataValue.get() != value) {
             dataValue.set(value);
             this.ability.onDataUpdated(accessor);
-            if (!entity.getCommandSenderWorld().isClientSide) {
-                ModNetworking.sendToTrackingEntityAndSelf(new ClientSyncData(entity.getId(), accessor.key(), this.ability.builder.id, dataValue.serialize(new CompoundTag(), true)), entity);
-            }
         }
         return this;
     }

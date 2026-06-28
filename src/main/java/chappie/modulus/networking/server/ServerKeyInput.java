@@ -7,7 +7,6 @@ import chappie.modulus.common.capability.PowerCap;
 import chappie.modulus.networking.ModNetworking;
 import chappie.modulus.networking.client.ClientKeyInput;
 import chappie.modulus.util.KeyMap;
-import net.fabricmc.fabric.api.networking.v1.PacketSender;
 import net.minecraft.network.FriendlyByteBuf;
 import net.minecraft.network.codec.StreamCodec;
 import net.minecraft.network.protocol.common.custom.CustomPacketPayload;
@@ -44,11 +43,15 @@ public class ServerKeyInput implements CustomPacketPayload {
         }
     }
 
-    public void handle(ServerPlayer player, PacketSender packetSender) {
+    public void handle(ServerPlayer player) {
         if (player != null) {
             PowerCap cap = PowerCap.getCap(player);
             if (cap != null) {
                 Ability ability = cap.getAbility(this.id);
+                if (ability == null) {
+                    return;
+                }
+
                 ability.keys.copyFrom(this.keys);
                 ability.conditionManager.conditions().forEach(Condition::keyEvent);
                 ModNetworking.sendToTrackingEntityAndSelf(new ClientKeyInput(player.getId(), this.id, this.keys), player);

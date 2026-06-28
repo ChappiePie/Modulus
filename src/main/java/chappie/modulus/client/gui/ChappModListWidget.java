@@ -9,9 +9,6 @@ import com.google.gson.JsonElement;
 import com.google.gson.JsonObject;
 import com.mojang.blaze3d.systems.RenderSystem;
 import com.mojang.blaze3d.vertex.PoseStack;
-import net.fabricmc.loader.api.FabricLoader;
-import net.fabricmc.loader.api.ModContainer;
-import net.fabricmc.loader.api.metadata.ModMetadata;
 import net.minecraft.Util;
 import net.minecraft.client.Minecraft;
 import net.minecraft.client.gui.Font;
@@ -27,6 +24,9 @@ import net.minecraft.network.chat.Component;
 import net.minecraft.resources.ResourceLocation;
 import net.minecraft.util.Mth;
 import net.minecraft.world.phys.Vec2;
+import net.neoforged.fml.ModContainer;
+import net.neoforged.fml.ModList;
+import net.neoforged.neoforgespi.language.IModInfo;
 import org.joml.Matrix4f;
 import org.joml.Vector3f;
 
@@ -52,14 +52,14 @@ public class ChappModListWidget extends ContainerObjectSelectionList<ChappModLis
         PoseStack poseStack = guiGraphics.pose();
 
         poseStack.pushPose();
-        Component modName = Component.literal(entry.modInfo.modInfo() == null ? entry.modInfo.modId : entry.modInfo.modInfo().getName()).withStyle(ClientUtil.BOLD_MINECRAFT);
+        Component modName = Component.literal(entry.modInfo.modInfo() == null ? entry.modInfo.modId : entry.modInfo.modInfo().getDisplayName()).withStyle(ClientUtil.BOLD_MINECRAFT);
         float f = 2.5F;
         poseStack.scale(f, f, f);
         poseStack.translate(b ? (x.get() + 5) / f : (entryWidth - 128) / f - font.width(modName), (top + 5) / f, 0);
         guiGraphics.drawString(font, modName, 0, 0, -1, true);
         poseStack.popPose();
 
-        List<Component> list = entry.modInfo.modInfo() == null ? entry.modInfo.text : Component.literal(entry.modInfo.modInfo().getDescription()).toFlatList();
+        List<Component> list = entry.modInfo.modInfo() == null ? entry.modInfo.text : List.of(Component.literal(entry.modInfo.modInfo().getDescription()));
         MultiLineLabel label = MultiLineLabel.create(font, entryWidth - 160, 7, list.toArray(new Component[0]));
 
         poseStack.pushPose();
@@ -156,7 +156,7 @@ public class ChappModListWidget extends ContainerObjectSelectionList<ChappModLis
         public static void enableScissor(GuiGraphics guiGraphics, int minX, int minY, int maxX, int maxY) {
             ScreenRectangle screenRectangle = new ScreenRectangle(minX, minY, maxX - minX, maxY - minY);
             screenRectangle = MyButton.transformAxisAligned(screenRectangle, guiGraphics.pose().last().pose());
-            ((GuiGraphicsAccessor) guiGraphics).applyScissor(((GuiGraphicsAccessor) guiGraphics).getScissorStack().push(screenRectangle));
+            ((GuiGraphicsAccessor) guiGraphics).modulus$applyScissor(((GuiGraphicsAccessor) guiGraphics).getScissorStack().push(screenRectangle));
         }
 
         public static ScreenRectangle transformAxisAligned(ScreenRectangle rectangle, Matrix4f pose) {
@@ -169,11 +169,11 @@ public class ChappModListWidget extends ContainerObjectSelectionList<ChappModLis
             }
         }
 
-        protected static void renderScrollingString(GuiGraphics guiGraphics, Font font, Component text, int minX, int minY, int maxX, int maxY, int color) {
+        public static void renderScrollingString(GuiGraphics guiGraphics, Font font, Component text, int minX, int minY, int maxX, int maxY, int color) {
             renderScrollingString(guiGraphics, font, text, (minX + maxX) / 2, minX, minY, maxX, maxY, color);
         }
 
-        protected static void renderScrollingString(GuiGraphics guiGraphics, Font font, Component text, int centerX, int minX, int minY, int maxX, int maxY, int color) {
+        public static void renderScrollingString(GuiGraphics guiGraphics, Font font, Component text, int centerX, int minX, int minY, int maxX, int maxY, int color) {
             int i = font.width(text);
             int j = (minY + maxY - 9) / 2 + 1;
             int k = maxX - minX;
@@ -247,9 +247,10 @@ public class ChappModListWidget extends ContainerObjectSelectionList<ChappModLis
             this(modId, version, url, text, ModulusMainScreen.getTexByName("mods/%s".formatted(textureId)), textRenderable);
         }
 
-        public ModMetadata modInfo() {
-            var v = FabricLoader.getInstance().getModContainer(this.modId);
-            return v.map(ModContainer::getMetadata).orElse(null);
+        public IModInfo modInfo() {
+            return ModList.get().getModContainerById(this.modId)
+                    .map(ModContainer::getModInfo)
+                    .orElse(null);
         }
     }
 
@@ -268,7 +269,7 @@ public class ChappModListWidget extends ContainerObjectSelectionList<ChappModLis
             this.children = new HashMap<>();
             var modFile = info.modInfo();
 
-            String version = modFile != null ? modFile.getVersion().getFriendlyString() : info.version;
+            String version = modFile != null ? modFile.getVersion().toString() : info.version;
             if (version.equals("${version}")) {
                 version = "1.0";
             }

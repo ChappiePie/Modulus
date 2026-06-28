@@ -1,10 +1,10 @@
 package chappie.modulus.common.ability.base;
 
 import chappie.modulus.Modulus;
-import net.fabricmc.fabric.api.event.registry.FabricRegistryBuilder;
 import net.minecraft.core.Registry;
 import net.minecraft.network.chat.Component;
 import net.minecraft.resources.ResourceKey;
+import net.neoforged.neoforge.registries.RegistryBuilder;
 
 import java.util.Collections;
 import java.util.LinkedList;
@@ -12,7 +12,9 @@ import java.util.Objects;
 
 public class Superpower {
     public static final ResourceKey<Registry<Superpower>> SUPERPOWERS = ResourceKey.createRegistryKey(Modulus.id("superpowers"));
-    public static final Registry<Superpower> REGISTRY = FabricRegistryBuilder.createSimple(SUPERPOWERS).buildAndRegister();
+    public static final Registry<Superpower> REGISTRY = new RegistryBuilder<>(SUPERPOWERS)
+            .sync(true)
+            .create();
 
     /*public static final Superpower TEST = Registry.register(REGISTRY, Modulus.id("test"), new Superpower(
             AbilityBuilder.of("bruh", AbilityType.HELLO_WORLD)

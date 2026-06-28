@@ -1,0 +1,32 @@
+modLoader = "javafml"
+loaderVersion = "[4,)"
+license = "ARR"
+
+[[mods]]
+modId = "modulus"
+version = "${version}"
+displayName = "Modulus"
+description = '''
+The core for the mods created by Chappie is under constant development.
+Basically adding a lot of cool things for convenient writing of mods.
+'''
+authors = "ChappiePie"
+displayURL = "https://discord.gg/DwTaMAr"
+logoFile = "assets/modulus/icon.png"
+
+[[mixins]]
+config = "modulus.mixins.json"
+
+[[dependencies.modulus]]
+modId = "neoforge"
+type = "required"
+versionRange = "[21.1,)"
+ordering = "NONE"
+side = "BOTH"
+
+[[dependencies.modulus]]
+modId = "minecraft"
+type = "required"
+versionRange = "[1.21.1,1.22)"
+ordering = "NONE"
+side = "BOTH"

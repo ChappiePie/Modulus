@@ -6,13 +6,13 @@ import chappie.modulus.networking.client.ClientSyncAbility;
 import chappie.modulus.util.KeyMap;
 import chappie.modulus.util.data.DataAccessor;
 import chappie.modulus.util.data.DataManager;
-import net.fabricmc.api.EnvType;
-import net.fabricmc.loader.api.FabricLoader;
 import net.minecraft.nbt.CompoundTag;
 import net.minecraft.server.level.ServerPlayer;
 import net.minecraft.world.entity.Entity;
 import net.minecraft.world.entity.LivingEntity;
 import net.minecraft.world.entity.player.Player;
+import net.neoforged.api.distmarker.Dist;
+import net.neoforged.fml.loading.FMLEnvironment;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -29,13 +29,14 @@ public class Ability {
     public final AbilityBuilder.ConditionManager conditionManager;
     public final List<AbilityClientProperties> clientProperties = new ArrayList<>();
     public int enabledTicks;
+    private boolean initialSyncDone = false;
 
     public Ability(LivingEntity entity, AbilityBuilder builder) {
         this.entity = entity;
         this.builder = builder;
         this.defineData();
         this.conditionManager = new AbilityBuilder.ConditionManager(this);
-        if (FabricLoader.getInstance().getEnvironmentType() == EnvType.CLIENT) {
+        if (FMLEnvironment.dist == Dist.CLIENT) {
             this.initializeClient(this.clientProperties::add);
         }
     }
@@ -48,12 +49,19 @@ public class Ability {
         if (accessor == ENABLED) {
             this.entity.refreshDimensions();
         }
+        // Синхронизируем только если это не первоначальная установка значений
+        if (this.initialSyncDone) {
+            this.syncToAll(this.entity);
+        }
     }
 
     public void initializeClient(Consumer<AbilityClientProperties> consumer) {
     }
 
     public void updateTick(LivingEntity entity) {
+        if (!this.initialSyncDone) {
+            this.initialSyncDone = true;
+        }
         if (!entity.getCommandSenderWorld().isClientSide) {
             if (entity instanceof Player) {
                 this.dataManager.set(ENABLED, this.conditionManager.test("enabling"));

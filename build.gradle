@@ -1,5 +1,5 @@
 plugins {
-	id 'fabric-loom' version '1.9-SNAPSHOT'
+	id 'net.neoforged.moddev' version '2.0.28-beta'
 	id 'maven-publish'
 }
 
@@ -10,69 +10,59 @@ base {
 	archivesName = project.archives_base_name
 }
 
-loom {
-    accessWidenerPath = file("src/main/resources/modulus.accesswidener")
-}
+neoForge {
+    version = project.neoforge_version
 
-fabricApi {
-	configureDataGeneration {
-		client = true
-	}
+    accessTransformers {
+        file('src/main/resources/META-INF/accesstransformer.cfg')
+    }
+
+    parchment {
+        minecraftVersion = project.minecraft_version
+        mappingsVersion = project.parchment_version
+    }
+
+    runs {
+        client {
+            client()
+        }
+        server {
+            server()
+        }
+    }
+
+    mods {
+        modulus {
+            sourceSet(sourceSets.main)
+        }
+    }
 }
 
 
 repositories {
-	exclusiveContent {
-		forRepository {
-			maven {
-				name = "Modrinth"
-				url = "https://api.modrinth.com/maven"
-			}
-		}
-		filter {
-			includeGroup "maven.modrinth"
-		}
-	}
-	maven {
-		name = "Ladysnake Mods"
-		url = 'https://maven.ladysnake.org/releases'
-	}
+	mavenCentral()
 	maven {
 		name = 'ParchmentMC'
 		url = 'https://maven.parchmentmc.org'
 	}
 	maven {
-		name = 'BlameJared Maven (CrT / Bookshelf)'
-		url = 'https://maven.blamejared.com'
+		name = "Modrinth"
+		url = "https://api.modrinth.com/maven"
 	}
 }
 
 dependencies {
-	// To change the versions see the gradle.properties file
-	minecraft "com.mojang:minecraft:${project.minecraft_version}"
-	mappings loom.layered() {
-		officialMojangMappings()
-		parchment("org.parchmentmc.data:parchment-${project.minecraft_version}:${project.parchment_version}@zip")
-	}
-	modImplementation "net.fabricmc:fabric-loader:${project.loader_version}"
+	implementation "net.neoforged:neoforge:${project.neoforge_version}"
 
-	// Fabric API. This is technically optional, but you probably want it anyway.
-	modImplementation "net.fabricmc.fabric-api:fabric-api:${project.fabric_version}+${project.minecraft_version}"
+	compileOnly(annotationProcessor("io.github.llamalad7:mixinextras-common:${mixin_extras_version}"))
+	implementation("io.github.llamalad7:mixinextras-neoforge:${mixin_extras_version}")
 
-    modImplementation(include("org.ladysnake.cardinal-components-api:cardinal-components-base:${project.cca_version}"))
-    modImplementation(include("org.ladysnake.cardinal-components-api:cardinal-components-entity:${project.cca_version}"))
-
-    compileOnly(annotationProcessor("io.github.llamalad7:mixinextras-common:${project.mixin_extras_version}"))
-	modImplementation(include("io.github.llamalad7:mixinextras-fabric:${project.mixin_extras_version}"))
-
-
-	modRuntimeOnly "maven.modrinth:modmenu:${project.mod_menu_version}"
 }
 
 processResources {
 	inputs.property "version", project.version
 
-	filesMatching("fabric.mod.json") {
+	filesMatching("META-INF/neoforge.mods.toml") {
 		expand "version": project.version
 	}
 }

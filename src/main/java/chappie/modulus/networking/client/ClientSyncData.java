@@ -4,7 +4,6 @@ import chappie.modulus.Modulus;
 import chappie.modulus.common.ability.base.Ability;
 import chappie.modulus.common.capability.PowerCap;
 import chappie.modulus.util.data.DataAccessor;
-import net.fabricmc.fabric.api.networking.v1.PacketSender;
 import net.minecraft.client.Minecraft;
 import net.minecraft.client.player.LocalPlayer;
 import net.minecraft.nbt.CompoundTag;
@@ -47,7 +46,7 @@ public class ClientSyncData implements CustomPacketPayload {
         buf.writeNbt(this.tag);
     }
 
-    public void handle(LocalPlayer localPlayer, PacketSender packetSender) {
+    public void handle(LocalPlayer localPlayer) {
         Entity entity = Minecraft.getInstance().level.getEntity(this.entityId);
         if (entity != null) {
             PowerCap cap = PowerCap.getCap(entity);

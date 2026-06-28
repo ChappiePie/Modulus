@@ -1,18 +1,14 @@
 package chappie.modulus.util.events;
 
 import chappie.modulus.util.model.ModelProperties;
-import net.fabricmc.fabric.api.event.Event;
-import net.fabricmc.fabric.api.event.EventFactory;
 import net.minecraft.client.model.HumanoidModel;
 import net.minecraft.world.entity.LivingEntity;
 
+import java.util.ArrayList;
+import java.util.List;
+
 public interface SetupAnimCallback {
-    Event<SetupAnimCallback> EVENT = EventFactory.createArrayBacked(SetupAnimCallback.class,
-            (listeners) -> (event) -> {
-                for (SetupAnimCallback listener : listeners) {
-                    listener.event(event);
-                }
-            });
+    EventInvoker EVENT = new EventInvoker();
 
     void event(SetupAnimEvent event);
 
@@ -22,5 +18,19 @@ public interface SetupAnimCallback {
      */
     record SetupAnimEvent(LivingEntity entity, HumanoidModel<? extends LivingEntity> model,
                           ModelProperties modelProperties) {
+    }
+
+    class EventInvoker {
+        private final List<SetupAnimCallback> listeners = new ArrayList<>();
+
+        public void register(SetupAnimCallback listener) {
+            listeners.add(listener);
+        }
+
+        public void invoke(SetupAnimEvent event) {
+            for (SetupAnimCallback listener : listeners) {
+                listener.event(event);
+            }
+        }
     }
 }

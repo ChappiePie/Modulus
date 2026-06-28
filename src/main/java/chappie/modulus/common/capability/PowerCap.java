@@ -1,44 +1,42 @@
 package chappie.modulus.common.capability;
 
-import chappie.modulus.Modulus;
 import chappie.modulus.client.ClientEvents;
 import chappie.modulus.common.ability.base.Ability;
 import chappie.modulus.common.ability.base.AbilityBuilder;
 import chappie.modulus.common.ability.base.Superpower;
+import chappie.modulus.networking.ModNetworking;
+import chappie.modulus.networking.client.ClientSyncPowerCap;
 import chappie.modulus.util.CommonUtil;
 import chappie.modulus.util.IHasTimer;
 import com.google.common.collect.Maps;
 import net.minecraft.core.HolderLookup;
 import net.minecraft.nbt.CompoundTag;
 import net.minecraft.resources.ResourceLocation;
-import net.minecraft.server.level.ServerPlayer;
 import net.minecraft.world.entity.LivingEntity;
 import net.minecraft.world.entity.player.Player;
+import net.neoforged.neoforge.common.util.INBTSerializable;
 import org.jetbrains.annotations.Nullable;
-import org.ladysnake.cca.api.v3.component.ComponentKey;
-import org.ladysnake.cca.api.v3.component.ComponentRegistryV3;
-import org.ladysnake.cca.api.v3.component.ComponentV3;
-import org.ladysnake.cca.api.v3.component.sync.AutoSyncedComponent;
-import org.ladysnake.cca.api.v3.component.tick.CommonTickingComponent;
 
 import java.util.Collection;
 import java.util.Map;
 import java.util.Objects;
 
-public class PowerCap implements AutoSyncedComponent, CommonTickingComponent, ComponentV3 {
+public class PowerCap implements INBTSerializable<CompoundTag> {
 
-    public static final ComponentKey<PowerCap> KEY = ComponentRegistryV3.INSTANCE.getOrCreate(Modulus.id("powers"), PowerCap.class);
     private final LivingEntity livingEntity;
     private final Map<AbilityBuilder, Ability> abilities = Maps.newLinkedHashMap();
     private Superpower superpower;
-    
+
     public PowerCap(LivingEntity livingEntity) {
         this.livingEntity = livingEntity;
     }
 
     @Nullable
     public static PowerCap getCap(Object provider) {
-        return KEY.maybeGet(provider).orElse(null);
+        if (provider instanceof LivingEntity entity) {
+            return entity.getData(ModAttachments.POWER_CAP);
+        }
+        return null;
     }
 
     public Superpower getSuperpower() {
@@ -71,20 +69,19 @@ public class PowerCap implements AutoSyncedComponent, CommonTickingComponent, Co
     }
 
     public void sync() {
-        KEY.sync(this.livingEntity);
+        this.livingEntity.setData(ModAttachments.POWER_CAP, this);
     }
 
     public void syncToAll() {
         this.sync();
-        for (LivingEntity livingEntity : this.livingEntity.getCommandSenderWorld().players()) {
-            if (livingEntity instanceof ServerPlayer player && this.livingEntity != livingEntity) {
-                KEY.sync(player);
-            }
+        if (!this.livingEntity.level().isClientSide()) {
+            ModNetworking.sendToTrackingEntityAndSelf(new ClientSyncPowerCap(this.serializeNBT(this.livingEntity.level().registryAccess())), this.livingEntity);
         }
     }
 
-    @Override
     public void tick() {
+        if (this.livingEntity == null) return;
+
         if (this.livingEntity.getCommandSenderWorld().isClientSide) {
             if (this.livingEntity instanceof Player player) {
                 ClientEvents.playerTick(player);
@@ -108,7 +105,22 @@ public class PowerCap implements AutoSyncedComponent, CommonTickingComponent, Co
     }
 
     @Override
-    public void readFromNbt(CompoundTag tag, HolderLookup.Provider registryLookup) {
+    public CompoundTag serializeNBT(HolderLookup.Provider provider) {
+        CompoundTag tag = new CompoundTag();
+        CompoundTag superpowerTag = new CompoundTag();
+        if (this.superpower != null) {
+            superpowerTag.putString("Id", Objects.requireNonNull(Superpower.REGISTRY.getKey(this.superpower)).toString());
+
+            CompoundTag abilities = new CompoundTag();
+            this.abilities.forEach((s, a) -> abilities.put(s.id, a.serializeNBT()));
+            superpowerTag.put("Abilities", abilities);
+        }
+        tag.put("Superpower", superpowerTag);
+        return tag;
+    }
+
+    @Override
+    public void deserializeNBT(HolderLookup.Provider provider, CompoundTag tag) {
         CompoundTag compoundTag = tag.getCompound("Superpower");
         this.abilities.clear();
         if (!compoundTag.getString("Id").isEmpty()) {
@@ -129,18 +141,5 @@ public class PowerCap implements AutoSyncedComponent, CommonTickingComponent, Co
         } else {
             this.superpower = null;
         }
-    }
-
-    @Override
-    public void writeToNbt(CompoundTag tag, HolderLookup.Provider registryLookup) {
-        CompoundTag superpower = new CompoundTag();
-        if (this.superpower != null) {
-            superpower.putString("Id", Objects.requireNonNull(Superpower.REGISTRY.getKey(this.superpower)).toString());
-
-            CompoundTag abilities = new CompoundTag();
-            this.abilities.forEach((s, a) -> abilities.put(s.id, a.serializeNBT()));
-            superpower.put("Abilities", abilities);
-        }
-        tag.put("Superpower", superpower);
     }
 }

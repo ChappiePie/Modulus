@@ -2,25 +2,17 @@ package chappie.modulus.util.events;
 
 import chappie.modulus.util.model.ModelProperties;
 import com.mojang.blaze3d.vertex.PoseStack;
-import net.fabricmc.fabric.api.event.Event;
-import net.fabricmc.fabric.api.event.EventFactory;
 import net.minecraft.client.model.EntityModel;
 import net.minecraft.client.renderer.MultiBufferSource;
 import net.minecraft.client.renderer.RenderType;
 import net.minecraft.client.renderer.entity.LivingEntityRenderer;
 import net.minecraft.world.entity.LivingEntity;
 
+import java.util.ArrayList;
+import java.util.List;
+
 public interface RendererChangeCallback {
-    Event<RendererChangeCallback> EVENT = EventFactory.createArrayBacked(RendererChangeCallback.class,
-            (listeners) -> (event) -> {
-                boolean canceled = false;
-                for (RendererChangeCallback listener : listeners) {
-                    if (listener.event(event)) {
-                        canceled = true;
-                    }
-                }
-                return canceled;
-            });
+    EventInvoker EVENT = new EventInvoker();
 
     boolean event(RendererChangeEvent event);
 
@@ -107,6 +99,24 @@ public interface RendererChangeCallback {
 
         public int alpha() {
             return alpha;
+        }
+    }
+
+    class EventInvoker {
+        private final List<RendererChangeCallback> listeners = new ArrayList<>();
+
+        public void register(RendererChangeCallback listener) {
+            listeners.add(listener);
+        }
+
+        public boolean invoke(RendererChangeEvent event) {
+            boolean canceled = false;
+            for (RendererChangeCallback listener : listeners) {
+                if (listener.event(event)) {
+                    canceled = true;
+                }
+            }
+            return canceled;
         }
     }
 }

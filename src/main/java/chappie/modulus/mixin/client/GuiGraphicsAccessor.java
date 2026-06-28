@@ -14,5 +14,5 @@ public interface GuiGraphicsAccessor {
     GuiGraphics.ScissorStack getScissorStack();
 
     @Invoker("applyScissor")
-    void applyScissor(@Nullable ScreenRectangle rectangle);
+    void modulus$applyScissor(@Nullable ScreenRectangle rectangle);
 }
