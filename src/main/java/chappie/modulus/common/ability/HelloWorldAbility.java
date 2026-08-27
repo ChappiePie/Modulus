@@ -23,7 +23,7 @@ public class HelloWorldAbility extends Ability {
                 PlayerList playerlist = player.level().getServer().getPlayerList();
                 playerlist.broadcastChatMessage(PlayerChatMessage.unsigned(player.getUUID(), "Hello World,  %s!".formatted(this.builder.id)), player, ChatType.bind(ChatType.SAY_COMMAND, player));
             } else if (entity instanceof Player player) {
-                player.displayClientMessage(Component.literal("Hello Client World,  %s!".formatted(this.builder.id)), false);
+                player.sendSystemMessage(Component.literal("Hello Client World,  %s!".formatted(this.builder.id)));
             }
         }
     }

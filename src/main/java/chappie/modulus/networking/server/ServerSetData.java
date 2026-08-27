@@ -10,13 +10,13 @@ import net.minecraft.nbt.CompoundTag;
 import net.minecraft.network.FriendlyByteBuf;
 import net.minecraft.network.codec.StreamCodec;
 import net.minecraft.network.protocol.common.custom.CustomPacketPayload;
-import net.minecraft.resources.ResourceLocation;
+import net.minecraft.resources.Identifier;
 import net.minecraft.server.level.ServerPlayer;
 
 public record ServerSetData(String id, String abilityName, CompoundTag tag) implements CustomPacketPayload {
-    public static final ResourceLocation PACKET_ID = Modulus.id("set_data");
+    public static final Identifier PACKET_ID = Modulus.id("set_data");
     public static final Type<ServerSetData> PACKET = new Type<>(PACKET_ID);
-    public static StreamCodec<FriendlyByteBuf, ServerSetData> CODEC = CustomPacketPayload.codec(ServerSetData::write, ServerSetData::new);
+    public static StreamCodec<FriendlyByteBuf, ServerSetData> CODEC = StreamCodec.ofMember(ServerSetData::write, ServerSetData::new);
 
     public ServerSetData(FriendlyByteBuf buf) {
         this(buf.readUtf(), buf.readUtf(), buf.readNbt());
@@ -35,6 +35,11 @@ public record ServerSetData(String id, String abilityName, CompoundTag tag) impl
             if (ability != null) {
                 var accessor = ability.dataManager.getAccessorById(this.id);
                 if (accessor != null) {
+                    if (!ability.dataManager.isClientWritable(this.id)) {
+                        Modulus.LOGGER.warn("[Modulus] Player {} tried to set non-client-writable data '{}' on ability '{}'",
+                                player.getName().getString(), this.id, this.abilityName);
+                        return;
+                    }
                     var value = ability.dataManager.getDataValue(accessor);
                     value.deserialize(this.tag, true);
                     ability.onDataUpdated(accessor);

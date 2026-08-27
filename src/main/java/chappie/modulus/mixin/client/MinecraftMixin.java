@@ -5,7 +5,7 @@ import chappie.modulus.common.ability.base.Ability;
 import chappie.modulus.common.ability.base.condition.Condition;
 import chappie.modulus.common.ability.base.condition.KeyCondition;
 import chappie.modulus.networking.ModNetworking;
-import chappie.modulus.networking.server.ServerKeyInput;
+import chappie.modulus.networking.server.ServerKeysInput;
 import chappie.modulus.util.CommonUtil;
 import chappie.modulus.util.KeyMap;
 import com.llamalad7.mixinextras.injector.v2.WrapWithCondition;
@@ -48,7 +48,7 @@ public class MinecraftMixin {
                         if (ability.keys.notEquals(ClientEvents.KEYS)) {
                             ability.keys.copyFrom(ClientEvents.KEYS);
                             ability.conditionManager.conditions().forEach(Condition::keyEvent);
-                            ModNetworking.sendToServer(new ServerKeyInput(ability.builder.id, ClientEvents.KEYS));
+                            ModNetworking.sendToServer(new ServerKeysInput(ClientEvents.KEYS));
                         }
                         if (ability.conditionManager.test(e.getKey())) {
                             cir.setReturnValue(false);
@@ -79,7 +79,7 @@ public class MinecraftMixin {
                         if (ability.keys.notEquals(ClientEvents.KEYS)) {
                             ability.keys.copyFrom(ClientEvents.KEYS);
                             ability.conditionManager.conditions().forEach(Condition::keyEvent);
-                            ModNetworking.sendToServer(new ServerKeyInput(ability.builder.id, ClientEvents.KEYS));
+                            ModNetworking.sendToServer(new ServerKeysInput(ClientEvents.KEYS));
                         }
                         if (ability.conditionManager.test(e.getKey())) {
                             this.modulus$canceledRightClick = true;

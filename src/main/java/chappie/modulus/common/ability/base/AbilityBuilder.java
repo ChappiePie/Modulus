@@ -10,10 +10,7 @@ import net.minecraft.nbt.ListTag;
 import net.minecraft.network.chat.Component;
 import net.minecraft.world.entity.LivingEntity;
 
-import java.util.HashMap;
-import java.util.List;
-import java.util.Map;
-import java.util.Optional;
+import java.util.*;
 import java.util.function.Consumer;
 import java.util.function.Function;
 import java.util.stream.Collectors;
@@ -26,6 +23,8 @@ public class AbilityBuilder {
     Component displayName = null;
     boolean hidden;
     List<Consumer<Ability>> additionalData = Lists.newArrayList();
+    private java.util.function.Function<Ability, chappie.modulus.client.hud.AbilityHudProperties> hudFactory;
+    private boolean frozen;
 
     AbilityBuilder(String id, AbilityType type) {
         this.id = id;
@@ -36,27 +35,77 @@ public class AbilityBuilder {
         return new AbilityBuilder(name, type);
     }
 
+    private void checkNotFrozen() {
+        if (frozen) {
+            throw new IllegalStateException("[Modulus] AbilityBuilder '%s' is frozen — cannot modify after build()".formatted(id));
+        }
+    }
+
     public AbilityBuilder hide() {
+        checkNotFrozen();
         this.hidden = true;
         return this;
     }
 
     public AbilityBuilder hidden(boolean hidden) {
+        checkNotFrozen();
         this.hidden = hidden;
         return this;
     }
 
     public <T> AbilityBuilder change(DataAccessor<T> accessor, T value) {
+        checkNotFrozen();
         this.additionalData.add(a -> a.dataManager.set(accessor, value));
         return this;
     }
 
     public AbilityBuilder additionalData(Consumer<Ability> abilityConsumer) {
+        checkNotFrozen();
         this.additionalData.add(abilityConsumer);
         return this;
     }
 
+    /**
+     * Configures HUD properties for this ability using a factory that receives the Ability instance.
+     * This allows dynamic properties (backgroundColor, keyType) that depend on ability state.
+     *
+     * <pre>{@code
+     * .hud(a -> new AbilityHudProperties()
+     *     .texture(MY_TEXTURE).uv(32, 0)
+     *     .backgroundColor(() -> a.isEnabled() ? 0xFF0000 : -1)
+     *     .autoKey())
+     * }</pre>
+     */
+    public AbilityBuilder hud(java.util.function.Function<Ability, chappie.modulus.client.hud.AbilityHudProperties> factory) {
+        checkNotFrozen();
+        this.hudFactory = factory;
+        return this;
+    }
+
+    /**
+     * Simple overload for static HUD properties (no ability state needed).
+     *
+     * <pre>{@code
+     * .hud(hud -> hud.texture(MY_TEXTURE).uv(32, 0).autoKey())
+     * }</pre>
+     */
+    public AbilityBuilder hudStatic(java.util.function.Consumer<chappie.modulus.client.hud.AbilityHudProperties> config) {
+        checkNotFrozen();
+        this.hudFactory = a -> {
+            chappie.modulus.client.hud.AbilityHudProperties props = new chappie.modulus.client.hud.AbilityHudProperties();
+            config.accept(props);
+            return props;
+        };
+        return this;
+    }
+
+    @org.jetbrains.annotations.Nullable
+    public java.util.function.Function<Ability, chappie.modulus.client.hud.AbilityHudProperties> hudFactory() {
+        return this.hudFactory;
+    }
+
     public AbilityBuilder condition(Function<Ability, Condition> condition, String... methods) {
+        checkNotFrozen();
         for (String method : methods) {
             List<Function<Ability, Condition>> conditions = this.funcConditions.containsKey(method) ? this.funcConditions.get(method) : Lists.newArrayList();
             conditions.add(condition);
@@ -66,6 +115,7 @@ public class AbilityBuilder {
     }
 
     public Ability build(LivingEntity livingEntity) {
+        this.frozen = true;
         return this.type.create(livingEntity, this);
     }
 
@@ -77,13 +127,15 @@ public class AbilityBuilder {
 
         private final HashMap<String, List<Condition>> conditions = Maps.newHashMap();
         private final Ability ability;
+        private List<Condition> cachedFlatList;
 
         public ConditionManager(Ability ability) {
             this.ability = ability;
             for (Map.Entry<String, List<Function<Ability, Condition>>> e : ability.builder.funcConditions.entrySet()) {
                 this.conditions.put(e.getKey(), e.getValue().stream().map(func -> func.apply(ability)).collect(Collectors.toList()));
             }
-            for (Condition condition : this.conditions()) {
+            this.rebuildCache();
+            for (Condition condition : this.cachedFlatList) {
                 condition.init();
             }
         }
@@ -100,7 +152,7 @@ public class AbilityBuilder {
             }
             // to disable all removed abilities
             PowerCap cap = PowerCap.getCap(this.ability.entity);
-            if (cap != null && (cap.getSuperpower() == null || !cap.getSuperpower().getBuilders().contains(this.ability.builder))) {
+            if (cap != null && (cap.getSuperpower() == null || !cap.getSuperpower().hasBuilder(this.ability.builder))) {
                 return false;
             }
             return b;
@@ -111,11 +163,15 @@ public class AbilityBuilder {
         }
 
         public List<Condition> conditions() {
+            return cachedFlatList;
+        }
+
+        private void rebuildCache() {
             List<Condition> list = Lists.newArrayList();
             for (List<Condition> value : this.conditions.values()) {
                 list.addAll(value);
             }
-            return list;
+            this.cachedFlatList = Collections.unmodifiableList(list);
         }
 
         public HashMap<String, List<Condition>> methodConditions() {

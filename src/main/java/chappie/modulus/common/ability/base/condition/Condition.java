@@ -36,7 +36,7 @@ public class Condition {
     }
 
     public boolean get() {
-        if (this.ability.entity instanceof Player player && player.isCreative() && this.creative) {
+        if (this.ability.getEntity() instanceof Player player && player.isCreative() && this.creative) {
             return true;
         }
         return this.invert != this.predicate.test(this);
@@ -47,5 +47,54 @@ public class Condition {
     }
 
     public void deserializeNBT(CompoundTag nbt) {
+    }
+
+    // ===== Composition =====
+
+    /**
+     * Creates a composite condition: this AND other.
+     */
+    public CompositeCondition and(Condition other) {
+        return new CompositeCondition(this.ability, java.util.List.of(this, other), CompositeCondition.Mode.AND);
+    }
+
+    /**
+     * Creates a composite condition: this OR other.
+     */
+    public CompositeCondition or(Condition other) {
+        return new CompositeCondition(this.ability, java.util.List.of(this, other), CompositeCondition.Mode.OR);
+    }
+
+    /**
+     * Returns a new condition that inverts this one's result (without mutating the original).
+     */
+    public Condition not() {
+        Condition self = this;
+        return new Condition(this.ability, c -> !self.get()) {
+            @Override
+            public void init() {
+                self.init();
+            }
+
+            @Override
+            public void update() {
+                self.update();
+            }
+
+            @Override
+            public void keyEvent() {
+                self.keyEvent();
+            }
+
+            @Override
+            public CompoundTag serializeNBT() {
+                return self.serializeNBT();
+            }
+
+            @Override
+            public void deserializeNBT(CompoundTag nbt) {
+                self.deserializeNBT(nbt);
+            }
+        };
     }
 }

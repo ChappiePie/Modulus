@@ -14,7 +14,7 @@ public class WindowMixin {
 
     @ModifyVariable(method = "calculateScale(IZ)I", at = @At("HEAD"), ordinal = 0, argsOnly = true)
     private int injected(int pGuiScale) {
-        Screen screen = Minecraft.getInstance().screen;
+        Screen screen = Minecraft.getInstance().gui.screen();
         if (screen instanceof IOneScaleScreen scl && screen instanceof IScreenExtender ex && !ex.modulus$isRemoved())
             return scl.scale(pGuiScale);
         return pGuiScale;

@@ -9,10 +9,10 @@ import com.google.gson.JsonObject;
 import net.fabricmc.loader.api.FabricLoader;
 import net.fabricmc.loader.api.ModContainer;
 import net.fabricmc.loader.api.metadata.ModMetadata;
-import net.minecraft.Util;
 import net.minecraft.client.Minecraft;
 import net.minecraft.client.gui.Font;
-import net.minecraft.client.gui.GuiGraphics;
+import net.minecraft.client.gui.GuiGraphicsExtractor;
+import net.minecraft.client.gui.TextAlignment;
 import net.minecraft.client.gui.components.AbstractWidget;
 import net.minecraft.client.gui.components.Button;
 import net.minecraft.client.gui.components.ContainerObjectSelectionList;
@@ -22,9 +22,10 @@ import net.minecraft.client.gui.narration.NarratableEntry;
 import net.minecraft.client.input.MouseButtonEvent;
 import net.minecraft.client.renderer.RenderPipelines;
 import net.minecraft.network.chat.Component;
-import net.minecraft.resources.ResourceLocation;
+import net.minecraft.resources.Identifier;
 import net.minecraft.util.ARGB;
 import net.minecraft.util.Mth;
+import net.minecraft.util.Util;
 import net.minecraft.world.phys.Vec2;
 import org.jetbrains.annotations.NotNull;
 import org.joml.Matrix3x2fStack;
@@ -43,12 +44,12 @@ public class ChappModListWidget extends ContainerObjectSelectionList<ChappModLis
 
     private final int listWidth;
 
-    private final TextRenderable DEFAULT_TEXT = (entry, font, x, guiGraphics, entryIdx, rowLeft, contentTop, rowRight, entryHeight, mouseX, mouseY, isHovered, partialTick) -> {
+    private final TextRenderable DEFAULT_TEXT = (entry, font, x, GuiGraphicsExtractor, entryIdx, rowLeft, contentTop, rowRight, entryHeight, mouseX, mouseY, isHovered, partialTick) -> {
         boolean b = entryIdx % 2 == 0;
         int initX = x.get();
         x.set(initX + (b ? rowLeft + 128 : rowLeft - 12) + 6);
 
-        Matrix3x2fStack poseStack = guiGraphics.pose();
+        Matrix3x2fStack poseStack = GuiGraphicsExtractor.pose();
         List<Component> list = entry.modInfo.modInfo() == null ? entry.modInfo.text : Component.literal(entry.modInfo.modInfo().getDescription()).toFlatList();
         MultiLineLabel label = MultiLineLabel.create(font, rowRight - rowLeft - 160, 7, list.toArray(new Component[0]));
 
@@ -57,17 +58,18 @@ public class ChappModListWidget extends ContainerObjectSelectionList<ChappModLis
         float f = 2.5F;
         poseStack.scale(f, f);
         poseStack.translate(b ? (x.get() + 5) / f : (x.get() + 10 + label.getWidth() - font.width(modName) * f) / f, (contentTop + 5) / f);
-        guiGraphics.drawString(font, modName, 0, 0, -1, true);
+        GuiGraphicsExtractor.text(font, modName, 0, 0, -1, true);
         poseStack.popMatrix();
 
         poseStack.pushMatrix();
         int y = contentTop + 27;
-        guiGraphics.fill(x.get() + 4, y, x.get() + 10 + label.getWidth(), y + 2, -1);
+        GuiGraphicsExtractor.fill(x.get() + 4, y, x.get() + 10 + label.getWidth(), y + 2, -1);
         y += 4;
-        label.render(guiGraphics, MultiLineLabel.Align.LEFT, x.get() + 8, y, font.lineHeight, false, -1);
+        // Use GuiGraphicsExtractor's text renderer for proper label rendering
+        label.visitLines(TextAlignment.LEFT, x.get() + 8, y, font.lineHeight, GuiGraphicsExtractor.textRenderer());
         int newX = b ? x.get() + 4 : x.get() + 10 + label.getWidth();
         int yMax = y + font.lineHeight * label.getLineCount() + 3;
-        guiGraphics.fill(newX, y - 4, newX + 2, yMax, -1);
+        GuiGraphicsExtractor.fill(newX, y - 4, newX + 2, yMax, -1);
         poseStack.popMatrix();
         x.set(initX + (b ? rowLeft : rowRight - 128));
     };
@@ -84,7 +86,7 @@ public class ChappModListWidget extends ContainerObjectSelectionList<ChappModLis
 
 
     @Override
-    protected void renderListBackground(GuiGraphics guiGraphics) {
+    protected void extractListBackground(GuiGraphicsExtractor GuiGraphicsExtractor) {
     }
 
 
@@ -115,16 +117,16 @@ public class ChappModListWidget extends ContainerObjectSelectionList<ChappModLis
     }
 
     @Override
-    protected void renderItem(GuiGraphics guiGraphics, int mouseX, int mouseY, float partialTick, ChappEntry item) {
+    protected void extractItem(GuiGraphicsExtractor GuiGraphicsExtractor, int mouseX, int mouseY, float partialTick, ChappEntry item) {
         int colorIn = ARGB.color(150, 0, 0, 0);
         int colorOut = ARGB.color(50, 255, 255, 255);
         int i = item.getX();
         int j = item.getY();
         int k = i + item.getWidth();
         int l = j + item.getHeight();
-        guiGraphics.fill(i, j, k, l - 5, colorOut);
-        guiGraphics.fill(i + 1, j + 1, k - 1, l - 6, colorIn);
-        super.renderItem(guiGraphics, mouseX, mouseY, partialTick, item);
+        GuiGraphicsExtractor.fill(i, j, k, l - 5, colorOut);
+        GuiGraphicsExtractor.fill(i + 1, j + 1, k - 1, l - 6, colorIn);
+        super.extractItem(GuiGraphicsExtractor, mouseX, mouseY, partialTick, item);
     }
 
     public void tick() {
@@ -137,7 +139,7 @@ public class ChappModListWidget extends ContainerObjectSelectionList<ChappModLis
     @FunctionalInterface
     public interface TextRenderable {
 
-        void render(ChappEntry entry, Font font, AtomicInteger x, GuiGraphics guiGraphics, int entryIdx, int rowLeft, int contentTop, int rowRight, int entryHeight, int mouseX, int mouseY, boolean isHovered, float partialTick);
+        void render(ChappEntry entry, Font font, AtomicInteger x, GuiGraphicsExtractor GuiGraphicsExtractor, int entryIdx, int rowLeft, int contentTop, int rowRight, int entryHeight, int mouseX, int mouseY, boolean isHovered, float partialTick);
     }
 
 
@@ -155,15 +157,15 @@ public class ChappModListWidget extends ContainerObjectSelectionList<ChappModLis
         }
 
         @Override
-        public void renderWidget(GuiGraphics guiGraphics, int pMouseX, int pMouseY, float pPartialTick) {
-            Matrix3x2fStack poseStack = guiGraphics.pose();
+        public void extractContents(GuiGraphicsExtractor GuiGraphicsExtractor, int pMouseX, int pMouseY, float pPartialTick) {
+            Matrix3x2fStack poseStack = GuiGraphicsExtractor.pose();
 
             poseStack.pushMatrix();
             float scale = 0.75F;
             float invScale = 1.0F / scale;
             poseStack.scale(scale, scale);
             poseStack.translate(this.getX() * invScale, this.getY() * invScale);
-            guiGraphics.blitSprite(
+            GuiGraphicsExtractor.blitSprite(
                     RenderPipelines.GUI_TEXTURED,
                     ModulusMainScreen.SPRITES.get(this.active, this.isHoveredOrFocused()),
                     0, 0,
@@ -179,9 +181,16 @@ public class ChappModListWidget extends ContainerObjectSelectionList<ChappModLis
             float invTextScale = 1.0F / textScale;
             poseStack.scale(textScale, textScale);
             poseStack.translate(this.getX() * invTextScale, this.getY() * invTextScale);
-            guiGraphics.enableScissor(6, 5, (int) (this.oldSize.x * invScale + 8), (int) (this.oldSize.y + 3));
-            renderScrollingString(guiGraphics, Minecraft.getInstance().font, this.getMessage(), 6, -10, (int) (this.oldSize.x * invScale + 6), (int) (this.oldSize.y * invTextScale + 2), 10526880 | Mth.ceil(1 * 255.0F) << 24);
-            guiGraphics.disableScissor();
+            int textColor = 10526880 | Mth.ceil(this.alpha * 255.0F) << 24;
+            Font font = Minecraft.getInstance().font;
+            int textWidth = font.width(this.getMessage());
+            // The button sprite is rendered at scale 0.75, so visible size = oldSize * 0.75
+            // In text space (scale 0.5), the button occupies oldSize * 0.75 / 0.5 = oldSize * 1.5
+            float visibleWidthInTextSpace = this.oldSize.x * scale / textScale;
+            float visibleHeightInTextSpace = this.oldSize.y * scale / textScale;
+            int textX = (int) ((visibleWidthInTextSpace - textWidth) / 2);
+            int textY = (int) ((visibleHeightInTextSpace - font.lineHeight) / 2);
+            GuiGraphicsExtractor.text(font, this.getMessage(), textX, textY, textColor);
 
             poseStack.popMatrix();
 
@@ -199,7 +208,7 @@ public class ChappModListWidget extends ContainerObjectSelectionList<ChappModLis
     }
 
 
-    public record ChappModInfo(String modId, String version, String url, List<Component> text, ResourceLocation texture,
+    public record ChappModInfo(String modId, String version, String url, List<Component> text, Identifier texture,
                                TextRenderable textRenderable) {
 
         public ChappModInfo(String modId, String version, String url, List<Component> text, String textureId, TextRenderable textRenderable) {
@@ -246,7 +255,7 @@ public class ChappModListWidget extends ContainerObjectSelectionList<ChappModLis
 
 
         @Override
-        public void renderContent(GuiGraphics guiGraphics, int mouseX, int mouseY, boolean isHovered, float partialTick) {
+        public void extractContent(GuiGraphicsExtractor GuiGraphicsExtractor, int mouseX, int mouseY, boolean isHovered, float partialTick) {
             Font font = Minecraft.getInstance().font;
             AtomicInteger x = new AtomicInteger(10);
             int contentTop = this.getContentY();
@@ -259,7 +268,7 @@ public class ChappModListWidget extends ContainerObjectSelectionList<ChappModLis
                     this,
                     font,
                     x,
-                    guiGraphics,
+                    GuiGraphicsExtractor,
                     entryIdx,
                     rowLeft,
                     contentTop,
@@ -277,8 +286,8 @@ public class ChappModListWidget extends ContainerObjectSelectionList<ChappModLis
                 int minX = x.get() - 4, minY = y - 4;
                 int maxX = x.get() + 128 + 4, maxY = y + 67 + 7;
                 boolean isHoveredMod = mouseX > minX && mouseX < maxX && mouseY > minY && mouseY < maxY;
-                guiGraphics.fill(minX, minY, maxX, maxY, mainColor);
-                guiGraphics.fill(minX, maxY, maxX, maxY + 15, offColor);
+                GuiGraphicsExtractor.fill(minX, minY, maxX, maxY, mainColor);
+                GuiGraphicsExtractor.fill(minX, maxY, maxX, maxY + 15, offColor);
 
                 this.titleTimer.predicate = () -> isHoveredMod;
                 this.titleTimer.update();
@@ -292,13 +301,13 @@ public class ChappModListWidget extends ContainerObjectSelectionList<ChappModLis
                     ht = 0.75F + this.highlightTimer.value(partialTick) * 0.25F;
                 }
 
-                ClientUtil.blit(guiGraphics, this.modInfo.texture, x.get() + 6 * f, y + 2 + 3 * f, 0, 0, 128 / (1.0F + f / 10F), 64 / (1.0F + f / 10F), 2048, 1024, 2048, 1024, ARGB.colorFromFloat(1, ht, ht, ht));
+                ClientUtil.blit(GuiGraphicsExtractor, this.modInfo.texture, x.get() + 6 * f, y + 2 + 3 * f, 0, 0, 128 / (1.0F + f / 10F), 64 / (1.0F + f / 10F), 2048, 1024, 2048, 1024, ARGB.colorFromFloat(1, ht, ht, ht));
             }
             for (Map.Entry<AbstractWidget, BiFunction<Integer, Integer, Vec2>> e : this.children.entrySet()) {
                 Vec2 vec2 = e.getValue().apply(x.get(), y);
                 e.getKey().setX((int) vec2.x);
                 e.getKey().setY((int) vec2.y);
-                e.getKey().render(guiGraphics, mouseX, mouseY, partialTick);
+                e.getKey().extractRenderState(GuiGraphicsExtractor, mouseX, mouseY, partialTick);
             }
         }
 

@@ -4,14 +4,14 @@ import chappie.modulus.Modulus;
 import chappie.modulus.client.gui.ModulusMainScreen;
 import chappie.modulus.common.ability.base.Ability;
 import chappie.modulus.networking.ModNetworking;
-import chappie.modulus.networking.server.ServerKeyInput;
+import chappie.modulus.networking.server.ServerKeysInput;
 import chappie.modulus.util.CommonUtil;
-import chappie.modulus.util.IHasTimer;
 import chappie.modulus.util.KeyMap;
 import com.mojang.blaze3d.platform.InputConstants;
 import net.fabricmc.fabric.api.client.screen.v1.Screens;
 import net.minecraft.client.KeyMapping;
 import net.minecraft.client.Minecraft;
+import net.minecraft.client.gui.components.AbstractWidget;
 import net.minecraft.client.gui.components.Button;
 import net.minecraft.client.gui.components.SpriteIconButton;
 import net.minecraft.client.gui.components.events.GuiEventListener;
@@ -35,9 +35,10 @@ public class ClientEvents {
 
     public static void onGuiInit(Minecraft client, Screen screen, int scaledWidth, int scaledHeight) {
         if (screen instanceof TitleScreen || screen instanceof PauseScreen) {
-            int x = screen.width;
-            int y = screen.height / 4 + 96;
+            int x = 0;
+            int y = 0;
             boolean b = true;
+
             if (screen instanceof PauseScreen) {
                 boolean b1 = false;
                 for (GuiEventListener guiEventListener : screen.children()) {
@@ -47,18 +48,42 @@ public class ClientEvents {
                     }
                 }
                 b = b1;
-            }
-            for (GuiEventListener guiEventListener : screen.children()) {
-                if (guiEventListener instanceof Button button) {
-                    if (button.getX() < x) {
-                        x = button.getX();
+                // Find leftmost button X for pause screen
+                x = screen.width;
+                for (GuiEventListener guiEventListener : screen.children()) {
+                    if (guiEventListener instanceof Button button) {
+                        if (button.getX() < x) {
+                            x = button.getX();
+                        }
                     }
+                }
+                x -= 24;
+            } else {
+                // TitleScreen: position next to the small bottom-row buttons (accessibility, language)
+                // These are typically 20x20 buttons at the bottom of the screen
+                int maxX = 0;
+                int bottomY = 0;
+                for (GuiEventListener guiEventListener : screen.children()) {
+                    if (guiEventListener instanceof AbstractWidget widget && widget.getWidth() == 20 && widget.getHeight() == 20) {
+                        if (widget.getX() + widget.getWidth() > maxX) {
+                            maxX = widget.getX() + widget.getWidth();
+                            bottomY = widget.getY();
+                        }
+                    }
+                }
+                if (maxX > 0) {
+                    x = maxX + 4; // 4px gap after the last small button
+                    y = bottomY;
+                } else {
+                    // Fallback: bottom-left area
+                    x = screen.width / 2 + 104;
+                    y = screen.height - 40;
                 }
             }
 
             if (b) {
-                Screens.getButtons(screen).add(ClientEvents.modulusButton(x - (screen instanceof PauseScreen ? 24 : 0), y, (button) ->
-                        client.setScreen(new ModulusMainScreen(screen))));
+                Screens.getWidgets(screen).add(ClientEvents.modulusButton(x, y, (button) ->
+                        client.gui.setScreen(new ModulusMainScreen(screen))));
             }
         }
     }
@@ -92,11 +117,9 @@ public class ClientEvents {
         }
 
         for (Ability ability : CommonUtil.getAbilities(player)) {
-            if (ability instanceof IHasTimer iHasTimer) {
-                iHasTimer.timers().forEach(IHasTimer.Timer::update);
-            }
             if (ability.keys.notEquals(KEYS)) {
-                ModNetworking.sendToServer(new ServerKeyInput(ability.builder.id, KEYS));
+                ModNetworking.sendToServer(new ServerKeysInput(KEYS));
+                break;
             }
         }
     }

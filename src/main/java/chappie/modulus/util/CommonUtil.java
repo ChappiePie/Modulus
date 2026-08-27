@@ -1,5 +1,6 @@
 package chappie.modulus.util;
 
+import chappie.modulus.common.ModConstants;
 import chappie.modulus.common.ability.base.Ability;
 import chappie.modulus.common.capability.PowerCap;
 import com.google.gson.JsonArray;
@@ -7,21 +8,19 @@ import com.google.gson.JsonElement;
 import com.google.gson.JsonObject;
 import com.google.gson.JsonParser;
 import com.mojang.serialization.JsonOps;
-import net.minecraft.Util;
-import net.minecraft.client.player.AbstractClientPlayer;
 import net.minecraft.core.Holder;
 import net.minecraft.core.particles.ParticleOptions;
 import net.minecraft.network.chat.Component;
 import net.minecraft.network.chat.ComponentSerialization;
 import net.minecraft.network.protocol.game.ClientboundLevelParticlesPacket;
-import net.minecraft.resources.ResourceLocation;
+import net.minecraft.resources.Identifier;
 import net.minecraft.server.level.ServerPlayer;
+import net.minecraft.util.Util;
 import net.minecraft.world.entity.Entity;
 import net.minecraft.world.entity.LivingEntity;
 import net.minecraft.world.entity.ai.attributes.Attribute;
 import net.minecraft.world.entity.ai.attributes.AttributeInstance;
 import net.minecraft.world.entity.ai.attributes.AttributeModifier;
-import net.minecraft.world.entity.player.PlayerModelType;
 import net.minecraft.world.entity.projectile.ProjectileUtil;
 import net.minecraft.world.level.Level;
 import net.minecraft.world.phys.AABB;
@@ -30,7 +29,6 @@ import net.minecraft.world.phys.HitResult;
 import net.minecraft.world.phys.Vec3;
 
 import java.io.BufferedReader;
-import java.io.InputStream;
 import java.io.InputStreamReader;
 import java.net.URL;
 import java.util.ArrayList;
@@ -39,57 +37,36 @@ import java.util.List;
 import java.util.concurrent.CompletableFuture;
 import java.util.concurrent.atomic.AtomicReference;
 import java.util.function.Supplier;
-import java.util.stream.Collectors;
 
 public class CommonUtil {
 
-    public static List<Ability> getAbilities(Entity entity) {
-        List<Ability> list = new ArrayList<>();
+    public static Collection<Ability> getAbilities(Entity entity) {
         PowerCap cap = PowerCap.getCap(entity);
-        if (cap == null) return list;
-        if (entity instanceof ServerPlayer player && player.gameMode != null) {
-            if (!player.isSpectator()) {
-                list.addAll(cap.getAbilities());
-            }
-        } else {
-            list.addAll(cap.getAbilities());
+        if (cap == null) return List.of();
+
+        if (entity instanceof ServerPlayer player && player.isSpectator()) {
+            return List.of();
         }
-        return list;
+
+        return cap.getAbilities();
     }
 
-    public static <T> List<T> listOfType(Class<T> type, Collection<?> list) {
-        return list.stream().filter(x -> type.isAssignableFrom(x.getClass())).map(type::cast).collect(Collectors.toList());
-    }
-
-    public static boolean smallArms(Entity entity) {
-        if (entity instanceof AbstractClientPlayer) {
-            return ((AbstractClientPlayer) entity).getSkin().model().equals(PlayerModelType.SLIM);
+    public static <T extends Ability> Collection<T> getAbilitiesByType(Class<T> type, Entity entity) {
+        PowerCap cap = PowerCap.getCap(entity);
+        if (cap == null) return List.of();
+        if (entity instanceof ServerPlayer player && player.gameMode != null && player.isSpectator()) {
+            return List.of();
         }
-        return false;
+        return cap.getAbilitiesByType(type);
     }
 
     public static void spawnParticleForAll(Level world, ParticleOptions particleIn, boolean longDistanceIn, Vec3 posVc3d, Vec3 offsetVc3d, float speedIn, int countIn) {
-        for (ServerPlayer player : world.getEntitiesOfClass(ServerPlayer.class, CommonUtil.boxWithRange(posVc3d, 20))) {
+        for (ServerPlayer player : world.getEntitiesOfClass(ServerPlayer.class, CommonUtil.boxWithRange(posVc3d, ModConstants.PARTICLE_RENDER_DISTANCE))) {
             player.connection.send(new ClientboundLevelParticlesPacket(particleIn, longDistanceIn, true, posVc3d.x, posVc3d.y, posVc3d.z, (float) offsetVc3d.x, (float) offsetVc3d.y, (float) offsetVc3d.z, speedIn, countIn));
         }
     }
 
-    public static void setAttribute(LivingEntity entity, ResourceLocation name, Holder<Attribute> attribute, double amount, AttributeModifier.Operation operation) {
-        AttributeInstance instance = entity.getAttribute(attribute);
-        if (instance == null || entity.level().isClientSide()) {
-            return;
-        }
-
-        AttributeModifier modifier = instance.getModifier(name);
-        if (modifier != null && (amount == 0 || (modifier.amount() != amount || modifier.operation() != operation))) {
-            instance.removeModifier(name);
-            return;
-        }
-
-        if (modifier == null && amount != 0) {
-            instance.addTransientModifier(new AttributeModifier(name, amount, operation));
-        }
-    }
+    private static final int HTTP_TIMEOUT_MS = 8000;
 
     public static AABB boxWithRange(Vec3 vec3, double range) {
         return new AABB(vec3, vec3).inflate(range);
@@ -114,18 +91,39 @@ public class CommonUtil {
         return hitResult;
     }
 
+    public static void setAttribute(LivingEntity entity, Identifier name, Holder<Attribute> attribute, double amount, AttributeModifier.Operation operation) {
+        AttributeInstance instance = entity.getAttribute(attribute);
+        if (instance == null || entity.level().isClientSide()) {
+            return;
+        }
+
+        AttributeModifier modifier = instance.getModifier(name);
+        if (modifier != null) {
+            if (modifier.amount() == amount && modifier.operation() == operation) {
+                return; // No change needed
+            }
+            instance.removeModifier(name);
+        }
+
+        if (amount != 0) {
+            instance.addTransientModifier(new AttributeModifier(name, amount, operation));
+        }
+    }
+
     public static Supplier<List<String>> getTxtFromLink(String link) {
         List<String> content = new ArrayList<>();
         CompletableFuture.runAsync(() -> {
             try {
-                URL url = new URL(link);
-                BufferedReader bufferedReader = new BufferedReader(new InputStreamReader(url.openStream()));
+                java.net.HttpURLConnection conn = (java.net.HttpURLConnection) new URL(link).openConnection();
+                conn.setConnectTimeout(HTTP_TIMEOUT_MS);
+                conn.setReadTimeout(HTTP_TIMEOUT_MS);
+                BufferedReader bufferedReader = new BufferedReader(new InputStreamReader(conn.getInputStream()));
                 String line;
                 while ((line = bufferedReader.readLine()) != null) {
                     content.add(line);
                 }
-
                 bufferedReader.close();
+                conn.disconnect();
             } catch (Exception e) {
                 e.printStackTrace();
             }
@@ -135,18 +133,36 @@ public class CommonUtil {
 
     public static Supplier<JsonObject> getJsonFromLink(String link) {
         AtomicReference<JsonObject> jsonObject = new AtomicReference<>(new JsonObject());
-        CompletableFuture.runAsync(() -> {
-            try (InputStream url = new URL(link).openStream()) {
-                BufferedReader bufferedReader = new BufferedReader(new InputStreamReader(url));
-                JsonElement root = JsonParser.parseReader(bufferedReader);
-                bufferedReader.close();
-                assert root != null;
-                jsonObject.set(root.getAsJsonObject());
-            } catch (Exception e) {
-                e.printStackTrace();
+        AtomicReference<Boolean> loading = new AtomicReference<>(false);
+        Runnable load = () -> {
+            if (loading.getAndSet(true)) return;
+            CompletableFuture.runAsync(() -> {
+                try {
+                    java.net.HttpURLConnection conn = (java.net.HttpURLConnection) new URL(link).openConnection();
+                    conn.setConnectTimeout(HTTP_TIMEOUT_MS);
+                    conn.setReadTimeout(HTTP_TIMEOUT_MS);
+                    BufferedReader bufferedReader = new BufferedReader(new InputStreamReader(conn.getInputStream()));
+                    JsonElement root = JsonParser.parseReader(bufferedReader);
+                    bufferedReader.close();
+                    conn.disconnect();
+                    if (root != null) {
+                        jsonObject.set(root.getAsJsonObject());
+                    }
+                } catch (Exception e) {
+                    e.printStackTrace();
+                } finally {
+                    loading.set(false);
+                }
+            }, Util.backgroundExecutor());
+        };
+        load.run();
+        return () -> {
+            JsonObject result = jsonObject.get();
+            if (result.isEmpty() && !loading.get()) {
+                load.run(); // retry if failed and not currently loading
             }
-        });
-        return jsonObject::get;
+            return result;
+        };
     }
 
     public static List<Component> parseDescriptionLines(JsonElement jsonElement) {

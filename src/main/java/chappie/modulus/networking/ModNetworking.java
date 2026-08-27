@@ -1,10 +1,10 @@
 package chappie.modulus.networking;
 
 import chappie.modulus.Modulus;
-import chappie.modulus.networking.client.ClientKeyInput;
+import chappie.modulus.networking.client.ClientKeysInput;
 import chappie.modulus.networking.client.ClientSyncAbility;
 import chappie.modulus.networking.client.ClientSyncData;
-import chappie.modulus.networking.server.ServerKeyInput;
+import chappie.modulus.networking.server.ServerKeysInput;
 import chappie.modulus.networking.server.ServerSetData;
 import net.fabricmc.fabric.api.client.networking.v1.ClientPlayNetworking;
 import net.fabricmc.fabric.api.networking.v1.PayloadTypeRegistry;
@@ -19,22 +19,22 @@ import net.minecraft.world.entity.Entity;
 public class ModNetworking {
 
     public static void registerMessages() {
-        PayloadTypeRegistry.playC2S().register(ServerSetData.PACKET, ServerSetData.CODEC);
+        PayloadTypeRegistry.serverboundPlay().register(ServerSetData.PACKET, ServerSetData.CODEC);
         ServerPlayNetworking.registerGlobalReceiver(ServerSetData.PACKET, (packet, context) -> packet.handle(context.player(), context.responseSender()));
 
-        PayloadTypeRegistry.playC2S().register(ServerKeyInput.PACKET, ServerKeyInput.CODEC);
-        ServerPlayNetworking.registerGlobalReceiver(ServerKeyInput.PACKET, (packet, context) -> packet.handle(context.player(), context.responseSender()));
+        PayloadTypeRegistry.serverboundPlay().register(ServerKeysInput.PACKET, ServerKeysInput.CODEC);
+        ServerPlayNetworking.registerGlobalReceiver(ServerKeysInput.PACKET, (packet, context) -> packet.handle(context.player(), context.responseSender()));
 
-        PayloadTypeRegistry.playS2C().register(ClientSyncAbility.PACKET, ClientSyncAbility.CODEC);
-        PayloadTypeRegistry.playS2C().register(ClientSyncData.PACKET, ClientSyncData.CODEC);
-        PayloadTypeRegistry.playS2C().register(ClientKeyInput.PACKET, ClientKeyInput.CODEC);
+        PayloadTypeRegistry.clientboundPlay().register(ClientSyncAbility.PACKET, ClientSyncAbility.CODEC);
+        PayloadTypeRegistry.clientboundPlay().register(ClientSyncData.PACKET, ClientSyncData.CODEC);
+        PayloadTypeRegistry.clientboundPlay().register(ClientKeysInput.PACKET, ClientKeysInput.CODEC);
         Modulus.LOGGER.debug("Registered server network");
     }
 
     public static void registerClientMessages() {
         ClientPlayNetworking.registerGlobalReceiver(ClientSyncAbility.PACKET, (packet, context) -> packet.handle(context.player(), context.responseSender()));
         ClientPlayNetworking.registerGlobalReceiver(ClientSyncData.PACKET, (packet, context) -> packet.handle(context.player(), context.responseSender()));
-        ClientPlayNetworking.registerGlobalReceiver(ClientKeyInput.PACKET, (packet, context) -> packet.handle(context.player(), context.responseSender()));
+        ClientPlayNetworking.registerGlobalReceiver(ClientKeysInput.PACKET, (packet, context) -> packet.handle(context.player(), context.responseSender()));
 
         Modulus.LOGGER.debug("Registered client network");
     }
@@ -47,7 +47,7 @@ public class ModNetworking {
         try {
             ServerPlayNetworking.send(player, packet);
         } catch (Throwable throwable) {
-            throwable.fillInStackTrace();
+            Modulus.LOGGER.error("[Modulus] Failed to send packet {} to player {}", packet.type().id(), player.getName().getString(), throwable);
         }
     }
 

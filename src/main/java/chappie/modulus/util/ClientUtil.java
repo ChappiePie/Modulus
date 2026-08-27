@@ -2,25 +2,31 @@ package chappie.modulus.util;
 
 import chappie.modulus.Modulus;
 import chappie.modulus.util.model.IChangeableSize;
+import com.mojang.blaze3d.PrimitiveTopology;
 import com.mojang.blaze3d.pipeline.BlendFunction;
+import com.mojang.blaze3d.pipeline.ColorTargetState;
+import com.mojang.blaze3d.pipeline.DepthStencilState;
 import com.mojang.blaze3d.pipeline.RenderPipeline;
 import com.mojang.blaze3d.vertex.DefaultVertexFormat;
 import com.mojang.blaze3d.vertex.VertexConsumer;
-import com.mojang.blaze3d.vertex.VertexFormat;
 import net.minecraft.client.Minecraft;
-import net.minecraft.client.gui.GuiGraphics;
+import net.minecraft.client.gui.GuiGraphicsExtractor;
 import net.minecraft.client.gui.navigation.ScreenRectangle;
 import net.minecraft.client.gui.render.TextureSetup;
-import net.minecraft.client.gui.render.state.GuiElementRenderState;
 import net.minecraft.client.model.Model;
 import net.minecraft.client.model.geom.ModelPart;
+import net.minecraft.client.player.AbstractClientPlayer;
 import net.minecraft.client.renderer.RenderPipelines;
-import net.minecraft.client.renderer.RenderStateShard;
-import net.minecraft.client.renderer.RenderType;
+import net.minecraft.client.renderer.rendertype.OutputTarget;
+import net.minecraft.client.renderer.rendertype.RenderSetup;
+import net.minecraft.client.renderer.rendertype.RenderType;
+import net.minecraft.client.renderer.state.gui.GuiElementRenderState;
 import net.minecraft.network.chat.FontDescription;
 import net.minecraft.network.chat.Style;
-import net.minecraft.resources.ResourceLocation;
+import net.minecraft.resources.Identifier;
 import net.minecraft.util.Mth;
+import net.minecraft.world.entity.Entity;
+import net.minecraft.world.entity.player.PlayerModelType;
 import net.minecraft.world.phys.AABB;
 import org.jetbrains.annotations.Nullable;
 import org.joml.Matrix3x2f;
@@ -30,7 +36,7 @@ import java.util.function.BiConsumer;
 
 public class ClientUtil {
 
-    private static final ResourceLocation BOLD_FONT_LOCATION = Modulus.id("bold");
+    private static final Identifier BOLD_FONT_LOCATION = Modulus.id("bold");
     private static final FontDescription BOLD_FONT = new FontDescription.Resource(BOLD_FONT_LOCATION);
     public static final Style BOLD_MINECRAFT = Style.EMPTY.withFont(BOLD_FONT);
 
@@ -38,7 +44,7 @@ public class ClientUtil {
         return Minecraft.getInstance().isPaused() ? 0 : Minecraft.getInstance().getDeltaTracker().getGameTimeDeltaPartialTick(false);
     }
 
-    public static void blit(GuiGraphics guiGraphics, ResourceLocation atlasLocation, float x, float y, float uOffset, float vOffset, float uWidth, float vHeight, float width, float height, float textureWidth, float textureHeight, int color) {
+    public static void blit(GuiGraphicsExtractor guiGraphics, Identifier atlasLocation, float x, float y, float uOffset, float vOffset, float uWidth, float vHeight, float width, float height, float textureWidth, float textureHeight, int color) {
         float x1 = x + uWidth;
         float y1 = y + vHeight;
         float u0 = uOffset / textureWidth;
@@ -46,11 +52,11 @@ public class ClientUtil {
         float v0 = vOffset / textureHeight;
         float v1 = (vOffset + height) / textureHeight;
 
-        // Submit a custom render state so floats are preserved instead of being rounded by GuiGraphics.blit.
-        guiGraphics.guiRenderState.submitGuiElement(
+        // Submit a custom render state so floats are preserved instead of being rounded by GuiGraphicsExtractor.blit.
+        guiGraphics.guiRenderState.addGuiElement(
                 new FloatBlitRenderState(
                         RenderPipelines.GUI_TEXTURED,
-                        TextureSetup.singleTexture(Minecraft.getInstance().getTextureManager().getTexture(atlasLocation).getTextureView()),
+                        TextureSetup.singleTexture(Minecraft.getInstance().getTextureManager().getTexture(atlasLocation).getTextureView(), Minecraft.getInstance().getTextureManager().getTexture(atlasLocation).getSampler()),
                         new Matrix3x2f(guiGraphics.pose()),
                         x,
                         y,
@@ -76,31 +82,37 @@ public class ClientUtil {
     }
 
     public static void renderFilledBox(Matrix4f pose, VertexConsumer builder, AABB box, float red, float green, float blue, float alpha, int combinedLightIn) {
+        // Top face (normal 0,1,0)
         builder.addVertex(pose, (float) box.minX, (float) box.maxY, (float) box.minZ).setColor(red, green, blue, alpha).setLight(combinedLightIn);
         builder.addVertex(pose, (float) box.minX, (float) box.maxY, (float) box.maxZ).setColor(red, green, blue, alpha).setLight(combinedLightIn);
         builder.addVertex(pose, (float) box.maxX, (float) box.maxY, (float) box.maxZ).setColor(red, green, blue, alpha).setLight(combinedLightIn);
         builder.addVertex(pose, (float) box.maxX, (float) box.maxY, (float) box.minZ).setColor(red, green, blue, alpha).setLight(combinedLightIn);
 
+        // Bottom face (normal 0,-1,0)
         builder.addVertex(pose, (float) box.minX, (float) box.minY, (float) box.minZ).setColor(red, green, blue, alpha).setLight(combinedLightIn);
         builder.addVertex(pose, (float) box.maxX, (float) box.minY, (float) box.minZ).setColor(red, green, blue, alpha).setLight(combinedLightIn);
         builder.addVertex(pose, (float) box.maxX, (float) box.minY, (float) box.maxZ).setColor(red, green, blue, alpha).setLight(combinedLightIn);
         builder.addVertex(pose, (float) box.minX, (float) box.minY, (float) box.maxZ).setColor(red, green, blue, alpha).setLight(combinedLightIn);
 
+        // North face (normal 0,0,-1)
         builder.addVertex(pose, (float) box.minX, (float) box.minY, (float) box.minZ).setColor(red, green, blue, alpha).setLight(combinedLightIn);
         builder.addVertex(pose, (float) box.minX, (float) box.maxY, (float) box.minZ).setColor(red, green, blue, alpha).setLight(combinedLightIn);
         builder.addVertex(pose, (float) box.maxX, (float) box.maxY, (float) box.minZ).setColor(red, green, blue, alpha).setLight(combinedLightIn);
         builder.addVertex(pose, (float) box.maxX, (float) box.minY, (float) box.minZ).setColor(red, green, blue, alpha).setLight(combinedLightIn);
 
+        // South face (normal 0,0,1)
         builder.addVertex(pose, (float) box.minX, (float) box.minY, (float) box.maxZ).setColor(red, green, blue, alpha).setLight(combinedLightIn);
         builder.addVertex(pose, (float) box.maxX, (float) box.minY, (float) box.maxZ).setColor(red, green, blue, alpha).setLight(combinedLightIn);
         builder.addVertex(pose, (float) box.maxX, (float) box.maxY, (float) box.maxZ).setColor(red, green, blue, alpha).setLight(combinedLightIn);
         builder.addVertex(pose, (float) box.minX, (float) box.maxY, (float) box.maxZ).setColor(red, green, blue, alpha).setLight(combinedLightIn);
 
+        // East face (normal 1,0,0)
         builder.addVertex(pose, (float) box.maxX, (float) box.minY, (float) box.minZ).setColor(red, green, blue, alpha).setLight(combinedLightIn);
         builder.addVertex(pose, (float) box.maxX, (float) box.maxY, (float) box.minZ).setColor(red, green, blue, alpha).setLight(combinedLightIn);
         builder.addVertex(pose, (float) box.maxX, (float) box.maxY, (float) box.maxZ).setColor(red, green, blue, alpha).setLight(combinedLightIn);
         builder.addVertex(pose, (float) box.maxX, (float) box.minY, (float) box.maxZ).setColor(red, green, blue, alpha).setLight(combinedLightIn);
 
+        // West face (normal -1,0,0)
         builder.addVertex(pose, (float) box.minX, (float) box.minY, (float) box.minZ).setColor(red, green, blue, alpha).setLight(combinedLightIn);
         builder.addVertex(pose, (float) box.minX, (float) box.minY, (float) box.maxZ).setColor(red, green, blue, alpha).setLight(combinedLightIn);
         builder.addVertex(pose, (float) box.minX, (float) box.maxY, (float) box.maxZ).setColor(red, green, blue, alpha).setLight(combinedLightIn);
@@ -182,43 +194,55 @@ public class ClientUtil {
     public static final class ModRenderTypes {
 
         private static final RenderPipeline LASER_PIPELINE = RenderPipelines.register(
-                RenderPipeline.builder(RenderPipelines.MATRICES_FOG_SNIPPET)
+                RenderPipeline.builder(RenderPipelines.ENTITY_SNIPPET)
                         .withLocation(Modulus.id("pipeline/laser"))
                         .withVertexShader("core/rendertype_lightning")
                         .withFragmentShader("core/rendertype_lightning")
-                        .withBlend(BlendFunction.LIGHTNING)
-                        .withDepthWrite(false)
+                        .withColorTargetState(new ColorTargetState(BlendFunction.LIGHTNING))
+                        .withDepthStencilState(new DepthStencilState(com.mojang.blaze3d.platform.CompareOp.LESS_THAN_OR_EQUAL, false))
                         .withCull(false)
-                        .withVertexFormat(DefaultVertexFormat.POSITION_COLOR_LIGHTMAP, VertexFormat.Mode.QUADS)
+                        .withVertexBinding(0, DefaultVertexFormat.POSITION_COLOR_LIGHTMAP)
+                        .withPrimitiveTopology(PrimitiveTopology.QUADS)
                         .build()
         );
-        public static final RenderType LASER = RenderType.create(Modulus.MODID + ":laser", 256, false, true, LASER_PIPELINE, RenderType.CompositeState.builder()
-                .setTextureState(RenderStateShard.NO_TEXTURE)
-                .setLightmapState(RenderStateShard.LIGHTMAP)
-                .setLayeringState(RenderStateShard.VIEW_OFFSET_Z_LAYERING)
-                .createCompositeState(true));
+        public static final RenderType LASER = RenderType.create(Modulus.MODID + ":laser",
+                RenderSetup.builder(LASER_PIPELINE)
+                        .setOutputTarget(OutputTarget.MAIN_TARGET)
+                        .sortOnUpload()
+                        .createRenderSetup());
+
         private static final RenderPipeline MAIN_LASER_PIPELINE = RenderPipelines.register(
-                RenderPipeline.builder(RenderPipelines.MATRICES_FOG_SNIPPET)
+                RenderPipeline.builder(RenderPipelines.ENTITY_SNIPPET)
                         .withLocation(Modulus.id("pipeline/main_laser"))
                         .withVertexShader("core/rendertype_lightning")
                         .withFragmentShader("core/rendertype_lightning")
-                        .withBlend(BlendFunction.LIGHTNING)
+                        .withColorTargetState(new ColorTargetState(BlendFunction.TRANSLUCENT))
+                        .withDepthStencilState(new DepthStencilState(com.mojang.blaze3d.platform.CompareOp.LESS_THAN_OR_EQUAL, false))
                         .withCull(false)
-                        .withVertexFormat(DefaultVertexFormat.POSITION_COLOR_LIGHTMAP, VertexFormat.Mode.QUADS)
+                        .withVertexBinding(0, DefaultVertexFormat.POSITION_COLOR_LIGHTMAP)
+                        .withPrimitiveTopology(PrimitiveTopology.QUADS)
                         .build()
         );
-        public static final RenderType MAIN_LASER = RenderType.create(Modulus.MODID + ":main_laser", 256, false, true, MAIN_LASER_PIPELINE, RenderType.CompositeState.builder()
-                .setLightmapState(RenderStateShard.LIGHTMAP)
-                .setLayeringState(RenderStateShard.VIEW_OFFSET_Z_LAYERING)
-                .createCompositeState(true));
+        public static final RenderType MAIN_LASER = RenderType.create(Modulus.MODID + ":main_laser",
+                RenderSetup.builder(MAIN_LASER_PIPELINE)
+                        .setOutputTarget(OutputTarget.MAIN_TARGET)
+                        .sortOnUpload()
+                        .createRenderSetup());
 
-        public static RenderType glow(ResourceLocation texture) {
-            return RenderType.create(Modulus.MODID + ":light", 256, false, true, RenderPipelines.ENERGY_SWIRL, RenderType.CompositeState.builder()
-                    .setTextureState(new RenderStateShard.TextureStateShard(texture, false))
-                    .setTexturingState(new RenderStateShard.OffsetTexturingStateShard(0, 0))
-                    .setLightmapState(RenderStateShard.LIGHTMAP)
-                    .setOverlayState(RenderStateShard.OVERLAY)
-                    .createCompositeState(false));
+        public static RenderType glow(Identifier texture) {
+            return RenderType.create(Modulus.MODID + ":light",
+                    RenderSetup.builder(RenderPipelines.ENERGY_SWIRL)
+                            .withTexture("Sampler0", texture)
+                            .useLightmap()
+                            .useOverlay()
+                            .createRenderSetup());
         }
+    }
+
+    public static boolean smallArms(Entity entity) {
+        if (entity instanceof AbstractClientPlayer player) {
+            return player.getSkin().model().equals(PlayerModelType.SLIM);
+        }
+        return false;
     }
 }

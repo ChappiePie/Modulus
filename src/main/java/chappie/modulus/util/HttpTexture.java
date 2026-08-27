@@ -7,7 +7,7 @@ import net.fabricmc.api.Environment;
 import net.minecraft.client.Minecraft;
 import net.minecraft.client.renderer.texture.DynamicTexture;
 import net.minecraft.client.renderer.texture.TextureManager;
-import net.minecraft.resources.ResourceLocation;
+import net.minecraft.resources.Identifier;
 import org.apache.commons.io.FileUtils;
 import org.jetbrains.annotations.Nullable;
 
@@ -20,15 +20,15 @@ import java.net.URL;
 @Environment(EnvType.CLIENT)
 public class HttpTexture implements AutoCloseable {
     private final TextureManager textureManager;
-    private final ResourceLocation textureLocation;
-    private final ResourceLocation withoutInternet;
+    private final Identifier textureLocation;
+    private final Identifier withoutInternet;
     private final String urlString;
     private final @Nullable File file;
     @Nullable
     private DynamicTexture texture;
     private boolean closed;
 
-    private HttpTexture(TextureManager textureManager, @Nullable File file, String urlString, ResourceLocation textureLocation, ResourceLocation withoutInternet) {
+    private HttpTexture(TextureManager textureManager, @Nullable File file, String urlString, Identifier textureLocation, Identifier withoutInternet) {
         this.textureManager = textureManager;
         this.file = file;
         this.urlString = urlString;
@@ -36,7 +36,7 @@ public class HttpTexture implements AutoCloseable {
         this.withoutInternet = withoutInternet == null ? Modulus.id("textures/gui/white.png") : withoutInternet;
     }
 
-    public static ResourceLocation byUrl(@Nullable File file, String urlString, ResourceLocation textureLocation, @Nullable ResourceLocation withoutInternet) {
+    public static Identifier byUrl(@Nullable File file, String urlString, Identifier textureLocation, @Nullable Identifier withoutInternet) {
         HttpTexture texture = new HttpTexture(Minecraft.getInstance().getTextureManager(), file, urlString, textureLocation, withoutInternet);
         texture.loadIcon();
         return texture.textureLocation;
@@ -74,7 +74,7 @@ public class HttpTexture implements AutoCloseable {
         }
     }
 
-    public ResourceLocation textureLocation() {
+    public Identifier textureLocation() {
         return this.texture != null ? this.textureLocation : this.withoutInternet;
     }
 

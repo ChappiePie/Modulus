@@ -4,8 +4,7 @@ import chappie.modulus.Modulus;
 import chappie.modulus.util.*;
 import com.google.common.collect.ImmutableList;
 import com.google.common.collect.Lists;
-import net.minecraft.Util;
-import net.minecraft.client.gui.GuiGraphics;
+import net.minecraft.client.gui.GuiGraphicsExtractor;
 import net.minecraft.client.gui.components.Button;
 import net.minecraft.client.gui.components.Renderable;
 import net.minecraft.client.gui.components.WidgetSprites;
@@ -19,9 +18,10 @@ import net.minecraft.client.resources.sounds.SimpleSoundInstance;
 import net.minecraft.network.chat.CommonComponents;
 import net.minecraft.network.chat.Component;
 import net.minecraft.network.chat.MutableComponent;
-import net.minecraft.resources.ResourceLocation;
+import net.minecraft.resources.Identifier;
 import net.minecraft.util.ARGB;
 import net.minecraft.util.Mth;
+import net.minecraft.util.Util;
 import org.jetbrains.annotations.Nullable;
 import org.joml.Matrix3x2fStack;
 
@@ -32,13 +32,13 @@ import java.util.function.Supplier;
 
 public class ModulusMainScreen extends Screen implements IOneScaleScreen {
 
-    public static final ResourceLocation MENU = Modulus.id("textures/gui/sprites/menu.png");
+    public static final Identifier MENU = Modulus.id("textures/gui/sprites/menu.png");
     public static final WidgetSprites SPRITES = new WidgetSprites(
             Modulus.id("widget/button"),
             Modulus.id("widget/button_disabled"),
             Modulus.id("widget/button_highlighted")
     );
-    private static final ResourceLocation CHAPPIE_TEXTURE = getTexByName("chappie");
+    private static final Identifier CHAPPIE_TEXTURE = getTexByName("chappie");
     private final Screen lastScreen;
     private final List<TabButton> tabs = Lists.newArrayList();
     private final IHasTimer.Timer atChappieTimer = new IHasTimer.Timer(() -> 10, () -> false);
@@ -54,10 +54,10 @@ public class ModulusMainScreen extends Screen implements IOneScaleScreen {
         this.lastScreen = lastScreen;
     }
 
-    public static ResourceLocation getTexByName(String name) {
-        ResourceLocation resourcelocation = Modulus.id("modulus_screen" + "/" + name);
+    public static Identifier getTexByName(String name) {
+        Identifier Identifier = Modulus.id("modulus_screen" + "/" + name);
         File file = new File("config/modulus/data", name);
-        return HttpTexture.byUrl(file, "https://raw.githubusercontent.com/ChappiePie/ModulusResources/main/%s.png".formatted(name), resourcelocation, Modulus.id("textures/gui/mods_author/%s.png".formatted(name)));
+        return HttpTexture.byUrl(file, "https://raw.githubusercontent.com/ChappiePie/ModulusResources/main/%s.png".formatted(name), Identifier, Modulus.id("textures/gui/mods_author/%s.png".formatted(name)));
     }
 
     @Override
@@ -76,7 +76,7 @@ public class ModulusMainScreen extends Screen implements IOneScaleScreen {
 
         int halfWidth = this.width / 2;
         this.addRenderableWidget(Button.builder(CommonComponents.GUI_DONE, (b) ->
-                this.minecraft.setScreen(this.lastScreen)).pos(halfWidth - 75, this.height - 30).build());
+                this.minecraft.gui.setScreen(this.lastScreen)).pos(halfWidth - 75, this.height - 30).build());
 
         this.tabs.clear();
         int tabWidth = 100;
@@ -114,7 +114,7 @@ public class ModulusMainScreen extends Screen implements IOneScaleScreen {
     }
 
     @Override
-    public void render(GuiGraphics guiGraphics, int pMouseX, int pMouseY, float pPartialTick) {
+    public void extractRenderState(GuiGraphicsExtractor GuiGraphicsExtractor, int pMouseX, int pMouseY, float pPartialTick) {
 
         long l = Util.getMillis();
         if (l - this.utilMillis > 10L) {
@@ -128,10 +128,10 @@ public class ModulusMainScreen extends Screen implements IOneScaleScreen {
                 }
             }
         }
-        super.render(guiGraphics, pMouseX, pMouseY, pPartialTick);
+        super.extractRenderState(GuiGraphicsExtractor, pMouseX, pMouseY, pPartialTick);
 
         // Modulus header
-        guiGraphics.blitSprite(
+        GuiGraphicsExtractor.blitSprite(
                 RenderPipelines.GUI_TEXTURED,
                 SPRITES.get(true, false),
                 this.width / 2 - 60, 3,
@@ -139,7 +139,7 @@ public class ModulusMainScreen extends Screen implements IOneScaleScreen {
                 ARGB.white(1.0F)
         );
 
-        Matrix3x2fStack pPoseStack = guiGraphics.pose();
+        Matrix3x2fStack pPoseStack = GuiGraphicsExtractor.pose();
         // Label
         {
             pPoseStack.pushMatrix();
@@ -148,7 +148,7 @@ public class ModulusMainScreen extends Screen implements IOneScaleScreen {
 
             int labelXPos = this.width / 2, labelYPos = 10;
 
-            guiGraphics.blit(RenderPipelines.GUI_TEXTURED, MENU, labelXPos - 52, labelYPos, 0, 0, 104, 29, 104, 29, 256, 256);
+            GuiGraphicsExtractor.blit(RenderPipelines.GUI_TEXTURED, MENU, labelXPos - 52, labelYPos, 0, 0, 104, 29, 104, 29, 256, 256);
 
 
             // Line under label
@@ -156,18 +156,18 @@ public class ModulusMainScreen extends Screen implements IOneScaleScreen {
             labelYPos += 30;
 
             //RenderSystem.setShaderColor(0.15F, 0.15F, 0.15F, 1F);
-            guiGraphics.fill(labelXPos - 51 - 16, labelYPos + 3, labelXPos - 51 + 104 + 16, labelYPos + 5, lineColor);
+            GuiGraphicsExtractor.fill(labelXPos - 51 - 16, labelYPos + 3, labelXPos - 51 + 104 + 16, labelYPos + 5, lineColor);
             //RenderSystem.setShaderColor(1F, 1F, 1F, 1F);
-            guiGraphics.fill(labelXPos - 52 - 16, labelYPos + 2, labelXPos - 52 + 104 + 16, labelYPos + 4, lineColor);
+            GuiGraphicsExtractor.fill(labelXPos - 52 - 16, labelYPos + 2, labelXPos - 52 + 104 + 16, labelYPos + 4, lineColor);
 
             pPoseStack.popMatrix();
         }
-        //guiGraphics.blit(RenderPipelines.GUI_TEXTURED, Screen.HEADER_SEPARATOR, 0, 56, 0.0F, 0.0F, this.width, 2, 32, 2);
-        //guiGraphics.blit(RenderPipelines.GUI_TEXTURED, Screen.FOOTER_SEPARATOR, 0, Mth.roundToward(this.height - 36, 2), 0.0F, 0.0F, this.width, 2, 32, 2);
+        //GuiGraphicsExtractor.blit(RenderPipelines.GUI_TEXTURED, Screen.HEADER_SEPARATOR, 0, 56, 0.0F, 0.0F, this.width, 2, 32, 2);
+        //GuiGraphicsExtractor.blit(RenderPipelines.GUI_TEXTURED, Screen.FOOTER_SEPARATOR, 0, Mth.roundToward(this.height - 36, 2), 0.0F, 0.0F, this.width, 2, 32, 2);
 
         if (this.tabId == 1) {
             int canvasHeight = this.canvasMaxY - this.canvasMinY;
-            this.renderTitle(guiGraphics, Component.translatable("screen.modulus.socials")
+            this.renderTitle(GuiGraphicsExtractor, Component.translatable("screen.modulus.socials")
                     .withStyle(ClientUtil.BOLD_MINECRAFT), (int) (this.width / 4F), this.canvasMinY + 10);
 
             // Two sticks like borders
@@ -178,28 +178,28 @@ public class ModulusMainScreen extends Screen implements IOneScaleScreen {
                 int maxY = this.canvasMaxY - 8;
 
                 // right at socials
-                guiGraphics.fill(x - 2 + 30, minY, x + 2 + 30, maxY, c);
+                GuiGraphicsExtractor.fill(x - 2 + 30, minY, x + 2 + 30, maxY, c);
 
-                guiGraphics.fill(x + 2 + 30, minY, x + 6 + 30, minY + 4, c);
+                GuiGraphicsExtractor.fill(x + 2 + 30, minY, x + 6 + 30, minY + 4, c);
 
                 x = this.width / 2;
                 // right at center
-                guiGraphics.fill(x - 2 + 30, minY, x + 2 + 30, maxY - 4, c);
+                GuiGraphicsExtractor.fill(x - 2 + 30, minY, x + 2 + 30, maxY - 4, c);
 
-                guiGraphics.fill(x + 2 + 30, minY, x + 6 + 30, minY + 4, c);
+                GuiGraphicsExtractor.fill(x + 2 + 30, minY, x + 6 + 30, minY + 4, c);
 
                 // left at center
-                guiGraphics.fill(x - 2 - 30, minY, x + 2 - 30, maxY - 4, c);
+                GuiGraphicsExtractor.fill(x - 2 - 30, minY, x + 2 - 30, maxY - 4, c);
 
-                guiGraphics.fill(x - 2 - 30, minY, x - 6 - 30, minY + 4, c);
+                GuiGraphicsExtractor.fill(x - 2 - 30, minY, x - 6 - 30, minY + 4, c);
 
                 // left at creator
                 x = this.width;
-                guiGraphics.fill(x - 2 - 30, minY, x + 2 - 30, maxY, c);
+                GuiGraphicsExtractor.fill(x - 2 - 30, minY, x + 2 - 30, maxY, c);
 
-                guiGraphics.fill(x - 2 - 30, minY, x - 6 - 30, minY + 4, c);
+                GuiGraphicsExtractor.fill(x - 2 - 30, minY, x - 6 - 30, minY + 4, c);
 
-                guiGraphics.fill(2 + 30, maxY, x - 2 - 30, maxY - 4, c);
+                GuiGraphicsExtractor.fill(2 + 30, maxY, x - 2 - 30, maxY - 4, c);
             }
 
             // Creator
@@ -207,12 +207,12 @@ public class ModulusMainScreen extends Screen implements IOneScaleScreen {
                 Component s = Component.translatable("screen.modulus.creator").withStyle(ClientUtil.BOLD_MINECRAFT);
                 int x = (int) (this.width * 0.75F), y = this.canvasMinY + 10;
 
-                this.renderTitle(guiGraphics, s, x, y);
+                this.renderTitle(GuiGraphicsExtractor, s, x, y);
                 //RenderSystem.setShaderColor(0.125F, 0.125F, 0.125F, 1.0F);
                 final int width = (int) (canvasHeight / 1.27);
                 final int x1 = x - width / 2, y1 = y + 25;
-                guiGraphics.enableScissor(x1, y1, x1 + width, y1 + (int) (canvasHeight / 1.5));
-                guiGraphics.blit(RenderPipelines.GUI_TEXTURED, Screen.MENU_BACKGROUND, x1, y1, 0, 0, width, (int) (canvasHeight / 1.5F), 32, 32);
+                GuiGraphicsExtractor.enableScissor(x1, y1, x1 + width, y1 + (int) (canvasHeight / 1.5));
+                GuiGraphicsExtractor.blit(RenderPipelines.GUI_TEXTURED, Screen.MENU_BACKGROUND, x1, y1, 0, 0, width, (int) (canvasHeight / 1.5F), 32, 32);
                 //RenderSystem.setShaderColor(1.0F, 1.0F, 1.0F, 1.0F);
 
 
@@ -221,16 +221,16 @@ public class ModulusMainScreen extends Screen implements IOneScaleScreen {
                 float mouseXAdd = (pMouseX - x1 - width / 2F) / 10F * f;
                 float mouseYAdd = Math.max(-40, pMouseY - y1 - (int) (canvasHeight / 1.5F) / 2F) / 10F * f;
                 f *= 10F;
-                ClientUtil.blit(guiGraphics, CHAPPIE_TEXTURE, x1 + 11.5F - f / 2 + mouseXAdd, y1 - f / 2 + mouseYAdd, 0.0F, 0.0F, canvasHeight / 1.6F + f, canvasHeight / 1.5F + f, 1310, 1440, 1310, 1440, -1);
-                guiGraphics.disableScissor();
+                ClientUtil.blit(GuiGraphicsExtractor, CHAPPIE_TEXTURE, x1 + 11.5F - f / 2 + mouseXAdd, y1 - f / 2 + mouseYAdd, 0.0F, 0.0F, canvasHeight / 1.6F + f, canvasHeight / 1.5F + f, 1310, 1440, 1310, 1440, -1);
+                GuiGraphicsExtractor.disableScissor();
 
                 Component pTooltip = Component.literal("ChappiePie");
                 if (isMouseOverObj(pMouseX, pMouseY, x - 1 - this.minecraft.font.width(s) * 0.75F, y - 1, (this.minecraft.font.width(s) * 0.75F) * 2, this.minecraft.font.lineHeight * 1.5F - 1)) {
                     int i = pMouseX + 2;
                     int j = pMouseY - 10;
                     int k = this.font.width(pTooltip);
-                    guiGraphics.fillGradient(i - 3, j - 3, i + k + 3, j + 8 + 3, -1073741824, -1073741824);
-                    guiGraphics.drawString(this.font, pTooltip, i, j, -1, true);
+                    GuiGraphicsExtractor.fillGradient(i - 3, j - 3, i + k + 3, j + 8 + 3, -1073741824, -1073741824);
+                    GuiGraphicsExtractor.text(this.font, pTooltip, i, j, -1, true);
                 }
             }
         }
@@ -240,12 +240,12 @@ public class ModulusMainScreen extends Screen implements IOneScaleScreen {
         return pMouseX >= x && pMouseY >= y && pMouseX <= x + width && pMouseY <= y + height;
     }
 
-    private void renderTitle(GuiGraphics guiGraphics, Component component, int x, int y) {
-        Matrix3x2fStack pose = guiGraphics.pose();
+    private void renderTitle(GuiGraphicsExtractor GuiGraphicsExtractor, Component component, int x, int y) {
+        Matrix3x2fStack pose = GuiGraphicsExtractor.pose();
         pose.pushMatrix();
         pose.translate(x + 1, y);
         pose.scale(1.5F, 1.5F);
-        guiGraphics.drawCenteredString(this.minecraft.font, component, 0, 0, -1);
+        GuiGraphicsExtractor.centeredText(this.minecraft.font, component, 0, 0, -1);
         pose.popMatrix();
         y += 14;
         int color = -1;
@@ -256,10 +256,10 @@ public class ModulusMainScreen extends Screen implements IOneScaleScreen {
                 y += 2;
             }
             int length = this.minecraft.font.width(component) + 5;
-            guiGraphics.fill(x - length, y, x + length, y + 2, color);
+            GuiGraphicsExtractor.fill(x - length, y, x + length, y + 2, color);
 
-            guiGraphics.fill(x - length + 2, y - 2, x - length + 4, y + 4, color);
-            guiGraphics.fill(x + length - 2, y - 2, x + length - 4, y + 4, color);
+            GuiGraphicsExtractor.fill(x - length + 2, y - 2, x - length + 4, y + 4, color);
+            GuiGraphicsExtractor.fill(x + length - 2, y - 2, x + length - 4, y + 4, color);
 
             //RenderSystem.setShaderColor(1F, 1F, 1F, 1F);
             if (k == 0) {
@@ -273,7 +273,7 @@ public class ModulusMainScreen extends Screen implements IOneScaleScreen {
 
     @Override
     public void onClose() {
-        this.minecraft.setScreen(this.lastScreen instanceof PauseScreen ? null : this.lastScreen);
+        this.minecraft.gui.setScreen(this.lastScreen instanceof PauseScreen ? null : this.lastScreen);
         this.minecraft.getSoundManager().play(SimpleSoundInstance.forUI(ModRegistries.CLOSE_BUTTON, 1.0F));
     }
 

@@ -10,16 +10,37 @@ import net.minecraft.nbt.CompoundTag;
 import net.minecraft.world.entity.Entity;
 import org.slf4j.Logger;
 
+import java.util.HashSet;
 import java.util.Map;
+import java.util.Set;
 
 public class DataManager {
 
     private static final Logger LOGGER = LogUtils.getLogger();
     public final Map<DataAccessor<?>, DataValue<?>> dataMap = Maps.newHashMap();
+    private final Set<String> clientWritableKeys = new HashSet<>();
     private final Ability ability;
 
     public DataManager(Ability ability) {
         this.ability = ability;
+    }
+
+    /**
+     * Marks a DataAccessor as writable from client packets.
+     * Only accessors marked with this will be accepted by ServerSetData.
+     */
+    public DataManager clientWritable(DataAccessor<?>... accessors) {
+        for (DataAccessor<?> accessor : accessors) {
+            this.clientWritableKeys.add(accessor.key());
+        }
+        return this;
+    }
+
+    /**
+     * Returns true if the given accessor ID is allowed to be set from client packets.
+     */
+    public boolean isClientWritable(String accessorId) {
+        return this.clientWritableKeys.contains(accessorId);
     }
 
     public <T> DataManager define(DataAccessor<T> accessor, T initialValue) {
@@ -40,12 +61,12 @@ public class DataManager {
 
     public <T> DataManager set(DataAccessor<T> accessor, T value) {
         DataValue<T> dataValue = this.getDataValue(accessor);
-        Entity entity = this.ability.entity;
+        Entity entity = this.ability.getEntity();
         if (dataValue.get() != value) {
             dataValue.set(value);
             this.ability.onDataUpdated(accessor);
             if (!entity.level().isClientSide() && dataValue.synchronizeWithOthers()) {
-                ModNetworking.sendToTrackingEntityAndSelf(new ClientSyncData(entity.getId(), accessor.key(), this.ability.builder.id, dataValue.serialize(new CompoundTag(), true)), entity);
+                ModNetworking.sendToTrackingEntityAndSelf(new ClientSyncData(entity.getId(), accessor.key(), this.ability.getBuilder().id, dataValue.serialize(new CompoundTag(), true)), entity);
             }
         }
         return this;
@@ -53,8 +74,8 @@ public class DataManager {
 
     public <T> DataManager setFromClient(DataAccessor<T> accessor, T value) {
         DataValue<T> dataValue = this.getDataValue(accessor);
-        if (this.ability.entity.level().isClientSide() && dataValue.get() != value) {
-            ModNetworking.sendToServer(new ServerSetData(accessor.key(), this.ability.builder.id, dataValue.serialize(new CompoundTag(), value, true)));
+        if (this.ability.getEntity().level().isClientSide() && dataValue.get() != value) {
+            ModNetworking.sendToServer(new ServerSetData(accessor.key(), this.ability.getBuilder().id, dataValue.serialize(new CompoundTag(), value, true)));
         }
         return this;
     }

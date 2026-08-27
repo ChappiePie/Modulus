@@ -10,7 +10,7 @@ public class AbilityEnabledCondition extends Condition {
     public AbilityEnabledCondition(Ability ability) {
         super(ability, (c) -> {
             if (c instanceof AbilityEnabledCondition condition) {
-                PowerCap cap = PowerCap.getCap(ability.entity);
+                PowerCap cap = PowerCap.getCap(ability.getEntity());
                 if (cap != null) {
                     var conditionAbility = cap.getAbility(condition.abilityName);
                     if (conditionAbility != null) {

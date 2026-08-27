@@ -11,9 +11,9 @@ import net.minecraft.commands.CommandSourceStack;
 import net.minecraft.commands.Commands;
 import net.minecraft.commands.SharedSuggestionProvider;
 import net.minecraft.commands.arguments.EntityArgument;
-import net.minecraft.commands.arguments.ResourceLocationArgument;
+import net.minecraft.commands.arguments.IdentifierArgument;
 import net.minecraft.network.chat.Component;
-import net.minecraft.resources.ResourceLocation;
+import net.minecraft.resources.Identifier;
 import net.minecraft.world.entity.Entity;
 
 import java.util.Collection;
@@ -23,9 +23,9 @@ public class SuperpowerCommand {
     private static final SuggestionProvider<CommandSourceStack> SUGGEST_SUPERPOWERS = (context, builder) -> SharedSuggestionProvider.suggestResource(Superpower.REGISTRY.keySet(), builder);
 
     public static void register(CommandDispatcher<CommandSourceStack> dispatcher) {
-        dispatcher.register(Commands.literal("superpower").requires((player) -> player.hasPermission(2))
+        dispatcher.register(Commands.literal("superpower").requires((player) -> player.permissions().hasPermission(new net.minecraft.server.permissions.Permission.HasCommandLevel(net.minecraft.server.permissions.PermissionLevel.GAMEMASTERS)))
                 .then(Commands.argument("targets", EntityArgument.entities())
-                        .then(Commands.argument("superpower", ResourceLocationArgument.id()).suggests(SUGGEST_SUPERPOWERS)
+                        .then(Commands.argument("superpower", IdentifierArgument.id()).suggests(SUGGEST_SUPERPOWERS)
                                 .executes((c) -> setSuperpower(c.getSource(), EntityArgument.getEntities(c, "targets"), getSuperpower(c, "superpower"))))
                         .then(Commands.literal("remove").executes(c -> removeSuperpower(c.getSource(), EntityArgument.getEntities(c, "targets"))))
                 )
@@ -69,7 +69,7 @@ public class SuperpowerCommand {
     }
 
     public static Superpower getSuperpower(CommandContext<CommandSourceStack> context, String key) throws CommandSyntaxException {
-        ResourceLocation id = context.getArgument(key, ResourceLocation.class);
+        Identifier id = context.getArgument(key, Identifier.class);
         Superpower superpower = Superpower.REGISTRY.getValue(id);
         if (superpower == null) {
             throw DIDNT_EXIST.create(id);

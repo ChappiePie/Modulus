@@ -11,13 +11,13 @@ import net.minecraft.nbt.CompoundTag;
 import net.minecraft.network.FriendlyByteBuf;
 import net.minecraft.network.codec.StreamCodec;
 import net.minecraft.network.protocol.common.custom.CustomPacketPayload;
-import net.minecraft.resources.ResourceLocation;
+import net.minecraft.resources.Identifier;
 import net.minecraft.world.entity.Entity;
 
 public class ClientSyncData implements CustomPacketPayload {
-    public static final ResourceLocation PACKET_ID = Modulus.id("sync_data");
+    public static final Identifier PACKET_ID = Modulus.id("sync_data");
     public static final Type<ClientSyncData> PACKET = new Type<>(PACKET_ID);
-    public static StreamCodec<FriendlyByteBuf, ClientSyncData> CODEC = CustomPacketPayload.codec(ClientSyncData::write, ClientSyncData::new);
+    public static StreamCodec<FriendlyByteBuf, ClientSyncData> CODEC = StreamCodec.ofMember(ClientSyncData::write, ClientSyncData::new);
     public int entityId;
     public String id, abilityName;
     public CompoundTag tag;

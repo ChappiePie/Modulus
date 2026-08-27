@@ -24,8 +24,8 @@ public abstract class ItemInHandRendererMixin {
     protected abstract void renderPlayerArm(PoseStack pMatrixStack, SubmitNodeCollector submitNodeCollector, int pCombinedLight, float pEquippedProgress, float pSwingProgress, HumanoidArm pSide);
 
     @WrapOperation(
-            method = "renderHandsWithItems",
-            at = @At(value = "INVOKE", target = "Lnet/minecraft/client/renderer/ItemInHandRenderer;renderArmWithItem(Lnet/minecraft/client/player/AbstractClientPlayer;FFLnet/minecraft/world/InteractionHand;FLnet/minecraft/world/item/ItemStack;FLcom/mojang/blaze3d/vertex/PoseStack;Lnet/minecraft/client/renderer/SubmitNodeCollector;I)V")
+            method = "submitHandsWithItems",
+            at = @At(value = "INVOKE", target = "Lnet/minecraft/client/renderer/ItemInHandRenderer;submitArmWithItem(Lnet/minecraft/client/player/AbstractClientPlayer;FFLnet/minecraft/world/InteractionHand;FLnet/minecraft/world/item/ItemStack;FLcom/mojang/blaze3d/vertex/PoseStack;Lnet/minecraft/client/renderer/SubmitNodeCollector;I)V")
     )
     private void onlyFlyIfAllowed(ItemInHandRenderer instance, AbstractClientPlayer pPlayer, float pPartialTicks, float pPitch, InteractionHand pHand, float pSwingProgress, ItemStack pStack, float pEquippedProgress, PoseStack pMatrixStack, SubmitNodeCollector submitNodeCollector, int pCombinedLight, Operation<Void> original) {
         pMatrixStack.pushPose();
