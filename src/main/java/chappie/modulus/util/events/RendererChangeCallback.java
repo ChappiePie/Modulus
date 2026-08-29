@@ -6,6 +6,7 @@ import net.fabricmc.fabric.api.event.Event;
 import net.fabricmc.fabric.api.event.EventFactory;
 import net.minecraft.client.model.EntityModel;
 import net.minecraft.client.model.Model;
+import net.minecraft.client.renderer.SubmitNodeCollector;
 import net.minecraft.client.renderer.entity.LivingEntityRenderer;
 import net.minecraft.client.renderer.entity.state.LivingEntityRenderState;
 import net.minecraft.client.renderer.feature.ModelFeatureRenderer;
@@ -38,7 +39,7 @@ public interface RendererChangeCallback {
      */
     record RendererChangeEvent<T extends LivingEntity, S extends LivingEntityRenderState, M extends EntityModel<? super S>>(
             T entity, S renderState, LivingEntityRenderer<T, S, M> renderer, ModelProperties modelProperties,
-            PoseStack poseStack, Object submitNodeCollector, Model<? super S> model, RenderType renderType,
+            PoseStack poseStack, SubmitNodeCollector submitNodeCollector, Model<? super S> model, RenderType renderType,
             int packedLight, int packedOverlay, int tintColor, @Nullable TextureAtlasSprite sprite, int outlineColor,
             @Nullable ModelFeatureRenderer.CrumblingOverlay crumblingOverlay) {
 
@@ -62,7 +63,7 @@ public interface RendererChangeCallback {
                 int outlineColor,
                 @Nullable ModelFeatureRenderer.CrumblingOverlay crumblingOverlay
         ) {
-            ((net.minecraft.client.renderer.SubmitNodeCollector) this.submitNodeCollector).submitModel(model, this.renderState, this.poseStack, renderType, packedLight, packedOverlay, tintColor, sprite, outlineColor, crumblingOverlay);
+            this.submitNodeCollector.submitModel(model, this.renderState, this.poseStack, renderType, packedLight, packedOverlay, tintColor, sprite, outlineColor, crumblingOverlay);
         }
 
     }
