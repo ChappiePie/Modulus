@@ -57,11 +57,10 @@ public class ClientKeyInput implements CustomPacketPayload {
             PowerCap cap = PowerCap.getCap(entity);
             if (cap != null) {
                 Ability ability = cap.getAbility(this.id);
-                if (ability == null) {
-                    return;
+                if (ability != null) {
+                    ability.keys.copyFrom(this.keys);
+                    ability.conditionManager.conditions().forEach(Condition::keyEvent);
                 }
-                ability.keys.copyFrom(this.keys);
-                ability.conditionManager.conditions().forEach(Condition::keyEvent);
             }
         }
     }

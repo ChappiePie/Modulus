@@ -6,12 +6,13 @@ import com.google.gson.JsonArray;
 import com.google.gson.JsonElement;
 import com.google.gson.JsonObject;
 import com.google.gson.JsonParser;
+import com.mojang.serialization.JsonOps;
 import net.minecraft.Util;
 import net.minecraft.client.player.AbstractClientPlayer;
 import net.minecraft.core.Holder;
-import net.minecraft.core.RegistryAccess;
 import net.minecraft.core.particles.ParticleOptions;
 import net.minecraft.network.chat.Component;
+import net.minecraft.network.chat.ComponentSerialization;
 import net.minecraft.network.protocol.game.ClientboundLevelParticlesPacket;
 import net.minecraft.resources.ResourceLocation;
 import net.minecraft.server.level.ServerPlayer;
@@ -72,10 +73,9 @@ public class CommonUtil {
         }
     }
 
-    public static void setAttribute(LivingEntity entity, ResourceLocation name, Attribute attribute, double amount, AttributeModifier.Operation operation) {
-        Holder<Attribute> attributeHolder = Holder.direct(attribute);
-        AttributeInstance instance = entity.getAttribute(attributeHolder);
-        if (instance == null || entity.getCommandSenderWorld().isClientSide) {
+    public static void setAttribute(LivingEntity entity, ResourceLocation name, Holder<Attribute> attribute, double amount, AttributeModifier.Operation operation) {
+        AttributeInstance instance = entity.getAttribute(attribute);
+        if (instance == null || entity.level().isClientSide()) {
             return;
         }
 
@@ -158,7 +158,7 @@ public class CommonUtil {
                     lines.addAll(parseDescriptionLines(jsonArray.get(i)));
                 }
             } else if (jsonElement.isJsonObject()) {
-                lines.add(Component.Serializer.fromJson(jsonElement, RegistryAccess.EMPTY));
+                lines.add(ComponentSerialization.CODEC.parse(JsonOps.INSTANCE, jsonElement).result().orElse(Component.empty()));
             } else if (jsonElement.isJsonPrimitive()) {
                 lines.add(Component.literal(jsonElement.getAsString()));
             }

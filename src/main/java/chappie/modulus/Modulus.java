@@ -41,7 +41,7 @@ public class Modulus {
         SuperpowerCommand.register(event.getDispatcher());
     }
 
-    private void onLivingTick(EntityTickEvent.Pre event) {
+    private void onLivingTick(EntityTickEvent.Post event) {
         if (event.getEntity() instanceof LivingEntity entity) {
             PowerCap cap = PowerCap.getCap(entity);
             if (cap != null) {

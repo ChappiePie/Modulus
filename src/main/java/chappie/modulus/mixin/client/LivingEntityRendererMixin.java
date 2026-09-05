@@ -13,6 +13,7 @@ import com.mojang.blaze3d.vertex.VertexConsumer;
 import net.minecraft.client.model.EntityModel;
 import net.minecraft.client.model.HumanoidModel;
 import net.minecraft.client.model.PlayerModel;
+import net.minecraft.client.model.geom.ModelPart;
 import net.minecraft.client.renderer.MultiBufferSource;
 import net.minecraft.client.renderer.RenderType;
 import net.minecraft.client.renderer.entity.LivingEntityRenderer;
@@ -48,6 +49,12 @@ public abstract class LivingEntityRendererMixin<T extends LivingEntity, M extend
     @Inject(method = "render(Lnet/minecraft/world/entity/LivingEntity;FFLcom/mojang/blaze3d/vertex/PoseStack;Lnet/minecraft/client/renderer/MultiBufferSource;I)V", at = @At(value = "INVOKE", target = "Lnet/minecraft/client/model/EntityModel;setupAnim(Lnet/minecraft/world/entity/Entity;FFFFF)V"))
     public void setupModelProperties2(T entity, float entityYaw, float partialTicks, PoseStack poseStack, MultiBufferSource buffer, int packedLight, CallbackInfo ci, @Local(ordinal = 8) float f5, @Local(ordinal = 7) float f8, @Local(ordinal = 6) float f7, @Local(ordinal = 2) float f2, @Local(ordinal = 4) float f6) {
         if (this.model instanceof IHasModelProperties iModel) {
+            iModel.modulus$modelProperties().root().resetPose();
+            for (ModelPart value : ((ModelPartAccessor) (Object) iModel.modulus$modelProperties().root()).modulus$getChildren().values()) {
+                value.resetPose();
+            }
+
+            iModel.modulus$poseCache().clear();
             iModel.modulus$setup(new RotationProperties(entity, f5, f8, f7, f2, f6), ClientUtil.getPartialTick(), this.layers);
             if (this.layers.stream().noneMatch(p -> p instanceof AbilityLayerRenderer)) {
                 this.addLayer(new AbilityLayerRenderer<>((LivingEntityRenderer<T, M>) (Object) this));
@@ -62,6 +69,7 @@ public abstract class LivingEntityRendererMixin<T extends LivingEntity, M extend
             this.modulus$event = new RendererChangeCallback.RendererChangeEvent<>(entity, renderer, iModel.modulus$modelProperties(), poseStack, buffer, type, packedLight, LivingEntityRenderer.getOverlayCoords(entity, this.getWhiteOverlayProgress(entity, partialTicks)));
             if (this.model instanceof HumanoidModel<?> humanoidModel) {
                 SetupAnimCallback.EVENT.invoke(new SetupAnimCallback.SetupAnimEvent(entity, (HumanoidModel<T>) this.model, iModel.modulus$modelProperties()));
+                iModel.modulus$poseCache().storePose(iModel.modulus$modelProperties().root());
 
                 humanoidModel.hat.copyFrom(humanoidModel.head);
                 if (humanoidModel instanceof PlayerModel playerModel) {

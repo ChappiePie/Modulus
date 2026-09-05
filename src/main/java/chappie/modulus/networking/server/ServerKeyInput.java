@@ -48,13 +48,11 @@ public class ServerKeyInput implements CustomPacketPayload {
             PowerCap cap = PowerCap.getCap(player);
             if (cap != null) {
                 Ability ability = cap.getAbility(this.id);
-                if (ability == null) {
-                    return;
+                if (ability != null) {
+                    ability.keys.copyFrom(this.keys);
+                    ability.conditionManager.conditions().forEach(Condition::keyEvent);
+                    ModNetworking.sendToTrackingEntityAndSelf(new ClientKeyInput(player.getId(), this.id, this.keys), player);
                 }
-
-                ability.keys.copyFrom(this.keys);
-                ability.conditionManager.conditions().forEach(Condition::keyEvent);
-                ModNetworking.sendToTrackingEntityAndSelf(new ClientKeyInput(player.getId(), this.id, this.keys), player);
             }
         }
     }

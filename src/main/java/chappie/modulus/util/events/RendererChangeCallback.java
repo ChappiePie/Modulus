@@ -57,6 +57,10 @@ public interface RendererChangeCallback {
             return this.entity;
         }
 
+        public T entity() {
+            return this.entity;
+        }
+
         public LivingEntityRenderer<T, M> renderer() {
             return renderer;
         }
@@ -109,14 +113,20 @@ public interface RendererChangeCallback {
             listeners.add(listener);
         }
 
-        public boolean invoke(RendererChangeEvent event) {
-            boolean canceled = false;
-            for (RendererChangeCallback listener : listeners) {
-                if (listener.event(event)) {
-                    canceled = true;
+        public RendererChangeCallback invoker() {
+            return event -> {
+                boolean canceled = false;
+                for (RendererChangeCallback listener : listeners) {
+                    if (listener.event(event)) {
+                        canceled = true;
+                    }
                 }
-            }
-            return canceled;
+                return canceled;
+            };
+        }
+
+        public boolean invoke(RendererChangeEvent event) {
+            return invoker().event(event);
         }
     }
 }

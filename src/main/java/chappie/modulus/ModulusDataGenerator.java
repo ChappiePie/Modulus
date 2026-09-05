@@ -41,7 +41,7 @@ public class ModulusDataGenerator {
             add("screen.modulus.tab.mods", "Mods");
             add("screen.modulus.tab.about", "About");
 
-            add("screen.modulus.modEntry.version", "Version, %s");
+            add("screen.modulus.modEntry.version", "Version: %s");
 
             add("screen.modulus.creator", "Creator");
             add("screen.modulus.socials", "Socials");

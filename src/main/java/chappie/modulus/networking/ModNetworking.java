@@ -89,7 +89,10 @@ public class ModNetworking {
 
     public static void sendToTrackingEntityAndSelf(CustomPacketPayload packet, Entity entityToTrack) {
         if (entityToTrack instanceof ServerPlayer serverPlayer) {
-            PacketDistributor.sendToPlayer(serverPlayer, packet);
+            // connection is null when the player is being loaded/deserialized before fully joining
+            if (serverPlayer.connection != null) {
+                PacketDistributor.sendToPlayer(serverPlayer, packet);
+            }
         }
         if (entityToTrack.level() instanceof ServerLevel serverLevel) {
             PacketDistributor.sendToPlayersTrackingEntity(entityToTrack, packet);

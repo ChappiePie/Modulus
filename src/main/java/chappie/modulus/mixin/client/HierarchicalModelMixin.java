@@ -4,6 +4,7 @@ import chappie.modulus.util.ClientUtil;
 import chappie.modulus.util.model.IHasModelProperties;
 import chappie.modulus.util.model.ModelProperties;
 import chappie.modulus.util.model.RotationProperties;
+import chappie.modulus.util.render.ModelPoseCache;
 import net.minecraft.client.model.HierarchicalModel;
 import net.minecraft.client.model.geom.ModelPart;
 import net.minecraft.client.renderer.entity.layers.RenderLayer;
@@ -18,6 +19,8 @@ public abstract class HierarchicalModelMixin implements IHasModelProperties {
 
     @Unique
     private ModelProperties modulus$modelProperties;
+    @Unique
+    private final ModelPoseCache modulus$poseCache = new ModelPoseCache();
 
     @Shadow
     public abstract ModelPart root();
@@ -34,5 +37,10 @@ public abstract class HierarchicalModelMixin implements IHasModelProperties {
                     ClientUtil.getPartialTick(), List.of());
         }
         return this.modulus$modelProperties;
+    }
+
+    @Override
+    public ModelPoseCache modulus$poseCache() {
+        return modulus$poseCache;
     }
 }

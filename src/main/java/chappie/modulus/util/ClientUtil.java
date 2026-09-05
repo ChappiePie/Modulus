@@ -51,8 +51,8 @@ public class ClientUtil {
 
     public static void modifyAllParts(Model model, BiConsumer<ModelPart, IChangeableSize> consumer) {
         if (model instanceof IHasModelProperties modelProperties) {
-            modelProperties.allParts().forEach((part) ->
-                    consumer.accept(part, modified(part)));
+            modelProperties.modulus$modelProperties().root().getAllParts()
+                    .forEach(part -> consumer.accept(part, modified(part)));
         }
     }
 

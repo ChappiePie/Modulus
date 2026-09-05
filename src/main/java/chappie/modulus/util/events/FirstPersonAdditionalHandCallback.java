@@ -35,14 +35,21 @@ public interface FirstPersonAdditionalHandCallback {
             listeners.add(listener);
         }
 
-        public boolean invoke(FirstPersonAdditionalHandEvent event) {
-            boolean canceled = false;
-            for (FirstPersonAdditionalHandCallback listener : listeners) {
-                if (listener.event(event)) {
-                    canceled = true;
+        public FirstPersonAdditionalHandCallback invoker() {
+            return event -> {
+                boolean canceled = false;
+                for (FirstPersonAdditionalHandCallback listener : listeners) {
+                    if (listener.event(event)) {
+                        canceled = true;
+                    }
                 }
-            }
-            return canceled;
+                return canceled;
+            };
+        }
+
+        // backward compat
+        public boolean invoke(FirstPersonAdditionalHandEvent event) {
+            return invoker().event(event);
         }
     }
 }

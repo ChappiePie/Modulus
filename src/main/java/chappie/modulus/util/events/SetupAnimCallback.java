@@ -27,10 +27,16 @@ public interface SetupAnimCallback {
             listeners.add(listener);
         }
 
+        public SetupAnimCallback invoker() {
+            return event -> {
+                for (SetupAnimCallback listener : listeners) {
+                    listener.event(event);
+                }
+            };
+        }
+
         public void invoke(SetupAnimEvent event) {
-            for (SetupAnimCallback listener : listeners) {
-                listener.event(event);
-            }
+            invoker().event(event);
         }
     }
 }

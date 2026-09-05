@@ -62,9 +62,14 @@ public class Ability {
         if (!this.initialSyncDone) {
             this.initialSyncDone = true;
         }
-        if (!entity.getCommandSenderWorld().isClientSide) {
+        if (!entity.level().isClientSide) {
             if (entity instanceof Player) {
-                this.dataManager.set(ENABLED, this.conditionManager.test("enabling"));
+                boolean b = this.conditionManager.test("enabling");
+                if (b) {
+                    this.dataManager.set(ENABLED, b);
+                } else {
+                    this.dataManager.set(ENABLED, b);
+                }
             } else {
                 if (entity.tickCount % 600 == 1) {
                     this.dataManager.set(ENABLED, !this.isEnabled());
@@ -116,7 +121,7 @@ public class Ability {
     }
 
     public void syncToAll(Entity entity) {
-        if (!entity.getCommandSenderWorld().isClientSide) {
+        if (!entity.level().isClientSide()) {
             ModNetworking.sendToTrackingEntityAndSelf(new ClientSyncAbility(entity.getId(), this.builder.id, this.serializeNBT()), entity);
         }
     }

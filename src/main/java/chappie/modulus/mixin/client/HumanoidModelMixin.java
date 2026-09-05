@@ -4,6 +4,7 @@ import chappie.modulus.util.ClientUtil;
 import chappie.modulus.util.model.IHasModelProperties;
 import chappie.modulus.util.model.ModelProperties;
 import chappie.modulus.util.model.RotationProperties;
+import chappie.modulus.util.render.ModelPoseCache;
 import net.minecraft.client.model.HumanoidModel;
 import net.minecraft.client.model.geom.ModelPart;
 import net.minecraft.client.renderer.entity.layers.RenderLayer;
@@ -23,6 +24,8 @@ public abstract class HumanoidModelMixin implements IHasModelProperties {
     private ModelProperties modulus$modelProperties;
     @Unique
     private ModelPart modulus$root;
+    @Unique
+    private final ModelPoseCache modulus$poseCache = new ModelPoseCache();
 
     @Inject(method = "<init>(Lnet/minecraft/client/model/geom/ModelPart;Ljava/util/function/Function;)V", at = @At(value = "TAIL"))
     private void mixin$init(ModelPart root, Function renderType, CallbackInfo ci) {
@@ -41,5 +44,10 @@ public abstract class HumanoidModelMixin implements IHasModelProperties {
                     ClientUtil.getPartialTick(), List.of());
         }
         return this.modulus$modelProperties;
+    }
+
+    @Override
+    public ModelPoseCache modulus$poseCache() {
+        return modulus$poseCache;
     }
 }

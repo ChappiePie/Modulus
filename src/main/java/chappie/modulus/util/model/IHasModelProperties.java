@@ -1,10 +1,9 @@
 package chappie.modulus.util.model;
 
-import net.minecraft.client.model.geom.ModelPart;
+import chappie.modulus.util.render.ModelPoseCache;
 import net.minecraft.client.renderer.entity.layers.RenderLayer;
 
 import java.util.List;
-import java.util.stream.Stream;
 
 public interface IHasModelProperties {
 
@@ -12,7 +11,5 @@ public interface IHasModelProperties {
 
     ModelProperties modulus$modelProperties();
 
-    default Stream<ModelPart> allParts() {
-        return modulus$modelProperties().root().getAllParts();
-    }
+    ModelPoseCache modulus$poseCache();
 }

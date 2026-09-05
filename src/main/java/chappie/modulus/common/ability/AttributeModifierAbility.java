@@ -5,6 +5,7 @@ import chappie.modulus.common.ability.base.Ability;
 import chappie.modulus.common.ability.base.AbilityBuilder;
 import chappie.modulus.common.ability.base.AbilityType;
 import chappie.modulus.util.CommonUtil;
+import net.minecraft.core.Holder;
 import net.minecraft.resources.ResourceLocation;
 import net.minecraft.world.entity.LivingEntity;
 import net.minecraft.world.entity.ai.attributes.Attribute;
@@ -46,11 +47,11 @@ public class AttributeModifierAbility extends Ability {
 
     public static class AttributeBuilder {
         protected final ResourceLocation name = ResourceLocation.fromNamespaceAndPath(Modulus.MODID, UUID.randomUUID().toString());
-        protected Attribute attribute;
+        protected Holder<Attribute> attribute;
         protected double amount;
         protected AttributeModifier.Operation operation;
 
-        public AttributeBuilder attribute(Attribute attribute) {
+        public AttributeBuilder attribute(Holder<Attribute> attribute) {
             this.attribute = attribute;
             return this;
         }

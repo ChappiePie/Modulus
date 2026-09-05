@@ -11,7 +11,9 @@
     "client.ItemInHandRendererMixin",
     "client.LivingEntityRendererMixin",
     "client.MinecraftMixin",
+    "client.ModelPartAccessor",
     "client.ModelPartMixin",
+    "client.MouseHandlerMixin",
     "client.QuadrupedModelMixin",
     "client.ScreenMixin",
     "client.WindowMixin"
